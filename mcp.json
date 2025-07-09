@@ -1,0 +1,39 @@
+{
+  "name": "avatax-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for Avatax services integration.",
+  "routes": [
+    {
+      "method": "POST",
+      "path": "/calculateTax",
+      "description": "Calculates tax for a given transaction."
+    },
+    {
+      "method": "POST",
+      "path": "/validateAddress",
+      "description": "Validates a given address."
+    },
+    {
+      "method": "POST",
+      "path": "/createTransaction",
+      "description": "Creates a new transaction."
+    }
+  ],
+  "services": [
+    {
+      "name": "Avatax",
+      "description": "Service for interacting with the Avatax API.",
+      "endpoint": "https://api.avatax.com"
+    }
+  ],
+  "middleware": [
+    {
+      "name": "bodyParser",
+      "description": "Middleware for parsing request bodies."
+    },
+    {
+      "name": "cors",
+      "description": "Middleware for enabling CORS."
+    }
+  ]
+}
