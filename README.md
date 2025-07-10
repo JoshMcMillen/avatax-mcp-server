@@ -56,14 +56,21 @@ Create a committed transaction in AvaTax.
 
 When using gitmcp.io, set these environment variables:
 
+> **Legend:** ✅ = Required, ❌ = Optional (uses default if not set; see below)
+>
+> **Defaults:**
+> - `AVATAX_ENVIRONMENT`: Defaults to `sandbox`
+> - `AVATAX_APP_NAME`: Defaults to `AvaTax-MCP-Server`
+> - `AVATAX_TIMEOUT`: Defaults to `30000` (milliseconds)
+
 | Variable | Required | Description | Example |
 |----------|----------|-------------|---------|
 | `AVATAX_ACCOUNT_ID` | ✅ | Your AvaTax account ID | `1234567890` |
 | `AVATAX_LICENSE_KEY` | ✅ | Your AvaTax license key | `1A2B3C4D5E6F7G8H` |
 | `AVATAX_COMPANY_CODE` | ✅ | Your AvaTax company code | `DEFAULT` |
-| `AVATAX_ENVIRONMENT` | ❌ | Environment (`sandbox` or `production`) | `sandbox` |
-| `AVATAX_APP_NAME` | ❌ | Application name | `AvaTax-MCP-Server` |
-| `AVATAX_TIMEOUT` | ❌ | API timeout in milliseconds | `30000` |
+| `AVATAX_ENVIRONMENT` | ❌ | Environment (`sandbox` or `production`). **Default:** `sandbox` | `sandbox` |
+| `AVATAX_APP_NAME` | ❌ | Application name. **Default:** `AvaTax-MCP-Server` | `AvaTax-MCP-Server` |
+| `AVATAX_TIMEOUT` | ❌ | API timeout in milliseconds. **Default:** `30000` | `30000` |
 
 ## Getting AvaTax Credentials
 
