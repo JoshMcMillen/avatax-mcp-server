@@ -10,7 +10,8 @@
     "electron:dev": "electron .",
     "electron:build": "npm run build && electron-builder",
     "electron:build-unsigned": "set CSC_IDENTITY_AUTO_DISCOVERY=false && npm run build && electron-builder",
-    "dist": "npm run electron:build"
+    "dist": "npm run electron:build",
+    "release": "powershell -ExecutionPolicy Bypass -File scripts/create-release.ps1"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.5.0",
