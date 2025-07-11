@@ -16,3 +16,8 @@ node_modules/
 # OS files
 Thumbs.db
 .DS_Store
+
+# Ignore build artifacts and installers
+release/*.exe
+release/*.blockmap
+release/.cache/
