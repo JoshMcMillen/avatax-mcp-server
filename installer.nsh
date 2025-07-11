@@ -8,6 +8,11 @@
 Var /GLOBAL IsUpgrade
 Var /GLOBAL OldVersion
 
+; Get version from package.json or use default
+!ifndef VERSION
+  !define VERSION "1.0.2"
+!endif
+
 ; Function to check if application is running using tasklist
 Function CheckRunningApp
   ClearErrors
@@ -107,10 +112,23 @@ Function .onInstSuccess
     RMDir /r "$TEMP\AvaTax_Backup"
   ${EndIf}
   
+  ; Set install/upgrade flags for the application to detect
+  ${If} $IsUpgrade == "true"
+    ; Mark as upgrade - app will open config tab
+    WriteRegStr HKCU "Software\AvaTax MCP Server" "PostUpgrade" "true"
+    WriteRegStr HKCU "Software\AvaTax MCP Server" "FromVersion" "$OldVersion"
+  ${Else}
+    ; Mark as first install - app will open config tab
+    WriteRegStr HKCU "Software\AvaTax MCP Server" "FirstRun" "true"
+  ${EndIf}
+  
+  ; Write current version for future upgrades
+  WriteRegStr HKCU "Software\AvaTax MCP Server" "Version" "${VERSION}"
+  
   ; Show completion message
   ${If} $IsUpgrade == "true"
-    MessageBox MB_OK|MB_ICONINFORMATION "AvaTax MCP Server has been successfully upgraded!$\n$\nYour previous configuration has been preserved."
+    MessageBox MB_OK|MB_ICONINFORMATION "AvaTax MCP Server has been successfully upgraded!$\n$\nYour previous configuration has been preserved.$\n$\nThe application will now launch automatically."
   ${Else}
-    MessageBox MB_OK|MB_ICONINFORMATION "AvaTax MCP Server has been successfully installed!$\n$\nYou can now launch it from the Start Menu or Desktop shortcut."
+    MessageBox MB_OK|MB_ICONINFORMATION "AvaTax MCP Server has been successfully installed!$\n$\nThe application will now launch automatically to help you configure your AvaTax credentials."
   ${EndIf}
 FunctionEnd

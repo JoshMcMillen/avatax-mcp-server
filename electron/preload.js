@@ -12,6 +12,10 @@ contextBridge.exposeInMainWorld('mcp', {
   clearConfig: () => ipcRenderer.invoke('clear-config'),
   testConnection: (config) => ipcRenderer.invoke('test-connection', config),
   
+  // Install state management
+  getInstallState: () => ipcRenderer.invoke('get-install-state'),
+  onInstallState: (callback) => ipcRenderer.on('install-state', (_event, data) => callback(data)),
+  
   // Event handlers
   onServerOutput: (callback) => ipcRenderer.on('server-output', (_event, data) => callback(data)),
   onServerError: (callback) => ipcRenderer.on('server-error', (_event, data) => callback(data)),

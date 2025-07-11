@@ -1,6 +1,6 @@
 {
   "name": "avatax-mcp-server",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "MCP server for AvaTax - calculate tax, validate addresses, and create transactions",
   "main": "electron/main.js",
   "scripts": {
@@ -11,6 +11,7 @@
     "electron:build": "npm run build && electron-builder",
     "electron:build-unsigned": "set CSC_IDENTITY_AUTO_DISCOVERY=false && npm run build && electron-builder",
     "dist": "npm run electron:build",
+    "smart-build": "powershell -ExecutionPolicy Bypass -File scripts/smart-build.ps1",
     "release": "powershell -ExecutionPolicy Bypass -File scripts/create-release.ps1"
   },
   "dependencies": {
@@ -76,7 +77,7 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "deleteAppDataOnUninstall": false,
-      "runAfterFinish": false,
+      "runAfterFinish": true,
       "include": "installer.nsh",
       "shortcutName": "AvaTax MCP Server",
       "displayLanguageSelector": false,

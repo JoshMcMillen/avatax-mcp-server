@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AvaTax MCP Server</title>
+    <title>AvaTax MCP Server - Avalara Tax Automation</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2L28 8V24L16 30L4 24V8L16 2Z' fill='%23FF6B35'/%3E%3Cpath d='M16 6L24 10V22L16 26L8 22V10L16 6Z' fill='white'/%3E%3Cpath d='M12 12L16 14L20 12V16L16 18L12 16V12Z' fill='%23FF6B35'/%3E%3C/svg%3E">
     <style>
         * {
             margin: 0;
@@ -12,10 +13,10 @@
         }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Roboto, sans-serif;
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FF6B35 100%);
             min-height: 100vh;
-            color: #333;
+            color: #2c3e50;
             overflow-x: hidden;
         }
         
@@ -29,24 +30,61 @@
             text-align: center;
             color: white;
             margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+        
+        .header .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .header .avalara-logo {
+            width: 70px;
+            height: 70px;
+            background: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: #FF6B35;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            transition: transform 0.3s ease;
+        }
+        
+        .header .avalara-logo:hover {
+            transform: scale(1.05);
         }
         
         .header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            font-weight: 700;
         }
         
         .header p {
             font-size: 1.2em;
-            opacity: 0.9;
+            opacity: 0.95;
+            font-weight: 400;
         }
         
         .tabs {
             display: flex;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15);
             border-radius: 15px 15px 0 0;
             overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         
         .tab {
@@ -56,17 +94,21 @@
             border: none;
             color: white;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
+            border-bottom: 3px solid transparent;
         }
         
         .tab.active {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.25);
+            border-bottom-color: #ffffff;
         }
         
         .tab:hover {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
         }
         
         .content {
@@ -127,8 +169,8 @@
         
         .form-group input:focus, .form-group select:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+            border-color: #FF6B35;
+            box-shadow: 0 0 0 3px rgba(255,107,53,0.15);
         }
         
         .form-row {
@@ -155,13 +197,15 @@
         }
         
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
             color: white;
+            box-shadow: 0 4px 15px rgba(255,107,53,0.3);
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255,107,53,0.4);
+            background: linear-gradient(135deg, #e55a2b 0%, #e6821a 100%);
         }
         
         .btn-secondary {
@@ -239,41 +283,53 @@
         }
         
         .feature-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 12px;
-            border-left: 4px solid #667eea;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #FF6B35;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
         }
         
         .feature-card h3 {
-            color: #667eea;
-            margin-bottom: 10px;
+            color: #FF6B35;
+            margin-bottom: 12px;
+            font-weight: 700;
         }
         
         .help-section {
-            background: #e3f2fd;
-            border: 1px solid #bbdefb;
-            border-radius: 8px;
-            padding: 20px;
+            background: linear-gradient(135deg, #fff5f0 0%, #ffe8dd 100%);
+            border: 2px solid #FFB89A;
+            border-radius: 12px;
+            padding: 25px;
             margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(255,107,53,0.1);
         }
         
         .help-section h3 {
-            color: #1976d2;
-            margin-bottom: 10px;
+            color: #CC4A25;
+            margin-bottom: 15px;
+            font-weight: 700;
         }
         
         .connection-info {
-            background: #f0f8ff;
-            border: 1px solid #b3d9ff;
-            border-radius: 8px;
-            padding: 20px;
+            background: linear-gradient(135deg, #fff5f0 0%, #ffe8dd 100%);
+            border: 2px solid #FFB89A;
+            border-radius: 12px;
+            padding: 25px;
             margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(255,107,53,0.1);
         }
         
         .connection-info h3 {
-            color: #0066cc;
+            color: #CC4A25;
             margin-bottom: 15px;
+            font-weight: 700;
         }
         
         .readme h1, .readme h2, .readme h3 {
@@ -282,12 +338,15 @@
         }
         
         .readme h1 {
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
+            border-bottom: 3px solid #FF6B35;
+            padding-bottom: 15px;
+            color: #2c3e50;
+            font-weight: 700;
         }
         
         .readme h2 {
-            color: #667eea;
+            color: #FF6B35;
+            font-weight: 600;
         }
         
         .readme code {
@@ -299,23 +358,154 @@
         
         .readme pre {
             background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 20px;
+            border-radius: 10px;
             overflow-x: auto;
-            border-left: 4px solid #667eea;
+            border-left: 5px solid #FF6B35;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
         
         .readme ul, .readme ol {
             margin-left: 20px;
             margin-bottom: 15px;
         }
+        
+        /* Claude Configuration Section */
+        .claude-config-section {
+            background: #e8f5e8;
+            border: 2px solid #4caf50;
+            border-radius: 12px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        
+        .claude-config-section h3 {
+            color: #2e7d32;
+            margin-bottom: 15px;
+            font-size: 1.4em;
+        }
+        
+        .claude-config-section h4 {
+            color: #2e7d32;
+            margin: 15px 0 10px 0;
+            font-size: 1.1em;
+        }
+        
+        .config-copy-container {
+            position: relative;
+            margin: 15px 0;
+        }
+        
+        .claude-config-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            white-space: pre;
+            margin-bottom: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .copy-btn {
+            background: #4caf50 !important;
+            color: white !important;
+            border: none !important;
+            font-weight: 600;
+        }
+        
+        .copy-btn:hover {
+            background: #45a049 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76,175,80,0.4);
+        }
+        
+        .copy-btn.copied {
+            background: #2e7d32 !important;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .config-link {
+            color: #FF6B35;
+            text-decoration: underline;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .config-link:hover {
+            color: #CC4A25;
+        }
+        
+        /* Enhanced visual elements */
+        .status.success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 2px solid #b3d9c7;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(21,87,36,0.1);
+        }
+        
+        .status.error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 2px solid #f1b2b7;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(114,28,36,0.1);
+        }
+        
+        .status.info {
+            background: linear-gradient(135deg, #cce5ff 0%, #99d1ff 100%);
+            color: #004085;
+            border: 2px solid #7cc7ff;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,64,133,0.1);
+        }
+        
+        .status.warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            border: 2px solid #fdd87d;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(133,100,4,0.1);
+        }
+        
+        .content {
+            background: white;
+            border-radius: 0 0 15px 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            min-height: 500px;
+            overflow: hidden;
+        }
+        
+        .tab-content h2 {
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🧮 AvaTax MCP Server</h1>
-            <p>Tax calculation and address validation for Claude Desktop</p>
+            <div class="logo-container">
+                <div class="avalara-logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 2L28 8V24L16 30L4 24V8L16 2Z" fill="#FF6B35"/>
+                        <path d="M16 6L24 10V22L16 26L8 22V10L16 6Z" fill="white"/>
+                        <path d="M12 12L16 14L20 12V16L16 18L12 16V12Z" fill="#FF6B35"/>
+                    </svg>
+                </div>
+                <h1>AvaTax MCP Server</h1>
+            </div>
+            <p>Tax calculation and address validation for Claude Desktop • Powered by Avalara</p>
         </div>
         
         <div class="tabs">
@@ -329,54 +519,57 @@
             <!-- Welcome Tab -->
             <div id="welcome" class="tab-content active">
                 <h2>Welcome to AvaTax MCP Server!</h2>
-                <p>This application provides AvaTax integration for Claude Desktop through the Model Context Protocol (MCP).</p>
+                <p>Integrate Avalara's industry-leading tax calculation and compliance platform with Claude Desktop through the Model Context Protocol (MCP). Access real-time tax calculations, address validation, and transaction management directly from your AI conversations.</p>
                 
                 <div class="feature-grid">
                     <div class="feature-card">
-                        <h3>🧮 Tax Calculation</h3>
-                        <p>Calculate sales tax, VAT, and other transaction taxes with line-item detail.</p>
+                        <h3>🧮 Precise Tax Calculation</h3>
+                        <p>Calculate sales tax, VAT, GST, and other transaction taxes with line-item detail using Avalara's comprehensive tax engine trusted by 40,000+ businesses worldwide.</p>
                     </div>
                     <div class="feature-card">
-                        <h3>📍 Address Validation</h3>
-                        <p>Validate and normalize addresses for accurate tax calculations.</p>
+                        <h3>📍 Global Address Validation</h3>
+                        <p>Validate and normalize addresses across 75+ countries for accurate tax calculations and compliance requirements.</p>
                     </div>
                     <div class="feature-card">
                         <h3>📊 Transaction Management</h3>
-                        <p>Create committed transactions directly in AvaTax.</p>
+                        <p>Create committed transactions directly in AvaTax for seamless integration with your existing tax workflow and audit requirements.</p>
                     </div>
                     <div class="feature-card">
-                        <h3>🔧 Multi-Environment</h3>
-                        <p>Switch between sandbox and production environments.</p>
+                        <h3>🌍 Multi-Environment Support</h3>
+                        <p>Seamlessly switch between Avalara's sandbox and production environments for testing and live operations.</p>
                     </div>
                 </div>
                 
                 <div class="connection-info">
                     <h3>🔌 Claude Desktop Integration</h3>
-                    <p>To use this server with Claude Desktop, you'll need to:</p>
+                    <p>Connect the power of Avalara's tax automation platform to your AI workflow:</p>
                     <ol>
-                        <li><strong>Configure your AvaTax credentials</strong> in the Configuration tab</li>
-                        <li><strong>Start the MCP server</strong> in the Server Control tab</li>
-                        <li><strong>Add the server to Claude Desktop</strong> configuration (instructions in Documentation tab)</li>
+                        <li><strong>Configure your AvaTax credentials</strong> in the <a href="javascript:showTab('configuration')" class="config-link">Configuration tab</a></li>
+                        <li><strong>Copy the auto-generated Claude configuration</strong> (appears after saving credentials)</li>
+                        <li><strong>Add it to your Claude Desktop configuration file</strong></li>
+                        <li><strong>Restart Claude Desktop</strong> to activate the integration</li>
                     </ol>
-                    <p><strong>Note:</strong> The server runs locally and connects Claude Desktop to your AvaTax account securely.</p>
+                    <p><strong>✨ Smart Configuration:</strong> Your personalized Claude Desktop configuration is automatically generated based on your credentials - no manual JSON editing required!</p>
+                    <p><strong>🚀 Instant Access:</strong> The application launches automatically after installation and upgrades, ensuring quick access to your tax compliance tools.</p>
                 </div>
                 
                 <div class="help-section">
-                    <h3>🚀 Quick Start</h3>
-                    <p>New to AvaTax? Here's what you need:</p>
+                    <h3>🚀 Getting Started with Avalara</h3>
+                    <p>New to Avalara's tax automation platform? Here's everything you need:</p>
                     <ul>
-                        <li>An AvaTax account (sign up at <a href="https://www.avalara.com/" target="_blank" rel="noopener">avalara.com</a>)</li>
-                        <li>Your Account ID and License Key from the AvaTax portal</li>
-                        <li>Your Company Code (found in AvaTax under Companies > Company Settings)</li>
-                        <li>Claude Desktop installed on your computer</li>
+                        <li>An <strong>Avalara AvaTax account</strong> (start your free trial at <a href="https://www.avalara.com/" target="_blank" rel="noopener">avalara.com</a>)</li>
+                        <li>Your <strong>Account ID and License Key</strong> from the AvaTax admin console</li>
+                        <li>Your <strong>Company Code</strong> (found in AvaTax under Companies > Company Settings)</li>
+                        <li><strong>Claude Desktop</strong> installed on your system</li>
                     </ul>
+                    <p><em>Join 40,000+ businesses worldwide who trust Avalara for automated tax compliance across 75+ countries.</em></p>
                 </div>
             </div>
             
             <!-- Configuration Tab -->
             <div id="configuration" class="tab-content">
-                <h2>AvaTax Configuration</h2>
-                <p>Configure your AvaTax credentials and settings. These will be saved securely on your computer.</p>
+                <h2>Avalara AvaTax Configuration</h2>
+                <p>Configure your Avalara AvaTax API credentials and environment settings. Your credentials are stored securely on your local computer.</p>
                 
                 <form class="config-form" id="configForm">
                     <div class="form-row">
@@ -433,12 +626,42 @@
                 </form>
                 
                 <div id="configStatus"></div>
+                
+                <!-- Claude Desktop Configuration Section -->
+                <div id="claudeConfigSection" class="claude-config-section hidden">
+                    <h3>📋 Claude Desktop Configuration</h3>
+                    <p>Copy this configuration to your <code>claude_desktop_config.json</code> file:</p>
+                    
+                    <div class="config-copy-container">
+                        <pre id="claudeConfigOutput" class="claude-config-output"></pre>
+                        <button type="button" class="btn btn-secondary copy-btn" onclick="copyClaudeConfig()">
+                            📋 Copy Configuration
+                        </button>
+                    </div>
+                    
+                    <div class="help-section">
+                        <h4>📁 Configuration File Location</h4>
+                        <ul>
+                            <li><strong>Windows:</strong> <code>%APPDATA%\\Claude\\claude_desktop_config.json</code></li>
+                            <li><strong>macOS:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
+                            <li><strong>Linux:</strong> <code>~/.config/Claude/claude_desktop_config.json</code></li>
+                        </ul>
+                        <p><strong>Next steps:</strong></p>
+                        <ol>
+                            <li>Copy the configuration above</li>
+                            <li>Open your <code>claude_desktop_config.json</code> file</li>
+                            <li>Add the AvaTax MCP server configuration</li>
+                            <li>Restart Claude Desktop</li>
+                            <li>Start asking Claude about tax calculations!</li>
+                        </ol>
+                    </div>
+                </div>
             </div>
             
             <!-- Server Control Tab -->
             <div id="server" class="tab-content">
-                <h2>MCP Server Control</h2>
-                <p>Start and stop the AvaTax MCP server for Claude Desktop integration.</p>
+                <h2>AvaTax MCP Server Control</h2>
+                <p>Start and manage the Avalara AvaTax MCP server for seamless Claude Desktop integration and tax automation.</p>
                 
                 <div class="button-group">
                     <button class="btn btn-primary" onclick="startServer()">
@@ -458,18 +681,22 @@
                     <h1>📚 Documentation</h1>
                     
                     <h2>Claude Desktop Configuration</h2>
-                    <p>To connect this MCP server to Claude Desktop, add the following to your <code>claude_desktop_config.json</code> file:</p>
+                    <p><strong>✨ For your personalized configuration, go to the <a href="javascript:showTab('configuration')" class="config-link">Configuration tab</a> and save your AvaTax credentials. The exact configuration you need will be generated automatically!</strong></p>
+                    
+                    <p>The generated configuration needs to be added to your <code>claude_desktop_config.json</code> file. Here's the general structure:</p>
                     
                     <pre><code>{
   "mcpServers": {
     "avatax": {
       "command": "node",
-      "args": ["C:\\Users\\YourUsername\\AppData\\Local\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js"],
+      "args": ["path/to/app.asar/dist/index.js"],
       "env": {
-        "AVATAX_ACCOUNT_ID": "your_account_id",
-        "AVATAX_LICENSE_KEY": "your_license_key", 
-        "AVATAX_COMPANY_CODE": "your_company_code",
-        "AVATAX_ENVIRONMENT": "sandbox"
+        "AVATAX_ACCOUNT_ID": "your_actual_account_id",
+        "AVATAX_LICENSE_KEY": "your_actual_license_key", 
+        "AVATAX_COMPANY_CODE": "your_actual_company_code",
+        "AVATAX_ENVIRONMENT": "sandbox_or_production",
+        "AVATAX_APP_NAME": "AvaTax-MCP-Server",
+        "AVATAX_TIMEOUT": "30000"
       }
     }
   }
@@ -491,26 +718,45 @@
                     <div class="feature-grid">
                         <div class="feature-card">
                             <h3>calculate_tax</h3>
-                            <p>"Calculate sales tax for a $100 item shipped from California to New York"</p>
+                            <p>"Calculate sales tax for a $100 item shipped from California to New York using Avalara's real-time tax engine"</p>
                         </div>
                         <div class="feature-card">
                             <h3>validate_address</h3>
-                            <p>"Validate this address: 123 Main St, Seattle, WA 98101"</p>
+                            <p>"Validate this address: 123 Main St, Seattle, WA 98101 using Avalara's global address validation service"</p>
                         </div>
                         <div class="feature-card">
                             <h3>create_transaction</h3>
-                            <p>"Create a committed sales transaction for order #12345"</p>
+                            <p>"Create a committed sales transaction for order #12345 in AvaTax for compliance reporting"</p>
+                        </div>
+                        <div class="feature-card">
+                            <h3>ping_service</h3>
+                            <p>"Test connectivity to Avalara's AvaTax service and verify your API credentials"</p>
                         </div>
                     </div>
                     
-                    <h2>Getting AvaTax Credentials</h2>
+                    <h2>Getting Avalara AvaTax Credentials</h2>
+                    <p>Follow these steps to obtain your Avalara AvaTax API credentials:</p>
                     <ol>
-                        <li><strong>Sign up</strong> for an AvaTax account at <a href="https://www.avalara.com/" target="_blank" rel="noopener">avalara.com</a></li>
-                        <li><strong>Access the AvaTax portal</strong> and navigate to Settings > License Keys</li>
-                        <li><strong>Copy your Account ID and License Key</strong></li>
-                        <li><strong>Find your Company Code</strong> under Companies > Company Settings</li>
-                        <li><strong>Start with sandbox</strong> environment for testing</li>
+                        <li><strong>Create an account</strong> at <a href="https://www.avalara.com/" target="_blank" rel="noopener">avalara.com</a> (free trial available)</li>
+                        <li><strong>Access the AvaTax admin console</strong> and navigate to Settings > License Keys</li>
+                        <li><strong>Copy your Account ID and License Key</strong> from the credentials section</li>
+                        <li><strong>Locate your Company Code</strong> under Companies > Company Settings</li>
+                        <li><strong>Start with sandbox environment</strong> for safe testing before going live</li>
                     </ol>
+                    <p><em>Avalara serves 40,000+ customers worldwide with automated tax compliance solutions.</em></p>
+                    
+                    <h2>Installation & Upgrades</h2>
+                    <div class="help-section">
+                        <h3>🚀 Automatic Launch</h3>
+                        <p>The AvaTax MCP Server makes it easy to get back to work after installation:</p>
+                        <ul>
+                            <li><strong>New Installation:</strong> The app will automatically launch after installation is complete</li>
+                            <li><strong>Upgrades:</strong> After upgrading, the app will start automatically so you can continue using it</li>
+                            <li><strong>Quick Setup:</strong> Navigate to the Configuration tab to set up your AvaTax credentials</li>
+                            <li><strong>Smart Configuration:</strong> The app will generate your Claude Desktop configuration automatically</li>
+                        </ul>
+                        <p><strong>💡 Tip:</strong> You can always launch the app later from your Start Menu or Desktop shortcut if you close it.</p>
+                    </div>
                     
                     <div class="help-section">
                         <h3>🔗 Useful Links</h3>

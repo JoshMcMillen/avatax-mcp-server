@@ -25,6 +25,21 @@ let currentConfig = {};
 window.addEventListener('DOMContentLoaded', () => {
     loadConfiguration();
     getServerStatus();
+    
+    // Listen for install state updates from main process
+    window.mcp.onInstallState((installState) => {
+        handleInstallState(installState);
+    });
+    
+    // Add real-time config generation as user types
+    const configInputs = ['accountId', 'licenseKey', 'companyCode', 'environment', 'appName', 'timeout'];
+    configInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('input', updateClaudeConfigPreview);
+            input.addEventListener('change', updateClaudeConfigPreview);
+        }
+    });
 });
 
 function loadConfiguration() {
@@ -38,8 +53,10 @@ function loadConfiguration() {
         if (config.AVATAX_TIMEOUT) document.getElementById('timeout').value = config.AVATAX_TIMEOUT;
         
         showStatus('Configuration loaded successfully', 'success');
+        generateClaudeConfig(config);
     }).catch(error => {
         showStatus('No saved configuration found', 'info');
+        hideClaudeConfig();
     });
 }
 
@@ -57,6 +74,7 @@ function saveConfiguration() {
     
     window.mcp.saveConfig(config).then(() => {
         showStatus('Configuration saved successfully!', 'success');
+        generateClaudeConfig(config);
     }).catch(error => {
         showStatus(`Failed to save configuration: ${error.message}`, 'error');
     });
@@ -68,6 +86,7 @@ function clearConfiguration() {
         window.mcp.clearConfig().then(() => {
             showStatus('Configuration cleared', 'warning');
             currentConfig = {};
+            hideClaudeConfig();
         }).catch(error => {
             showStatus(`Failed to clear configuration: ${error.message}`, 'error');
         });
@@ -236,5 +255,119 @@ function showServerStatus(message, type) {
                 statusDiv.innerHTML = '';
             }
         }, 5000);
+    }
+}
+
+// Claude Desktop Configuration Generation
+function updateClaudeConfigPreview() {
+    const config = {
+        AVATAX_ACCOUNT_ID: document.getElementById('accountId').value,
+        AVATAX_LICENSE_KEY: document.getElementById('licenseKey').value,
+        AVATAX_COMPANY_CODE: document.getElementById('companyCode').value || 'DEFAULT',
+        AVATAX_ENVIRONMENT: document.getElementById('environment').value,
+        AVATAX_APP_NAME: document.getElementById('appName').value || 'AvaTax-MCP-Server',
+        AVATAX_TIMEOUT: document.getElementById('timeout').value || '30000'
+    };
+    
+    generateClaudeConfig(config);
+}
+
+function generateClaudeConfig(config) {
+    if (!config.AVATAX_ACCOUNT_ID || !config.AVATAX_LICENSE_KEY || !config.AVATAX_COMPANY_CODE) {
+        hideClaudeConfig();
+        return;
+    }
+    
+    // Get the actual application path
+    const appPath = process.platform === 'win32' 
+        ? `${process.env.LOCALAPPDATA}\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js`
+        : `${process.env.HOME}/Applications/AvaTax MCP Server.app/Contents/Resources/app.asar/dist/index.js`;
+    
+    const claudeConfig = {
+        "mcpServers": {
+            "avatax": {
+                "command": "node",
+                "args": [appPath],
+                "env": {
+                    "AVATAX_ACCOUNT_ID": config.AVATAX_ACCOUNT_ID,
+                    "AVATAX_LICENSE_KEY": config.AVATAX_LICENSE_KEY,
+                    "AVATAX_COMPANY_CODE": config.AVATAX_COMPANY_CODE,
+                    "AVATAX_ENVIRONMENT": config.AVATAX_ENVIRONMENT,
+                    "AVATAX_APP_NAME": config.AVATAX_APP_NAME,
+                    "AVATAX_TIMEOUT": config.AVATAX_TIMEOUT
+                }
+            }
+        }
+    };
+    
+    const configText = JSON.stringify(claudeConfig, null, 2);
+    document.getElementById('claudeConfigOutput').textContent = configText;
+    showClaudeConfig();
+}
+
+function showClaudeConfig() {
+    const section = document.getElementById('claudeConfigSection');
+    section.classList.remove('hidden');
+}
+
+function hideClaudeConfig() {
+    const section = document.getElementById('claudeConfigSection');
+    section.classList.add('hidden');
+}
+
+function copyClaudeConfig() {
+    const configText = document.getElementById('claudeConfigOutput').textContent;
+    const copyBtn = document.querySelector('.copy-btn');
+    
+    navigator.clipboard.writeText(configText).then(() => {
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ Copied!';
+        copyBtn.classList.add('copied');
+        
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.classList.remove('copied');
+        }, 2000);
+    }).catch(err => {
+        // Fallback for older browsers
+        const textarea = document.createElement('textarea');
+        textarea.value = configText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        const originalText = copyBtn.textContent;
+        copyBtn.textContent = '✅ Copied!';
+        copyBtn.classList.add('copied');
+        
+        setTimeout(() => {
+            copyBtn.textContent = originalText;
+            copyBtn.classList.remove('copied');
+        }, 2000);
+    });
+}
+
+// Handle install state from main process
+function handleInstallState(installState) {
+    // Show appropriate welcome message but don't force tab switching
+    let message = '';
+    let messageType = 'info';
+    
+    if (installState.isFirstRun) {
+        message = '🎉 Welcome to AvaTax MCP Server! Navigate to the Configuration tab to set up your AvaTax credentials.';
+        messageType = 'info';
+    } else if (installState.isPostUpgrade) {
+        if (installState.fromVersion) {
+            message = `✅ Successfully upgraded from version ${installState.fromVersion}! The app is ready to use.`;
+        } else {
+            message = '✅ AvaTax MCP Server has been upgraded! The app is ready to use.';
+        }
+        messageType = 'success';
+    }
+    
+    if (message) {
+        // Show the message on the currently active tab
+        showStatus(message, messageType);
     }
 }

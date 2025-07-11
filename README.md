@@ -23,6 +23,17 @@ Download the latest installer from [GitHub Releases](https://github.com/JoshMcMi
 5. **Start** the MCP server from the Server Control tab
 6. **Add** to Claude Desktop using the provided configuration
 
+### 🎯 Automatic Launch
+
+The AvaTax MCP Server makes setup as easy as possible:
+
+- **Fresh Installation**: The app automatically launches after installation completes
+- **Upgrades**: After upgrading, the app starts automatically so you can continue working
+- **Smart Configuration**: Your Claude Desktop configuration is generated automatically when you save credentials
+- **Visual Interface**: No command-line work required - everything is done through the desktop app
+
+The app will start automatically after installation, and you can navigate to whichever tab you need!
+
 ## Features
 
 - **Tax Calculation**: Calculate sales tax, VAT, and other transaction taxes with line-item detail
