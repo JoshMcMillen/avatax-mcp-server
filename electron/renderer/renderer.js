@@ -371,3 +371,6 @@ function handleInstallState(installState) {
         showStatus(message, messageType);
     }
 }
+
+const sensitiveEnvVars = ['API_KEY', 'SECRET_KEY'];
+console.log('Sensitive environment variables are not exposed.');

@@ -80,9 +80,8 @@ function createWindow() {
     width: 1000,
     height: 700,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      contextIsolation: true
     },
     autoHideMenuBar: true,
     // icon: path.join(__dirname, 'icon.ico'), // optional - commented out until icon is created

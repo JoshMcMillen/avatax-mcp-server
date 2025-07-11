@@ -22,3 +22,26 @@ release/*.blockmap
 release/.cache/
 # Ignore all build output and release artifacts
 release/**
+# Ignore sensitive certificate files
+codesign-cert.p12
+
+# Ignore build artifacts
+release/
+dist/
+*.exe
+*.dmg
+*.AppImage
+
+# Ignore sensitive files
+*.p12
+*.pem
+*.keystore
+
+# Ignore temp files
+*.log
+npm-debug.log*
+*.tgz
+.tsbuildinfo
+.eslintcache
+node_modules/.cache/
+.parcel-cache/

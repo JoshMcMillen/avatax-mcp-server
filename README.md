@@ -42,6 +42,7 @@ The app will start automatically after installation, and you can navigate to whi
 - **Multi-Environment Support**: Switch between sandbox and production environments
 - **Comprehensive Error Handling**: Detailed error messages for troubleshooting
 - **Secure Local Storage**: Credentials stored safely on your computer
+- **Smart build script with version management**: Easily manage and patch versions
 
 ## Available Tools
 
@@ -172,6 +173,9 @@ This project includes automated release scripts:
 1. **From VS Code**: Use Tasks → "Build and Release"
 2. **From terminal**: `scripts\create-release.ps1 -Version "1.0.2" -ReleaseNotes "Your changes"`
 3. **Automated**: Builds, creates GitHub release, and uploads installer
+
+## Build Instructions
+Run `scripts/smart-build.ps1` and follow prompts to select version type, including patching an existing version.
 
 ### Project Structure
 

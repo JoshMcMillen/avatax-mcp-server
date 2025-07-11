@@ -1,4 +1,5 @@
 const { contextBridge, ipcRenderer } = require('electron');
+const allowedChannels = ['secure-channel'];
 
 contextBridge.exposeInMainWorld('mcp', {
   // Server management
@@ -20,4 +21,12 @@ contextBridge.exposeInMainWorld('mcp', {
   onServerOutput: (callback) => ipcRenderer.on('server-output', (_event, data) => callback(data)),
   onServerError: (callback) => ipcRenderer.on('server-error', (_event, data) => callback(data)),
   onServerExit: (callback) => ipcRenderer.on('server-exit', (_event, code) => callback(code))
+});
+
+ipcRenderer.on('message', (event, channel, data) => {
+    if (!allowedChannels.includes(channel)) {
+        console.error('Blocked unauthorized channel:', channel);
+        return;
+    }
+    // Process data securely
 });

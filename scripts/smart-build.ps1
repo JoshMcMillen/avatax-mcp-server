@@ -35,9 +35,10 @@ if ([string]::IsNullOrEmpty($VersionType) -and [string]::IsNullOrEmpty($CustomVe
     Write-Host "2. Minor (new features): $nextMinor" -ForegroundColor Green  
     Write-Host "3. Major (breaking changes): $nextMajor" -ForegroundColor Green
     Write-Host "4. Custom version" -ForegroundColor Green
+    Write-Host "5. Patch existing version" -ForegroundColor Green
     Write-Host ""
     
-    $choice = Read-Host "Select version type (1-4)"
+    $choice = Read-Host "Select version type (1-5)"
     
     switch ($choice) {
         "1" { $newVersion = $nextPatch }
@@ -50,6 +51,9 @@ if ([string]::IsNullOrEmpty($VersionType) -and [string]::IsNullOrEmpty($CustomVe
                 Write-Host "Invalid version format. Please use x.y.z format." -ForegroundColor Red
                 exit 1
             }
+        }
+        "5" {
+            $newVersion = $currentVersion # Automatically use the current version for patching
         }
         default {
             Write-Host "Invalid choice. Exiting." -ForegroundColor Red
@@ -91,12 +95,16 @@ if ($ReleaseNotes -eq "Bug fixes and improvements") {
 }
 
 # Update package.json version
-Write-Host "Updating package.json version to $newVersion..." -ForegroundColor Yellow
-npm version $newVersion --no-git-tag-version
+if ($newVersion -ne $currentVersion) {
+    Write-Host "Updating package.json version to $newVersion..." -ForegroundColor Yellow
+    npm version $newVersion --no-git-tag-version
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to update package.json version!" -ForegroundColor Red
-    exit 1
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Failed to update package.json version!" -ForegroundColor Red
+        exit 1
+    }
+} else {
+    Write-Host "Version unchanged. Skipping package.json update." -ForegroundColor Yellow
 }
 
 # Build TypeScript
@@ -110,7 +118,7 @@ if ($LASTEXITCODE -ne 0) {
 
 # Build Electron app
 Write-Host "Building Electron application..." -ForegroundColor Yellow
-npm run electron:build-unsigned
+npm run electron:build
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Electron build failed!" -ForegroundColor Red
@@ -160,3 +168,8 @@ if ($createRelease -eq "y" -or $createRelease -eq "Y") {
 
 Write-Host ""
 Write-Host "Version $newVersion is ready!" -ForegroundColor Green
+
+if (-not (Test-Path 'codesign-cert.p12')) {
+    Write-Error 'Code signing certificate not found. Build aborted.'
+    exit 1
+}
