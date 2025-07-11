@@ -2,20 +2,27 @@
   "name": "avatax-mcp-server",
   "version": "1.0.0",
   "description": "MCP server for AvaTax - calculate tax, validate addresses, and create transactions",
-  "main": "dist/index.js",
-  "type": "module",
+  "main": "electron/main.js",
   "scripts": {
     "build": "tsc",
     "prepare": "npm run build",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "electron:dev": "electron .",
+    "electron:build": "npm run build && electron-builder",
+    "electron:build-unsigned": "set CSC_IDENTITY_AUTO_DISCOVERY=false && npm run build && electron-builder",
+    "dist": "npm run electron:build"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^0.5.0",
-    "axios": "^1.6.0"
+    "axios": "^1.6.0",
+    "electron-store": "^8.1.0"
   },
   "devDependencies": {
     "typescript": "^5.3.0",
-    "@types/node": "^20.0.0"
+    "@types/node": "^20.0.0",
+    "electron": "^30.0.0",
+    "electron-builder": "^24.0.0",
+    "electron-updater": "^6.1.7"
   },
   "files": [
     "dist",
@@ -36,5 +43,46 @@
     "api"
   ],
   "author": "Your Name",
-  "license": "MIT"
+  "license": "MIT",
+  "build": {
+    "appId": "com.yourorg.avataxmcp",
+    "productName": "AvaTax MCP Server",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "electron/**/*",
+      "dist/**/*",
+      "node_modules/**/*",
+      "!node_modules/**/test/**",
+      "!node_modules/**/*.md",
+      "!node_modules/**/*.map",
+      "!node_modules/**/.bin/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "publisherName": "AvaTax MCP Server",
+      "certificateFile": "codesign-cert.p12",
+      "certificatePassword": "avatax123",
+      "signingHashAlgorithms": ["sha256"]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "allowElevation": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": false,
+      "include": "installer.nsh",
+      "shortcutName": "AvaTax MCP Server",
+      "displayLanguageSelector": false,
+      "installerLanguages": ["en_US"]
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "JoshMcMillen",
+      "repo": "avatax-mcp-server"
+    }
+  }
 }
