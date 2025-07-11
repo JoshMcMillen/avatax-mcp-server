@@ -1,5 +1,5 @@
 // Tab management
-function showTab(event, tabName) {
+function showTab(tabName) {
     // Hide all tab contents
     const tabContents = document.querySelectorAll('.tab-content');
     tabContents.forEach(content => content.classList.remove('active'));
@@ -11,8 +11,11 @@ function showTab(event, tabName) {
     // Show selected tab content
     document.getElementById(tabName).classList.add('active');
     
-    // Add active class to clicked tab
-    event.target.classList.add('active');
+    // Add active class to the corresponding tab button
+    const targetTab = document.querySelector(`button[onclick="showTab('${tabName}')"]`);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
 }
 
 // Configuration management
