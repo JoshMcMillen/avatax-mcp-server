@@ -2,7 +2,7 @@ export interface AvaTaxConfig {
     accountId: string;
     licenseKey: string;
     environment: 'sandbox' | 'production';
-    companyCode: string;
+    companyCode?: string;
     appName?: string;
     appVersion?: string;
     machineName?: string;

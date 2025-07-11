@@ -255,7 +255,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('AvaTax MCP Server running on stdio');
+  console.log('AvaTax MCP Server running on stdio');
 }
 
 main().catch((error) => {

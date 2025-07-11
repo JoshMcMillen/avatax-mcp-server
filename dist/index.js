@@ -257,7 +257,7 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const transport = new stdio_js_1.StdioServerTransport();
         yield server.connect(transport);
-        console.error('AvaTax MCP Server running on stdio');
+        console.log('AvaTax MCP Server running on stdio');
     });
 }
 main().catch((error) => {

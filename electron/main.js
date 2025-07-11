@@ -76,12 +76,17 @@ function checkInstallState() {
 function createWindow() {
   const installState = checkInstallState();
   
+  const preloadPath = path.resolve(__dirname, 'preload.js');
+  console.log('Preload path:', preloadPath);
+  console.log('Preload exists:', fs.existsSync(preloadPath));
+  
   mainWindow = new BrowserWindow({
     width: 1000,
     height: 700,
     webPreferences: {
       nodeIntegration: false,
-      contextIsolation: true
+      contextIsolation: true,
+      preload: path.resolve(__dirname, 'preload.js')
     },
     autoHideMenuBar: true,
     // icon: path.join(__dirname, 'icon.ico'), // optional - commented out until icon is created
@@ -108,6 +113,11 @@ function createWindow() {
   
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
   
+  // Open DevTools in development for debugging
+  if (!app.isPackaged || process.argv.includes('--dev')) {
+    mainWindow.webContents.openDevTools();
+  }
+  
   // Check install state and notify renderer when ready
   mainWindow.webContents.once('dom-ready', () => {
     // Always send install state, but don't force config tab
@@ -127,9 +137,22 @@ ipcMain.handle('launch', (_e, config) => {
     child = null;
   }
   
-  // Use node.exe to run the JS directly instead of trying to package
-  const nodePath = process.execPath; // Gets the path to node.exe
-  const scriptPath = path.join(__dirname, '../dist/index.js');
+  // Determine the correct executable and script path
+  let execPath;
+  let args;
+  let scriptPath;
+  
+  if (app.isPackaged) {
+    // In packaged app, use Electron executable with ELECTRON_RUN_AS_NODE
+    execPath = process.execPath;
+    scriptPath = path.join(process.resourcesPath, 'app.asar', 'dist', 'index.js');
+    args = [scriptPath];
+  } else {
+    // In development, use the system Node.js
+    execPath = 'node';
+    scriptPath = path.join(__dirname, '../dist/index.js');
+    args = [scriptPath];
+  }
   
   // Verify the script exists
   if (!fs.existsSync(scriptPath)) {
@@ -137,9 +160,14 @@ ipcMain.handle('launch', (_e, config) => {
   }
   
   try {
-    child = spawn(nodePath, [scriptPath], {
-      env: { ...process.env, ...config },
-      cwd: path.join(__dirname, '..'),
+    child = spawn(execPath, args, {
+      env: { 
+        ...process.env, 
+        ...config,
+        // Tell Electron to run as Node.js when packaged
+        ELECTRON_RUN_AS_NODE: app.isPackaged ? '1' : undefined
+      },
+      cwd: app.isPackaged ? path.dirname(process.execPath) : path.join(__dirname, '..'),
       detached: false,
       shell: false
     });
@@ -212,32 +240,36 @@ ipcMain.handle('clear-config', () => {
 
 // Connection testing handler
 ipcMain.handle('test-connection', async (_e, config) => {
+  // Defensive: default config to empty object
+  config = config || {};
+  const maskedAccountId = config.AVATAX_ACCOUNT_ID ? '***' + config.AVATAX_ACCOUNT_ID.slice(-4) : 'missing';
+  console.log('Test connection called with config:', {
+    accountId: maskedAccountId,
+    environment: config.AVATAX_ENVIRONMENT ?? 'missing'
+  });
+
+  // Fail fast if required config is missing
+  if (!config.AVATAX_ACCOUNT_ID || !config.AVATAX_LICENSE_KEY) {
+    return { success: false, error: 'Account ID or license key not supplied' };
+  }
+
   try {
     const https = require('https');
-    const baseUrl = config.AVATAX_ENVIRONMENT === 'production' 
-      ? 'https://rest.avatax.com'
-      : 'https://sandbox-rest.avatax.com';
-    
+    const hostname = config.AVATAX_ENVIRONMENT === 'production' ? 'rest.avatax.com' : 'sandbox-rest.avatax.com';
     const credentials = Buffer.from(`${config.AVATAX_ACCOUNT_ID}:${config.AVATAX_LICENSE_KEY}`).toString('base64');
-    
-    return new Promise((resolve) => {
-      const options = {
-        hostname: config.AVATAX_ENVIRONMENT === 'production' ? 'rest.avatax.com' : 'sandbox-rest.avatax.com',
+    return await new Promise((resolve) => {
+      const req = https.request({
+        hostname,
         port: 443,
         path: '/api/v2/utilities/ping',
         method: 'GET',
         headers: {
           'Authorization': `Basic ${credentials}`,
           'Content-Type': 'application/json'
-        },
-        timeout: 10000
-      };
-
-      const req = https.request(options, (res) => {
+        }
+      }, (res) => {
         let data = '';
-        res.on('data', (chunk) => {
-          data += chunk;
-        });
+        res.on('data', (chunk) => { data += chunk; });
         res.on('end', () => {
           if (res.statusCode === 200) {
             resolve({ success: true, response: data });
@@ -246,20 +278,18 @@ ipcMain.handle('test-connection', async (_e, config) => {
           }
         });
       });
-
-      req.on('error', (error) => {
-        resolve({ success: false, error: error.message });
-      });
-
-      req.on('timeout', () => {
+      const timeout = setTimeout(() => {
         req.destroy();
-        resolve({ success: false, error: 'Connection timeout' });
+        resolve({ success: false, error: 'Connection timeout (10 s)' });
+      }, 10000);
+      req.on('error', (err) => {
+        clearTimeout(timeout);
+        resolve({ success: false, error: err.message });
       });
-
       req.end();
     });
-  } catch (error) {
-    return { success: false, error: error.message };
+  } catch (err) {
+    return { success: false, error: err.message };
   }
 });
 

@@ -327,15 +327,15 @@ function updateClaudeConfigPreview() {
 }
 
 function generateClaudeConfig(config) {
-    if (!config.AVATAX_ACCOUNT_ID || !config.AVATAX_LICENSE_KEY || !config.AVATAX_COMPANY_CODE) {
+    if (!config.AVATAX_ACCOUNT_ID || !config.AVATAX_LICENSE_KEY) {
         hideClaudeConfig();
         return;
     }
     
     // Get the actual application path
-    const appPath = process.platform === 'win32' 
-        ? `${process.env.LOCALAPPDATA}\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js`
-        : `${process.env.HOME}/Applications/AvaTax MCP Server.app/Contents/Resources/app.asar/dist/index.js`;
+    const appPath = window.mcp.platform === 'win32' 
+        ? `${window.mcp.homedir}\\AppData\\Local\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js`
+        : `${window.mcp.homedir}/Applications/AvaTax MCP Server.app/Contents/Resources/app.asar/dist/index.js`;
     
     const claudeConfig = {
         "mcpServers": {
@@ -589,9 +589,11 @@ function updateTabStatusIndicators(config) {
 }
 
 function getApplicationPath() {
-    // This will be replaced with actual application path detection
-    if (typeof process !== 'undefined' && process.execPath) {
-        return process.execPath.replace('AvaTax MCP Server.exe', '');
+    // Use the exposed platform information instead of process
+    if (window.mcp && window.mcp.isPackaged) {
+        return window.mcp.platform === 'win32' 
+            ? `${window.mcp.homedir}\\AppData\\Local\\Programs\\AvaTax MCP Server\\`
+            : `${window.mcp.homedir}/Applications/AvaTax MCP Server.app/Contents/Resources/`;
     }
     return 'path/to/avatax-mcp-server';
 }

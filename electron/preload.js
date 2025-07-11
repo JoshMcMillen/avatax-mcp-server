@@ -1,5 +1,5 @@
 const { contextBridge, ipcRenderer } = require('electron');
-const allowedChannels = ['secure-channel'];
+// removed 'os' import; use environment vars for homedir
 
 contextBridge.exposeInMainWorld('mcp', {
   // Server management
@@ -15,18 +15,31 @@ contextBridge.exposeInMainWorld('mcp', {
   
   // Install state management
   getInstallState: () => ipcRenderer.invoke('get-install-state'),
-  onInstallState: (callback) => ipcRenderer.on('install-state', (_event, data) => callback(data)),
   
-  // Event handlers
-  onServerOutput: (callback) => ipcRenderer.on('server-output', (_event, data) => callback(data)),
-  onServerError: (callback) => ipcRenderer.on('server-error', (_event, data) => callback(data)),
-  onServerExit: (callback) => ipcRenderer.on('server-exit', (_event, code) => callback(code))
-});
-
-ipcRenderer.on('message', (event, channel, data) => {
-    if (!allowedChannels.includes(channel)) {
-        console.error('Blocked unauthorized channel:', channel);
-        return;
-    }
-    // Process data securely
+  // System information
+  platform: process.platform,
+  isPackaged: !process.defaultApp,
+  homedir: process.env.HOME || process.env.USERPROFILE,
+  
+  // Event handlers with proper cleanup
+  onServerOutput: (callback) => {
+    const subscription = (_event, data) => callback(data);
+    ipcRenderer.on('server-output', subscription);
+    return () => ipcRenderer.removeListener('server-output', subscription);
+  },
+  onServerError: (callback) => {
+    const subscription = (_event, data) => callback(data);
+    ipcRenderer.on('server-error', subscription);
+    return () => ipcRenderer.removeListener('server-error', subscription);
+  },
+  onServerExit: (callback) => {
+    const subscription = (_event, code) => callback(code);
+    ipcRenderer.on('server-exit', subscription);
+    return () => ipcRenderer.removeListener('server-exit', subscription);
+  },
+  onInstallState: (callback) => {
+    const subscription = (_event, state) => callback(state);
+    ipcRenderer.on('install-state', subscription);
+    return () => ipcRenderer.removeListener('install-state', subscription);
+  }
 });
