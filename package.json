@@ -1,6 +1,6 @@
 {
   "name": "avatax-mcp-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for AvaTax - calculate tax, validate addresses, and create transactions",
   "main": "electron/main.js",
   "scripts": {
@@ -65,7 +65,9 @@
       "publisherName": "AvaTax MCP Server",
       "certificateFile": "codesign-cert.p12",
       "certificatePassword": "avatax123",
-      "signingHashAlgorithms": ["sha256"]
+      "signingHashAlgorithms": [
+        "sha256"
+      ]
     },
     "nsis": {
       "oneClick": false,
@@ -78,7 +80,9 @@
       "include": "installer.nsh",
       "shortcutName": "AvaTax MCP Server",
       "displayLanguageSelector": false,
-      "installerLanguages": ["en_US"]
+      "installerLanguages": [
+        "en_US"
+      ]
     },
     "publish": {
       "provider": "github",

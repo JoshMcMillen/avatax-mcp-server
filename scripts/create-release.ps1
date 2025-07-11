@@ -7,7 +7,14 @@ param(
     [string]$ReleaseNotes = "New release of AvaTax MCP Server"
 )
 
+# Ensure GitHub CLI is in PATH
+$env:PATH += ";C:\Program Files\GitHub CLI"
+
 Write-Host "Building AvaTax MCP Server v$Version..." -ForegroundColor Green
+
+# Update package.json version
+Write-Host "Updating package.json version to $Version..." -ForegroundColor Yellow
+npm version $Version --no-git-tag-version
 
 # Build the application
 npm run electron:build-unsigned
@@ -35,9 +42,9 @@ gh release create "v$Version" `
     "$installerPath"
 
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "✅ Release v$Version created successfully!" -ForegroundColor Green
-    Write-Host "🔗 View at: https://github.com/JoshMcMillen/avatax-mcp-server/releases" -ForegroundColor Cyan
+    Write-Host "Success! Release v$Version created successfully!" -ForegroundColor Green
+    Write-Host "View at: https://github.com/JoshMcMillen/avatax-mcp-server/releases" -ForegroundColor Cyan
 } else {
-    Write-Host "❌ Failed to create release" -ForegroundColor Red
+    Write-Host "Failed to create release" -ForegroundColor Red
     exit 1
 }
