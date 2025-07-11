@@ -20,3 +20,5 @@ Thumbs.db
 release/*.exe
 release/*.blockmap
 release/.cache/
+# Ignore all build output and release artifacts
+release/**
