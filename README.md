@@ -166,13 +166,57 @@ If you want to modify or contribute to this project:
    npm run electron:dev
    ```
 
+## 🛠️ Development Setup
+
+For developers who want to build and modify the AvaTax MCP Server:
+
+### Prerequisites
+- Node.js 16+ 
+- Windows (for code signing)
+- AvaTax Developer Account
+
+### First-Time Setup
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Copy `.env.example` to `.env` and configure your AvaTax credentials
+4. Run the setup script: `.\scripts\setup.ps1 -SetupCertificate`
+5. Build the project: `npm run smart-build`
+
+### Certificate Configuration (One-Time)
+The setup script will:
+- Install required PowerShell modules
+- Securely store your code signing certificate password
+- Enable automatic builds without manual password entry
+
+```powershell
+# Set up certificate password (run once)
+.\scripts\setup.ps1 -SetupCertificate
+
+# Check setup status
+.\scripts\setup.ps1 -ShowStatus
+
+# Remove stored password if needed
+.\scripts\setup.ps1 -RemoveCertificate
+```
+
 ### Building Releases
+After initial setup, building is fully automated:
 
-This project includes automated release scripts:
+```powershell
+# Interactive build with version selection
+npm run smart-build
 
-1. **From VS Code**: Use Tasks → "Build and Release"
-2. **From terminal**: `scripts\create-release.ps1 -Version "1.0.2" -ReleaseNotes "Your changes"`
-3. **Automated**: Builds, creates GitHub release, and uploads installer
+# Quick version bumps
+npm run release:patch   # 1.0.4 → 1.0.5
+npm run release:minor   # 1.0.4 → 1.1.0
+npm run release:major   # 1.0.4 → 2.0.0
+```
+
+The build system will:
+- Automatically handle certificate password from secure storage
+- Build TypeScript and Electron application
+- Create signed Windows installer
+- Optionally create GitHub release
 
 ## Build Instructions
 Run `scripts/smart-build.ps1` and follow prompts to select version type, including patching an existing version.

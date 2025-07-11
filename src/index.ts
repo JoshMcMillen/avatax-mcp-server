@@ -180,6 +180,14 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         },
         required: ['date', 'customerCode', 'lines']
       }
+    },
+    {
+      name: 'ping_service',
+      description: 'Test connectivity to AvaTax service and verify credentials',
+      inputSchema: {
+        type: 'object',
+        properties: {}
+      }
     }
   ]
 }));
@@ -216,6 +224,16 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
           content: [{ 
             type: 'text', 
             text: `Transaction created successfully!\n\n${JSON.stringify(result, null, 2)}` 
+          }] 
+        };
+      }
+      
+      case 'ping_service': {
+        const result = await avataxClient.ping();
+        return { 
+          content: [{ 
+            type: 'text', 
+            text: `AvaTax service is ${result.authenticated ? 'accessible and authenticated' : 'not accessible'}\n\n${JSON.stringify(result, null, 2)}` 
           }] 
         };
       }

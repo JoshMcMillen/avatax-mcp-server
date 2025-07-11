@@ -14,11 +14,179 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Roboto, sans-serif;
-            background: linear-gradient(135deg, #FF6B35 0%, #F7931E 50%, #FF6B35 100%);
+            background: linear-gradient(135deg, var(--accent-primary) 0%, #F7931E 50%, var(--accent-primary) 100%);
             min-height: 100vh;
-            color: #2c3e50;
+            color: var(--text-primary);
             overflow-x: hidden;
+            transition: background 0.3s ease, color 0.3s ease;
         }
+        
+        /* CSS Variables for Dark Mode */
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-card: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #555;
+            --text-muted: #777;
+            --border-color: #e1e8ed;
+            --accent-primary: #FF6B35;
+            --accent-secondary: rgba(255,107,53,0.1);
+            --shadow-light: rgba(0,0,0,0.1);
+            --shadow-medium: rgba(0,0,0,0.15);
+        }
+        
+        [data-theme="dark"] {
+            --bg-primary: #0d1117;
+            --bg-secondary: #161b22;
+            --bg-card: #21262d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #c9d1d9;
+            --text-muted: #8b949e;
+            --border-color: #30363d;
+            --accent-primary: #FF6B35;
+            --accent-secondary: rgba(255,107,53,0.15);
+            --shadow-light: rgba(0,0,0,0.6);
+            --shadow-medium: rgba(0,0,0,0.8);
+        }
+        
+        [data-theme="dark"] .header {
+            background: rgba(33,38,45,0.8);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        
+        [data-theme="dark"] .tabs {
+            background: linear-gradient(135deg, rgba(255,107,53,0.7) 0%, rgba(247,147,30,0.7) 50%, rgba(255,107,53,0.7) 100%);
+        }
+        
+        [data-theme="dark"] .feature-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border-left-color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .help-section {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .connection-info {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .form-group input,
+        [data-theme="dark"] .form-group select {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        [data-theme="dark"] .form-group input:focus,
+        [data-theme="dark"] .form-group select:focus {
+            border-color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border-color: var(--border-color);
+        }
+        
+        [data-theme="dark"] .btn-secondary:hover {
+            background: var(--bg-card);
+            border-color: var(--accent-primary);
+        }
+        
+        /* Theme Toggle Switch */
+        .theme-toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px 0;
+        }
+        
+        .theme-toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 70px;
+            height: 34px;
+            cursor: pointer;
+        }
+        
+        .theme-toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .theme-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #ffd700, #ffb347);
+            border-radius: 34px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 8px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .theme-slider:before {
+            content: "";
+            position: absolute;
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+        
+        .theme-toggle-switch input:checked + .theme-slider {
+            background: linear-gradient(135deg, #2d3748, #4a5568);
+        }
+        
+        .theme-toggle-switch input:checked + .theme-slider:before {
+            transform: translateX(36px);
+            background: #1a202c;
+        }
+        
+        .theme-icon {
+            font-size: 14px;
+            z-index: 1;
+            transition: opacity 0.3s ease;
+        }
+        
+        .theme-light {
+            opacity: 1;
+        }
+        
+        .theme-dark {
+            opacity: 0.3;
+        }
+        
+        .theme-toggle-switch input:checked + .theme-slider .theme-light {
+            opacity: 0.3;
+        }
+        
+        .theme-toggle-switch input:checked + .theme-slider .theme-dark {
+            opacity: 1;
+        }
+        
+        .theme-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        /* Remove old theme toggle button styles */
         
         .container {
             max-width: 1000px;
@@ -81,10 +249,19 @@
         
         .tabs {
             display: flex;
-            background: rgba(255,255,255,0.15);
+            background: linear-gradient(135deg, rgba(255,107,53,0.9) 0%, rgba(247,147,30,0.9) 50%, rgba(255,107,53,0.9) 100%);
             border-radius: 15px 15px 0 0;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            position: relative;
+            animation: gradientShift 8s ease-in-out infinite;
+        }
+        
+        @keyframes gradientShift {
+            0%, 100% { background: linear-gradient(135deg, rgba(255,107,53,0.9) 0%, rgba(247,147,30,0.9) 50%, rgba(255,107,53,0.9) 100%); }
+            25% { background: linear-gradient(135deg, rgba(247,147,30,0.9) 0%, rgba(255,107,53,0.9) 50%, rgba(247,147,30,0.9) 100%); }
+            50% { background: linear-gradient(135deg, rgba(255,107,53,0.8) 0%, rgba(255,140,0,0.8) 50%, rgba(255,107,53,0.8) 100%); }
+            75% { background: linear-gradient(135deg, rgba(255,140,0,0.9) 0%, rgba(255,107,53,0.9) 50%, rgba(255,140,0,0.9) 100%); }
         }
         
         .tab {
@@ -123,6 +300,8 @@
             display: none;
             padding: 30px;
             animation: fadeIn 0.3s ease;
+            background: var(--bg-card);
+            color: var(--text-primary);
         }
         
         .tab-content.active {
@@ -280,6 +459,7 @@
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
             margin: 20px 0;
+            align-items: start;
         }
         
         .feature-card {
@@ -297,9 +477,113 @@
         }
         
         .feature-card h3 {
-            color: #FF6B35;
+            color: var(--accent-primary);
             margin-bottom: 12px;
             font-weight: 700;
+        }
+        
+        /* Interactive Feature Cards */
+        .interactive-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            overflow: visible;
+            position: relative;
+            z-index: 1;
+            align-self: start;
+        }
+        
+        .interactive-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            z-index: 10;
+            position: relative;
+        }
+        
+        .interactive-card:hover .feature-details {
+            max-height: 300px;
+            opacity: 1;
+            padding-top: 15px;
+        }
+        
+        .feature-details {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            padding-top: 0;
+            position: relative;
+            background: inherit;
+        }
+        
+        .feature-details.hidden {
+            display: block !important;
+        }
+        
+        .feature-details hr {
+            margin: 15px 0;
+            border: 1px solid var(--accent-primary);
+            opacity: 0.3;
+        }
+        
+        .feature-details ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .feature-details li {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        .feature-details em {
+            color: #666;
+            font-style: italic;
+            font-size: 13px;
+        }
+        
+        /* Industry cards and benefit cards */
+        .industry-card, .benefit-card {
+            background: var(--accent-secondary) !important;
+            border-color: rgba(255,107,53,0.3) !important;
+            transition: all 0.3s ease;
+        }
+        
+        .industry-card:hover, .benefit-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(255,107,53,0.2);
+            border-color: var(--accent-primary) !important;
+        }
+        
+        .industry-card h4, .benefit-card h4 {
+            color: var(--accent-primary) !important;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+        }
+        
+        .industry-card p, .benefit-card p {
+            margin: 5px 0 0 0 !important;
+            font-size: 14px !important;
+            line-height: 1.4;
+        }
+        
+        .credential-types.industry-grid {
+            margin-top: 15px !important;
+        }
+        
+        .gpt-instructions {
+            font-size: 11px;
+            margin: 10px 0;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .help-section {
@@ -477,11 +761,12 @@
         }
         
         .content {
-            background: white;
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
             border-radius: 0 0 15px 15px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            box-shadow: 0 15px 35px var(--shadow-medium);
             min-height: 500px;
             overflow: hidden;
+            transition: background 0.5s ease;
         }
         
         .tab-content h2 {
@@ -489,6 +774,572 @@
             font-weight: 700;
             margin-bottom: 20px;
             font-size: 1.8em;
+        }
+        /* Documentation Tab Styles */
+        .setup-tabs {
+            display: flex;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .setup-tab {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(44,62,80,0.8);
+            border: none;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .setup-tab.active {
+            background: #FF6B35;
+            color: white;
+            border-color: #FF6B35;
+            box-shadow: 0 2px 8px rgba(255,107,53,0.3);
+        }
+        
+        .setup-tab:hover {
+            background: rgba(255,107,53,0.8);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .setup-content {
+            display: none;
+        }
+        
+        .setup-content.active {
+            display: block;
+        }
+        
+        /* Platform Tab Styling */
+        .platform-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .platform-tab {
+            flex: 1;
+            min-width: 120px;
+            padding: 10px 15px;
+            background: rgba(44,62,80,0.7);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .platform-tab.active {
+            background: #FF6B35;
+            border-color: #FF6B35;
+            box-shadow: 0 2px 6px rgba(255,107,53,0.3);
+            transform: translateY(-1px);
+        }
+        
+        .platform-tab:hover {
+            background: rgba(255,107,53,0.8);
+            border-color: rgba(255,107,53,0.8);
+            transform: translateY(-1px);
+        }
+        
+        .platform-content {
+            display: none;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .platform-content.active {
+            display: block;
+        }
+        
+        .setup-steps {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+        }
+        
+        .credentials-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .credential-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .credential-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .credential-card h4 {
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        
+        /* Light mode API reference styling */
+        .api-group {
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+            border: 1px solid #e1e8ed;
+        }
+        
+        .api-group-header {
+            padding: 15px 20px;
+            background: #2c3e50;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin: 0;
+            transition: background 0.3s ease;
+        }
+        
+        .api-group-header:hover {
+            background: #34495e;
+        }
+        
+        .api-group-content {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        .api-group-content.expanded {
+            max-height: 500px;
+            padding: 20px;
+        }
+        
+        .api-endpoint {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            border-left: 4px solid #FF6B35;
+            border: 1px solid #e1e8ed;
+        }
+        
+        .api-endpoint strong {
+            color: #2c3e50;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .api-endpoint p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            color: #555;
+        }
+        
+        .api-groups {
+            margin: 20px 0;
+        }
+        
+        .api-group {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .api-group-header {
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.1);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin: 0;
+            transition: background 0.3s ease;
+        }
+        
+        .api-group-header:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        
+        .toggle-icon {
+            transition: transform 0.3s ease;
+            font-size: 12px;
+        }
+        
+        .api-group-content {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .api-group-content.expanded {
+            max-height: 500px;
+            padding: 20px;
+        }
+        
+        .api-group.expanded .toggle-icon {
+            transform: rotate(90deg);
+        }
+        
+        .api-endpoint {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            border-left: 4px solid #FFE5B4;
+        }
+        
+        .api-endpoint strong {
+            color: #FFE5B4;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .api-endpoint p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        /* Company Showcase Section */
+        .company-showcase {
+            background: linear-gradient(135deg, #fff5f0 0%, #ffe8dd 100%);
+            border: 2px solid #FFB89A;
+            border-radius: 12px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 4px 15px rgba(255,107,53,0.1);
+        }
+        
+        .showcase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .avalara-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .avalara-brand h3 {
+            color: #CC4A25;
+            font-size: 1.5em;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .trust-metrics {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .metric {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .metric-number {
+            font-size: 1.8em;
+            font-weight: 800;
+            color: #FF6B35;
+            line-height: 1;
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            color: #CC4A25;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        
+        .showcase-description {
+            font-size: 1.1em;
+            color: #8B4513;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .enterprise-logos {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,107,53,0.2);
+            text-align: center;
+        }
+        
+        .logos-subtitle {
+            color: #A0522D;
+            font-style: italic;
+            font-size: 0.95em;
+        }
+        
+        /* Dark mode for company showcase */
+        [data-theme="dark"] .company-showcase {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-card) 100%);
+            border-color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .avalara-brand h3 {
+            color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .metric-number {
+            color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .metric-label {
+            color: var(--text-secondary);
+        }
+        
+        [data-theme="dark"] .showcase-description {
+            color: var(--text-secondary);
+        }
+        
+        [data-theme="dark"] .logos-subtitle {
+            color: var(--text-muted);
+        }
+        
+        /* Additional dark mode improvements */
+        [data-theme="dark"] body {
+            background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%);
+        }
+        
+        [data-theme="dark"] .tab-content h2 {
+            color: var(--text-primary);
+        }
+        
+        [data-theme="dark"] .form-group label {
+            color: var(--text-secondary);
+        }
+        
+        [data-theme="dark"] .required {
+            color: #f85149;
+        }
+        
+        [data-theme="dark"] .output {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+            color: var(--text-primary);
+        }
+        
+        [data-theme="dark"] .claude-config-section {
+            background: var(--bg-secondary);
+            border-color: #388e3c;
+        }
+        
+        [data-theme="dark"] .claude-config-section h3,
+        [data-theme="dark"] .claude-config-section h4 {
+            color: #4caf50;
+        }
+        
+        [data-theme="dark"] .setup-steps {
+            background: rgba(33,38,45,0.5);
+        }
+        
+        [data-theme="dark"] .credentials-section {
+            background: rgba(33,38,45,0.5);
+        }
+        
+        /* Dark mode platform tabs */
+        [data-theme="dark"] .platform-tabs {
+            background: rgba(33,38,45,0.3);
+            border-color: var(--border-color);
+        }
+        
+        [data-theme="dark"] .platform-tab {
+            background: var(--bg-secondary);
+            border-color: var(--border-color);
+            color: var(--text-secondary);
+        }
+        
+        [data-theme="dark"] .platform-tab.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+        
+        [data-theme="dark"] .platform-tab:hover {
+            background: rgba(255,107,53,0.8);
+            border-color: rgba(255,107,53,0.8);
+            color: white;
+        }
+        
+        [data-theme="dark"] .platform-content {
+            background: rgba(33,38,45,0.2);
+            border-color: var(--border-color);
+        }
+        
+        [data-theme="dark"] .readme h1 {
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .readme h2 {
+            color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .readme h3 {
+            color: var(--text-primary);
+        }
+        
+        [data-theme="dark"] .readme code {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        [data-theme="dark"] .readme pre {
+            background: var(--bg-secondary);
+            border-color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .credential-card h4 {
+            color: #FFE5B4;
+        }
+        
+        [data-theme="dark"] .api-group {
+            background: rgba(33,38,45,0.3);
+            border-color: var(--border-color);
+        }
+        
+        [data-theme="dark"] .api-group-header {
+            background: rgba(33,38,45,0.5);
+            color: var(--text-primary);
+        }
+        
+        [data-theme="dark"] .api-group-header:hover {
+            background: rgba(33,38,45,0.7);
+        }
+        
+        [data-theme="dark"] .api-group-content {
+            background: var(--bg-card);
+        }
+        
+        [data-theme="dark"] .api-endpoint {
+            background: rgba(33,38,45,0.3);
+            border-color: var(--accent-primary);
+            border-left-color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .api-endpoint strong {
+            color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .api-endpoint p {
+            color: var(--text-secondary);
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                width: 100%;
+                padding: 12px;
+                font-size: 14px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .header p {
+                font-size: 1em;
+            }
+            
+            .feature-card {
+                padding: 20px;
+            }
+            
+            .feature-card h3 {
+                font-size: 1.2em;
+            }
+            
+            .btn {
+                width: 100%;
+                padding: 10px;
+                font-size: 16px;
+            }
+            
+            .form-group input, .form-group select {
+                font-size: 14px;
+            }
+            
+            .form-group label {
+                font-size: 14px;
+            }
+            
+            .status {
+                font-size: 14px;
+                padding: 10px;
+            }
+            
+            .output {
+                font-size: 13px;
+                padding: 10px;
+            }
+            
+            .readme h1 {
+                font-size: 1.8em;
+            }
+            
+            .readme h2 {
+                font-size: 1.4em;
+            }
+            
+            .readme h3 {
+                font-size: 1.2em;
+            }
+            
+            .api-group-header {
+                font-size: 14px;
+                padding: 10px 15px;
+            }
+            
+            .api-endpoint {
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -505,7 +1356,7 @@
                 </div>
                 <h1>AvaTax MCP Server</h1>
             </div>
-            <p>Tax calculation and address validation for Claude Desktop • Powered by Avalara</p>
+            <p>Tax calculation and address validation for AI platforms • Powered by Avalara</p>
         </div>
         
         <div class="tabs">
@@ -519,50 +1370,142 @@
             <!-- Welcome Tab -->
             <div id="welcome" class="tab-content active">
                 <h2>Welcome to AvaTax MCP Server!</h2>
-                <p>Integrate Avalara's industry-leading tax calculation and compliance platform with Claude Desktop through the Model Context Protocol (MCP). Access real-time tax calculations, address validation, and transaction management directly from your AI conversations.</p>
-                
-                <div class="feature-grid">
-                    <div class="feature-card">
-                        <h3>🧮 Precise Tax Calculation</h3>
-                        <p>Calculate sales tax, VAT, GST, and other transaction taxes with line-item detail using Avalara's comprehensive tax engine trusted by 40,000+ businesses worldwide.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>📍 Global Address Validation</h3>
-                        <p>Validate and normalize addresses across 75+ countries for accurate tax calculations and compliance requirements.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>📊 Transaction Management</h3>
-                        <p>Create committed transactions directly in AvaTax for seamless integration with your existing tax workflow and audit requirements.</p>
-                    </div>
-                    <div class="feature-card">
-                        <h3>🌍 Multi-Environment Support</h3>
-                        <p>Seamlessly switch between Avalara's sandbox and production environments for testing and live operations.</p>
-                    </div>
-                </div>
-                
-                <div class="connection-info">
-                    <h3>🔌 Claude Desktop Integration</h3>
-                    <p>Connect the power of Avalara's tax automation platform to your AI workflow:</p>
-                    <ol>
-                        <li><strong>Configure your AvaTax credentials</strong> in the <a href="javascript:showTab('configuration')" class="config-link">Configuration tab</a></li>
-                        <li><strong>Copy the auto-generated Claude configuration</strong> (appears after saving credentials)</li>
-                        <li><strong>Add it to your Claude Desktop configuration file</strong></li>
-                        <li><strong>Restart Claude Desktop</strong> to activate the integration</li>
-                    </ol>
-                    <p><strong>✨ Smart Configuration:</strong> Your personalized Claude Desktop configuration is automatically generated based on your credentials - no manual JSON editing required!</p>
-                    <p><strong>🚀 Instant Access:</strong> The application launches automatically after installation and upgrades, ensuring quick access to your tax compliance tools.</p>
-                </div>
+                <p>Integrate Avalara's industry-leading tax calculation and compliance platform with your AI applications through the Model Context Protocol (MCP). Transform complex tax compliance into simple AI conversations.</p>
                 
                 <div class="help-section">
-                    <h3>🚀 Getting Started with Avalara</h3>
-                    <p>New to Avalara's tax automation platform? Here's everything you need:</p>
-                    <ul>
-                        <li>An <strong>Avalara AvaTax account</strong> (start your free trial at <a href="https://www.avalara.com/" target="_blank" rel="noopener">avalara.com</a>)</li>
-                        <li>Your <strong>Account ID and License Key</strong> from the AvaTax admin console</li>
-                        <li>Your <strong>Company Code</strong> (found in AvaTax under Companies > Company Settings)</li>
-                        <li><strong>Claude Desktop</strong> installed on your system</li>
-                    </ul>
-                    <p><em>Join 40,000+ businesses worldwide who trust Avalara for automated tax compliance across 75+ countries.</em></p>
+                    <h3>🚀 Quick Start</h3>
+                    <p>Ready to get started? Here's your path to AI-powered tax automation:</p>
+                    <ol>
+                        <li><strong>Configure:</strong> Set up your Avalara credentials in the <a href="javascript:showTab('configuration')" class="config-link">Configuration tab</a></li>
+                        <li><strong>Connect:</strong> Follow the setup guide in the <a href="javascript:showTab('documentation')" class="config-link">Documentation tab</a></li>
+                        <li><strong>Automate:</strong> Start asking your AI about tax calculations, address validation, and compliance</li>
+                    </ol>
+                </div>
+                
+                <div class="feature-grid">
+                    <div class="feature-card interactive-card">
+                        <h3>🧮 Tax Calculation Engine</h3>
+                        <p>Real-time sales tax, VAT, and GST calculations with line-item precision across 75+ countries.</p>
+                        <div class="feature-details hidden" id="tax-calculation-details">
+                            <hr>
+                            <ul>
+                                <li>✓ Multi-jurisdiction tax rates</li>
+                                <li>✓ Product-specific tax codes</li>
+                                <li>✓ Exemption certificate handling</li>
+                                <li>✓ Real-time rate updates</li>
+                                <li>✓ Audit-ready calculations</li>
+                            </ul>
+                            <p><em>Ask your AI: "Calculate tax for a $500 software license from WA to CA"</em></p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card interactive-card">
+                        <h3>📍 Global Address Validation</h3>
+                        <p>Validate, normalize, and geocode addresses worldwide for accurate tax determinations.</p>
+                        <div class="feature-details hidden" id="address-validation-details">
+                            <hr>
+                            <ul>
+                                <li>✓ 75+ country coverage</li>
+                                <li>✓ Address standardization</li>
+                                <li>✓ Geocoding and mapping</li>
+                                <li>✓ Tax jurisdiction assignment</li>
+                                <li>✓ Delivery validation</li>
+                            </ul>
+                            <p><em>Ask your AI: "Validate and standardize this shipping address"</em></p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card interactive-card">
+                        <h3>📊 Transaction Management</h3>
+                        <p>Create, commit, and manage tax transactions for complete compliance workflows.</p>
+                        <div class="feature-details hidden" id="transaction-management-details">
+                            <hr>
+                            <ul>
+                                <li>✓ Committed transactions</li>
+                                <li>✓ Audit trail generation</li>
+                                <li>✓ Invoice integration</li>
+                                <li>✓ Compliance reporting</li>
+                                <li>✓ Multi-entity support</li>
+                            </ul>
+                            <p><em>Ask your AI: "Create a committed transaction for invoice INV-2024-001"</em></p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card interactive-card">
+                        <h3>🤖 AI Platform Integration</h3>
+                        <p>Seamlessly works with Claude, GitHub Copilot, ChatGPT, and other AI platforms.</p>
+                        <div class="feature-details hidden" id="ai-integration-details">
+                            <hr>
+                            <ul>
+                                <li>✓ Model Context Protocol (MCP)</li>
+                                <li>✓ Natural language queries</li>
+                                <li>✓ Contextual understanding</li>
+                                <li>✓ Auto-generated configurations</li>
+                                <li>✓ Cross-platform compatibility</li>
+                            </ul>
+                            <p><em>Universal AI integration through open standards</em></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="company-showcase">
+                    <div class="showcase-header">
+                        <div class="avalara-brand">
+                            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M24 3L42 12V36L24 45L6 36V12L24 3Z" fill="#FF6B35"/>
+                                <path d="M24 9L36 15V33L24 39L12 33V15L24 9Z" fill="white"/>
+                                <path d="M18 18L24 21L30 18V24L24 27L18 24V18Z" fill="#FF6B35"/>
+                            </svg>
+                            <h3>Powered by Avalara</h3>
+                        </div>
+                        <div class="trust-metrics">
+                            <div class="metric">
+                                <span class="metric-number">40,000+</span>
+                                <span class="metric-label">Global Businesses</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-number">75+</span>
+                                <span class="metric-label">Countries Covered</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-number">99.9%</span>
+                                <span class="metric-label">Uptime SLA</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="showcase-description">Join thousands of companies from startups to Fortune 500 enterprises who trust Avalara for accurate, compliant tax automation. Here's what makes the difference:</p>
+                    
+                    <div class="credential-types">
+                        <div class="credential-card benefit-card">
+                            <h4>⚡ Lightning Fast</h4>
+                            <p>Sub-second tax calculations with real-time rate updates from 75+ countries</p>
+                        </div>
+                        <div class="credential-card benefit-card">
+                            <h4>🌍 Global Coverage</h4>
+                            <p>Comprehensive tax rules for 19,000+ jurisdictions worldwide with automatic updates</p>
+                        </div>
+                        <div class="credential-card benefit-card">
+                            <h4>🔒 Enterprise Security</h4>
+                            <p>SOC 2 Type II certified with encrypted data and secure API endpoints</p>
+                        </div>
+                        <div class="credential-card benefit-card">
+                            <h4>📈 Proven Scale</h4>
+                            <p>Processing billions of transactions annually for global enterprises</p>
+                        </div>
+                        <div class="credential-card benefit-card">
+                            <h4>🤖 AI-Ready</h4>
+                            <p>Native Model Context Protocol integration for seamless AI conversations</p>
+                        </div>
+                        <div class="credential-card benefit-card">
+                            <h4>⚖️ Compliance First</h4>
+                            <p>Built-in audit trails and reporting to meet regulatory requirements</p>
+                        </div>
+                    </div>
+                    
+                    <div class="enterprise-logos">
+                        <p class="logos-subtitle">Trusted by industry leaders including Microsoft, Salesforce, Adobe, and thousands more</p>
+                    </div>
                 </div>
             </div>
             
@@ -617,6 +1560,25 @@
                         </div>
                     </div>
                     
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Interface Theme</label>
+                            <div class="theme-toggle-container">
+                                <label class="theme-toggle-switch">
+                                    <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                                    <span class="theme-slider">
+                                        <span class="theme-icon theme-light">☀️</span>
+                                        <span class="theme-icon theme-dark">🌙</span>
+                                    </span>
+                                </label>
+                                <span class="theme-label">Dark Mode</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <!-- Empty for spacing -->
+                        </div>
+                    </div>
+                    
                     <div class="button-group">
                         <button type="submit" class="btn btn-primary">Save Configuration</button>
                         <button type="button" class="btn btn-secondary" onclick="loadConfiguration()">Load Saved</button>
@@ -642,14 +1604,14 @@
                     <div class="help-section">
                         <h4>📁 Configuration File Location</h4>
                         <ul>
-                            <li><strong>Windows:</strong> <code>%APPDATA%\\Claude\\claude_desktop_config.json</code></li>
+                            <li><strong>Windows:</strong> <code>%APPDATA%\Roaming\Claude\claude_desktop_config.json</code></li>
                             <li><strong>macOS:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
                             <li><strong>Linux:</strong> <code>~/.config/Claude/claude_desktop_config.json</code></li>
                         </ul>
                         <p><strong>Next steps:</strong></p>
                         <ol>
                             <li>Copy the configuration above</li>
-                            <li>Open your <code>claude_desktop_config.json</code> file</li>
+                            <li>Open your Claude configuration file</li>
                             <li>Add the AvaTax MCP server configuration</li>
                             <li>Restart Claude Desktop</li>
                             <li>Start asking Claude about tax calculations!</li>
@@ -680,70 +1642,662 @@
                 <div class="readme">
                     <h1>📚 Documentation</h1>
                     
-                    <h2>Claude Desktop Configuration</h2>
-                    <p><strong>✨ For your personalized configuration, go to the <a href="javascript:showTab('configuration')" class="config-link">Configuration tab</a> and save your AvaTax credentials. The exact configuration you need will be generated automatically!</strong></p>
+                    <div class="help-section">
+                        <h3>🔗 What is MCP (Model Context Protocol)?</h3>
+                        <p>The Model Context Protocol (MCP) is an open-source standard that enables AI applications to securely access external data sources and tools. It acts as a bridge between AI models and real-world systems, allowing for:</p>
+                        <ul>
+                            <li><strong>Secure Integration:</strong> Connect AI to databases, APIs, and file systems safely</li>
+                            <li><strong>Real-time Data Access:</strong> Get live information instead of relying on training data</li>
+                            <li><strong>Tool Execution:</strong> Allow AI to perform actions like calculations, validations, and transactions</li>
+                            <li><strong>Standardized Interface:</strong> One protocol works across different AI platforms</li>
+                        </ul>
+                        <p>This AvaTax MCP Server brings Avalara's powerful tax automation directly to your AI workflow, enabling intelligent tax calculations, address validation, and compliance management through natural conversation.</p>
+                    </div>
                     
-                    <p>The generated configuration needs to be added to your <code>claude_desktop_config.json</code> file. Here's the general structure:</p>
+                    <div class="setup-tabs">
+                        <button class="setup-tab active" onclick="showSetupTab('claude')">Claude Desktop</button>
+                        <button class="setup-tab" onclick="showSetupTab('vscode')">VS Code + Copilot</button>
+                        <button class="setup-tab" onclick="showSetupTab('chatgpt')">ChatGPT</button>
+                        <button class="setup-tab" onclick="showSetupTab('api-groups')">API Reference</button>
+                    </div>
                     
-                    <pre><code>{
+                    <!-- Claude Desktop Setup -->
+                    <div id="claude-setup" class="setup-content active">
+                        <h2>Claude Desktop Configuration</h2>
+                        <p><strong>✨ For your personalized configuration, go to the <a href="javascript:showTab('configuration')" class="config-link">Configuration tab</a> and save your AvaTax credentials. The exact configuration you need will be generated automatically!</strong></p>
+                        
+                        <div class="setup-steps">
+                            <h3>🚀 Complete Setup Guide</h3>
+                            
+                            <h4>Step 1: Install Claude Desktop</h4>
+                            <ol>
+                                <li>Download Claude Desktop from <a href="https://claude.ai/download" target="_blank" rel="noopener">https://claude.ai/download</a></li>
+                                <li>Install the application on your computer</li>
+                                <li>Sign in with your Anthropic account (free account works fine)</li>
+                                <li><strong>Important:</strong> Close Claude Desktop completely before proceeding</li>
+                            </ol>
+                            
+                            <h4>Step 2: Access the Configuration File</h4>
+                            <p>Claude Desktop stores its configuration in a JSON file. You can access it in two ways:</p>
+                            
+                            <div class="help-section" style="margin-bottom: 20px;">
+                                <h4>🎯 RECOMMENDED: Using Claude Desktop (Easiest)</h4>
+                                <ol>
+                                    <li><strong>Open Claude Desktop</strong></li>
+                                    <li><strong>Click on "Claude" in the menu bar</strong> (top-left on Mac, or right-click the Claude icon)</li>
+                                    <li><strong>Select "Settings..."</strong> (NOT the in-app settings - this opens the system settings)</li>
+                                    <li><strong>Click "Developer"</strong> in the left sidebar</li>
+                                    <li><strong>Click "Edit Config"</strong> - this will create the file if it doesn't exist and open it in your default text editor</li>
+                                </ol>
+                                <p><strong>This is the official method and automatically handles file creation and location!</strong></p>
+                            </div>
+                            
+                            <h5>📁 Alternative: Manual File Location</h5>
+                            <p>If you prefer to find the file manually, here are the exact locations:</p>
+                            
+                            <div class="platform-tabs">
+                                <button class="platform-tab active" onclick="showPlatformTab('claude-platforms', 'windows')">🪟 Windows</button>
+                                <button class="platform-tab" onclick="showPlatformTab('claude-platforms', 'macos')">🍎 macOS</button>
+                                <button class="platform-tab" onclick="showPlatformTab('claude-platforms', 'linux')">🐧 Linux</button>
+                            </div>
+                            
+                            <div id="claude-platforms-windows" class="platform-content active">
+                                <div class="credential-card">
+                                    <ol>
+                                        <li>Press <code>Win + R</code> to open Run dialog</li>
+                                        <li>Type <code>%APPDATA%</code> and press Enter</li>
+                                        <li>Navigate to the <code>Claude</code> folder</li>
+                                        <li>Look for <code>claude_desktop_config.json</code></li>
+                                        <li><strong>If the file doesn't exist:</strong> Create it as a new text file</li>
+                                    </ol>
+                                    <p><strong>Full path:</strong> <code>%APPDATA%\Roaming\Claude\claude_desktop_config.json</code></p>
+                                </div>
+                            </div>
+                            
+                            <div id="claude-platforms-macos" class="platform-content">
+                                <div class="credential-card">
+                                    <ol>
+                                        <li>Open Finder</li>
+                                        <li>Press <code>Cmd + Shift + G</code> (Go to Folder)</li>
+                                        <li>Type <code>~/Library/Application Support/Claude</code> and press Enter</li>
+                                        <li>Look for <code>claude_desktop_config.json</code></li>
+                                        <li><strong>If the file doesn't exist:</strong> Create it using TextEdit</li>
+                                    </ol>
+                                    <p><strong>Full path:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></p>
+                                </div>
+                            </div>
+                            
+                            <div id="claude-platforms-linux" class="platform-content">
+                                <div class="credential-card">
+                                    <ol>
+                                        <li>Open a terminal</li>
+                                        <li>Run <code>cd ~/.config/Claude</code></li>
+                                        <li>Check if <code>claude_desktop_config.json</code> exists with <code>ls -la</code></li>
+                                        <li><strong>If the file doesn't exist:</strong> Create it with <code>touch claude_desktop_config.json</code></li>
+                                        <li>Edit with your preferred text editor: <code>nano claude_desktop_config.json</code></li>
+                                    </ol>
+                                    <p><strong>Full path:</strong> <code>~/.config/Claude/claude_desktop_config.json</code></p>
+                                </div>
+                            </div>
+                            
+                            <h4>Step 3: Add the Configuration</h4>
+                            <p>The configuration structure depends on whether the file is empty or already has content:</p>
+                            
+                            <h5>🆕 If the file is empty or doesn't exist:</h5>
+                            <p>Copy this entire configuration (your personalized version will be in the Configuration tab):</p>
+                            <pre><code>{
   "mcpServers": {
     "avatax": {
       "command": "node",
-      "args": ["path/to/app.asar/dist/index.js"],
+      "args": ["C:\\Users\\YourUser\\AppData\\Local\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js"],
       "env": {
         "AVATAX_ACCOUNT_ID": "your_actual_account_id",
         "AVATAX_LICENSE_KEY": "your_actual_license_key", 
         "AVATAX_COMPANY_CODE": "your_actual_company_code",
-        "AVATAX_ENVIRONMENT": "sandbox_or_production",
+        "AVATAX_ENVIRONMENT": "sandbox",
         "AVATAX_APP_NAME": "AvaTax-MCP-Server",
         "AVATAX_TIMEOUT": "30000"
       }
     }
   }
 }</code></pre>
-                    
-                    <div class="help-section">
-                        <h3>📍 Finding claude_desktop_config.json</h3>
-                        <p>The configuration file is located at:</p>
-                        <ul>
-                            <li><strong>Windows:</strong> <code>%APPDATA%\\Claude\\claude_desktop_config.json</code></li>
-                            <li><strong>macOS:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
-                            <li><strong>Linux:</strong> <code>~/.config/Claude/claude_desktop_config.json</code></li>
-                        </ul>
+
+                            <h5>📝 If the file already has MCP servers:</h5>
+                            <p>Add just the AvaTax section inside the existing "mcpServers" object:</p>
+                            <pre><code>"avatax": {
+  "command": "node",
+  "args": ["C:\\Users\\YourUser\\AppData\\Local\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js"],
+  "env": {
+    "AVATAX_ACCOUNT_ID": "your_actual_account_id",
+    "AVATAX_LICENSE_KEY": "your_actual_license_key", 
+    "AVATAX_COMPANY_CODE": "your_actual_company_code",
+    "AVATAX_ENVIRONMENT": "sandbox",
+    "AVATAX_APP_NAME": "AvaTax-MCP-Server",
+    "AVATAX_TIMEOUT": "30000"
+  }
+}</code></pre>
+
+                            <h4>Step 4: Test the Connection</h4>
+                            <ol>
+                                <li><strong>Save the file</strong> and close your text editor</li>
+                                <li><strong>Start Claude Desktop</strong> - you should see a hammer 🔨 icon at the bottom</li>
+                                <li><strong>Click the hammer icon</strong> to see available MCP servers</li>
+                                <li><strong>Look for "avatax"</strong> in the list - if it's there, you're connected!</li>
+                                <li><strong>Test with a query:</strong> "Calculate tax for a $100 sale from Washington to California"</li>
+                            </ol>
+                            
+                            <div class="help-section">
+                                <h4>🔧 Troubleshooting</h4>
+                                <ul>
+                                    <li><strong>Can't find the file path?</strong> Copy and paste the path directly into your file explorer address bar</li>
+                                    <li><strong>JSON syntax error?</strong> Use a JSON validator like <a href="https://jsonlint.com" target="_blank" rel="noopener">jsonlint.com</a> to check your file</li>
+                                    <li><strong>No hammer icon?</strong> Check that Claude Desktop is completely restarted after saving the config</li>
+                                    <li><strong>AvaTax not in the list?</strong> Verify the file path in "args" points to where you installed this app</li>
+                                    <li><strong>Connection errors?</strong> Make sure you've configured your credentials in the Configuration tab first</li>
+                                </ul>
+                                
+                                <div class="status info" style="margin-top: 15px;">
+                                    <strong>🤖 Need Help?</strong> If you get stuck during setup, ask Claude directly! Just say: <em>"Help me set up the AvaTax MCP server configuration file"</em> - Claude can guide you through each step and even help troubleshoot specific issues you encounter.
+                                    <br><br>
+                                    <a href="https://claude.ai/" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-block; margin-top: 8px; padding: 8px 16px; text-decoration: none;">
+                                        🌐 Open Claude Web
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <h2>Available Commands</h2>
-                    <p>Once connected, you can ask Claude to:</p>
-                    
-                    <div class="feature-grid">
-                        <div class="feature-card">
-                            <h3>calculate_tax</h3>
-                            <p>"Calculate sales tax for a $100 item shipped from California to New York using Avalara's real-time tax engine"</p>
-                        </div>
-                        <div class="feature-card">
-                            <h3>validate_address</h3>
-                            <p>"Validate this address: 123 Main St, Seattle, WA 98101 using Avalara's global address validation service"</p>
-                        </div>
-                        <div class="feature-card">
-                            <h3>create_transaction</h3>
-                            <p>"Create a committed sales transaction for order #12345 in AvaTax for compliance reporting"</p>
-                        </div>
-                        <div class="feature-card">
-                            <h3>ping_service</h3>
-                            <p>"Test connectivity to Avalara's AvaTax service and verify your API credentials"</p>
+                    <!-- VS Code Copilot Setup -->
+                    <div id="vscode-setup" class="setup-content">
+                        <h2>VS Code with GitHub Copilot Integration</h2>
+                        <p>Connect AvaTax MCP Server to VS Code and GitHub Copilot for intelligent tax calculations while coding:</p>
+                        
+                        <div class="setup-steps">
+                            <h3>� Complete Setup Guide</h3>
+                            
+                            <h4>Step 1: Prerequisites</h4>
+                            <ol>
+                                <li><strong>VS Code:</strong> Download from <a href="https://code.visualstudio.com/" target="_blank" rel="noopener">https://code.visualstudio.com/</a></li>
+                                <li><strong>GitHub Copilot:</strong> Install the extension and ensure you have an active subscription</li>
+                                <li><strong>Node.js:</strong> Install from <a href="https://nodejs.org/" target="_blank" rel="noopener">https://nodejs.org/</a> (LTS version recommended)</li>
+                            </ol>
+                            
+                            <h4>Step 2: Install MCP Extension</h4>
+                            <ol>
+                                <li>Open VS Code</li>
+                                <li>Press <code>Ctrl+Shift+X</code> (Windows/Linux) or <code>Cmd+Shift+X</code> (Mac) to open Extensions</li>
+                                <li>Search for <strong>"Model Context Protocol"</strong> or <strong>"MCP"</strong></li>
+                                <li>Install the official MCP extension by Anthropic</li>
+                                <li>Reload VS Code when prompted</li>
+                            </ol>
+                            
+                            <h4>Step 3: Configure MCP Settings</h4>
+                            <ol>
+                                <li><strong>Open Settings:</strong> Press <code>Ctrl+,</code> (Windows/Linux) or <code>Cmd+,</code> (Mac)</li>
+                                <li><strong>Search for "MCP"</strong> in the settings search box</li>
+                                <li><strong>Find "MCP: Servers"</strong> setting</li>
+                                <li><strong>Click "Edit in settings.json"</strong> to open the JSON configuration</li>
+                                <li><strong>Add the AvaTax server configuration:</strong></li>
+                            </ol>
+                            
+                            <h5>🔧 VS Code Configuration</h5>
+                            <p>Add this to your VS Code <code>settings.json</code> file:</p>
+                            <pre><code>{
+  "mcp.servers": {
+    "avatax": {
+      "command": "node",
+      "args": ["C:\\Users\\YourUser\\AppData\\Local\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js"],
+      "env": {
+        "AVATAX_ACCOUNT_ID": "your_account_id",
+        "AVATAX_LICENSE_KEY": "your_license_key",
+        "AVATAX_COMPANY_CODE": "your_company_code",
+        "AVATAX_ENVIRONMENT": "sandbox",
+        "AVATAX_APP_NAME": "AvaTax-MCP-Server",
+        "AVATAX_TIMEOUT": "30000"
+      }
+    }
+  }
+}</code></pre>
+                            
+                            <div class="help-section" id="vscode-config-notice">
+                                <h4>💡 Get Your Personalized Configuration</h4>
+                                <p>To get your exact VS Code configuration with your credentials, go to the <a href="javascript:showTab('configuration')" class="config-link">Configuration tab</a> and save your AvaTax settings. This will automatically generate the correct configuration!</p>
+                            </div>
+                            
+                            <h4>Step 4: Locate Your settings.json File</h4>
+                            <div class="credential-types">
+                                <div class="credential-card">
+                                    <h4>🪟 Windows</h4>
+                                    <p><strong>File Location:</strong><br>
+                                    <code>%APPDATA%\\Code\\User\\settings.json</code></p>
+                                    <p><strong>Quick Access:</strong><br>
+                                    Press <code>Ctrl+Shift+P</code> → Type "settings json" → Select "Preferences: Open Settings (JSON)"</p>
+                                </div>
+                                
+                                <div class="credential-card">
+                                    <h4>🍎 macOS</h4>
+                                    <p><strong>File Location:</strong><br>
+                                    <code>~/Library/Application Support/Code/User/settings.json</code></p>
+                                    <p><strong>Quick Access:</strong><br>
+                                    Press <code>Cmd+Shift+P</code> → Type "settings json" → Select "Preferences: Open Settings (JSON)"</p>
+                                </div>
+                                
+                                <div class="credential-card">
+                                    <h4>🐧 Linux</h4>
+                                    <p><strong>File Location:</strong><br>
+                                    <code>~/.config/Code/User/settings.json</code></p>
+                                    <p><strong>Quick Access:</strong><br>
+                                    Press <code>Ctrl+Shift+P</code> → Type "settings json" → Select "Preferences: Open Settings (JSON)"</p>
+                                </div>
+                            </div>
+                            
+                            <h4>Step 5: Test the Integration</h4>
+                            <ol>
+                                <li><strong>Restart VS Code</strong> completely</li>
+                                <li><strong>Open any code file</strong> (.js, .py, .ts, etc.)</li>
+                                <li><strong>Look for MCP status</strong> in the bottom status bar</li>
+                                <li><strong>Test Copilot integration</strong> by typing a comment like:</li>
+                            </ol>
+                            <pre><code>// Calculate sales tax for a $500 software sale from WA to CA</code></pre>
+                            
+                            <h3>🤖 Using with GitHub Copilot</h3>
+                            <p>Once configured, Copilot will have access to AvaTax capabilities. Here's how to use them:</p>
+                            
+                            <div class="credential-types">
+                                <div class="credential-card">
+                                    <h4>💬 Natural Language Queries</h4>
+                                    <ul>
+                                        <li>"Calculate tax for a $500 software sale from WA to CA"</li>
+                                        <li>"Validate this shipping address for tax purposes"</li>
+                                        <li>"Create a committed tax transaction"</li>
+                                        <li>"Get tax rates for Seattle, Washington"</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="credential-card">
+                                    <h4>📝 Code Comments</h4>
+                                    <p>Write descriptive comments and let Copilot suggest AvaTax API calls:</p>
+                                    <ul>
+                                        <li><code>// Calculate sales tax for this transaction</code></li>
+                                        <li><code>// Validate customer shipping address</code></li>
+                                        <li><code>// Create committed tax transaction for invoice</code></li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="credential-card">
+                                    <h4>🔧 Intelligent Suggestions</h4>
+                                    <ul>
+                                        <li><strong>Tax Codes:</strong> Copilot suggests appropriate tax codes for products</li>
+                                        <li><strong>Error Handling:</strong> Smart suggestions for API error responses</li>
+                                        <li><strong>Best Practices:</strong> Follows AvaTax API patterns and conventions</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <h3>💡 Example Interactions</h3>
+                            <div class="api-endpoint">
+                                <strong>Prompt:</strong> "Validate this address and calculate tax for a $100 book sale"
+                                <p><strong>Copilot Response:</strong> Suggests using both validate_address and calculate_tax MCP tools with proper parameters, error handling, and response processing</p>
+                            </div>
+                            <div class="api-endpoint">
+                                <strong>Prompt:</strong> "Create a committed transaction for invoice #INV-001"
+                                <p><strong>Copilot Response:</strong> Generates code using the create_transaction MCP tool with commitment settings and audit trail management</p>
+                            </div>
+                            
+                            <div class="help-section">
+                                <h4>🔧 Troubleshooting</h4>
+                                <ul>
+                                    <li><strong>MCP not appearing in status bar?</strong> Check that the MCP extension is installed and enabled</li>
+                                    <li><strong>Settings.json syntax error?</strong> Validate your JSON syntax at <a href="https://jsonlint.com" target="_blank" rel="noopener">jsonlint.com</a></li>
+                                    <li><strong>Copilot not suggesting AvaTax?</strong> Try more specific comments mentioning "tax calculation" or "AvaTax"</li>
+                                    <li><strong>Path not found?</strong> Verify the installation path of the AvaTax MCP Server app</li>
+                                </ul>
+                                
+                                <div class="status info" style="margin-top: 15px;">
+                                    <strong>💻 Need Help?</strong> If you encounter any issues, ask GitHub Copilot for assistance! Use comments like: <em>"// Help me set up AvaTax MCP server for tax calculations"</em> - Copilot can provide step-by-step guidance and troubleshoot your VS Code configuration.
+                                    <br><br>
+                                    <a href="https://github.com/" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-block; margin-top: 8px; padding: 8px 16px; text-decoration: none;">
+                                        🤖 Chat with GitHub Copilot
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
-                    <h2>Getting Avalara AvaTax Credentials</h2>
-                    <p>Follow these steps to obtain your Avalara AvaTax API credentials:</p>
-                    <ol>
-                        <li><strong>Create an account</strong> at <a href="https://www.avalara.com/" target="_blank" rel="noopener">avalara.com</a> (free trial available)</li>
-                        <li><strong>Access the AvaTax admin console</strong> and navigate to Settings > License Keys</li>
-                        <li><strong>Copy your Account ID and License Key</strong> from the credentials section</li>
-                        <li><strong>Locate your Company Code</strong> under Companies > Company Settings</li>
-                        <li><strong>Start with sandbox environment</strong> for safe testing before going live</li>
-                    </ol>
-                    <p><em>Avalara serves 40,000+ customers worldwide with automated tax compliance solutions.</em></p>
+                    <!-- ChatGPT Setup -->
+                    <div id="chatgpt-setup" class="setup-content">
+                        <h2>ChatGPT Integration</h2>
+                        <p>Connect AvaTax MCP Server to ChatGPT and OpenAI's ecosystem for intelligent tax calculations:</p>
+                        
+                        <div class="setup-steps">
+                            <h3>🚀 Complete Setup Guide</h3>
+                            
+                            <div class="help-section">
+                                <h4>� Important Note</h4>
+                                <p><strong>ChatGPT MCP support is currently in beta.</strong> OpenAI is actively developing MCP integration for ChatGPT. For the most up-to-date instructions, check the official OpenAI documentation.</p>
+                            </div>
+                            
+                            <h4>Step 1: Prerequisites</h4>
+                            <ol>
+                                <li><strong>ChatGPT Plus subscription:</strong> Required for custom GPT creation and API access</li>
+                                <li><strong>OpenAI API key:</strong> Get from <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">https://platform.openai.com/api-keys</a></li>
+                                <li><strong>Node.js installed:</strong> Download from <a href="https://nodejs.org/" target="_blank" rel="noopener">https://nodejs.org/</a></li>
+                                <li><strong>AvaTax MCP Server configured:</strong> Complete your credentials in the Configuration tab first</li>
+                            </ol>
+                            
+                            <h4>Step 2: OpenAI CLI Setup</h4>
+                            <ol>
+                                <li><strong>Install OpenAI CLI:</strong></li>
+                                <pre><code>npm install -g openai</code></pre>
+                                <li><strong>Configure your API key:</strong></li>
+                                <pre><code>export OPENAI_API_KEY="your-api-key-here"</code></pre>
+                                <li><strong>Test the connection:</strong></li>
+                                <pre><code>openai api completions.create -m text-davinci-003 -p "Test" --max-tokens 5</code></pre>
+                            </ol>
+                            
+                            <h4>Step 3: MCP Configuration for OpenAI</h4>
+                            <p>Create a configuration file for OpenAI's MCP integration:</p>
+                            
+                            <h5>📂 Create MCP Config File</h5>
+                            <ol>
+                                <li><strong>Create a new file:</strong> <code>mcp-config.json</code></li>
+                                <li><strong>Add this configuration:</strong></li>
+                            </ol>
+                            
+                            <pre><code>{
+  "mcp_servers": {
+    "avatax": {
+      "command": "node",
+      "args": ["C:\\Users\\YourUser\\AppData\\Local\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js"],
+      "env": {
+        "AVATAX_ACCOUNT_ID": "your_account_id",
+        "AVATAX_LICENSE_KEY": "your_license_key",
+        "AVATAX_COMPANY_CODE": "your_company_code",
+        "AVATAX_ENVIRONMENT": "sandbox",
+        "AVATAX_APP_NAME": "AvaTax-MCP-Server",
+        "AVATAX_TIMEOUT": "30000"
+      }
+    }
+  }
+}</code></pre>
+                            
+                            <div class="help-section" id="chatgpt-config-notice">
+                                <h4>💡 Get Your Personalized Configuration</h4>
+                                <p>To get your exact configuration with your credentials already filled in, go to the <a href="javascript:showTab('configuration')" class="config-link">Configuration tab</a> and save your AvaTax settings. This will automatically generate the correct configuration!</p>
+                            </div>
+                            
+                            <h4>Step 4: ChatGPT Custom GPT Setup</h4>
+                            <p>Create a specialized ChatGPT for tax calculations:</p>
+                            
+                            <ol>
+                                <li><strong>Access GPT Builder:</strong> Go to <a href="https://chat.openai.com/gpts/editor" target="_blank" rel="noopener">ChatGPT GPT Editor</a></li>
+                                <li><strong>Click "Create a GPT"</strong> in the top right corner</li>
+                                <li><strong>Configure the GPT:</strong></li>
+                            </ol>
+                            
+                            <div class="credential-types">
+                                <div class="credential-card">
+                                    <h4>🏷️ GPT Name</h4>
+                                    <p><strong>AvaTax Tax Assistant</strong></p>
+                                </div>
+                                
+                                <div class="credential-card">
+                                    <h4>📝 Description</h4>
+                                    <p>Expert tax calculation assistant powered by Avalara AvaTax. Handles sales tax, VAT, GST calculations, address validation, and compliance workflows for 75+ countries.</p>
+                                </div>
+                                
+                                <div class="credential-card">
+                                    <h4>🎯 Instructions</h4>
+                                    <p>Copy this into the instructions field:</p>
+                                    <pre class="gpt-instructions"><code>You are a tax calculation expert with access to Avalara AvaTax API through MCP. You can:
+
+1. Calculate sales tax, VAT, and GST for transactions
+2. Validate and standardize addresses globally
+3. Create committed tax transactions for compliance
+4. Provide tax rates and jurisdiction information
+5. Handle exemption certificates and special tax scenarios
+
+Always ask for necessary details:
+- Transaction amount and currency
+- Ship-from and ship-to addresses  
+- Product type or tax code
+- Customer exemption status
+
+Provide clear, accurate results with jurisdiction breakdowns when calculating taxes.</code></pre>
+                                </div>
+                            </div>
+                            
+                            <h4>Step 5: Advanced Configuration</h4>
+                            <ol>
+                                <li><strong>Add Actions:</strong> In the GPT editor, go to "Configure" → "Actions"</li>
+                                <li><strong>Import Schema:</strong> Upload the AvaTax MCP schema (generated automatically)</li>
+                                <li><strong>Set Authentication:</strong> Configure API key authentication for AvaTax</li>
+                                <li><strong>Test Integration:</strong> Use the preview to test tax calculations</li>
+                            </ol>
+                            
+                            <h4>Step 6: Test the Integration</h4>
+                            <p>Try these example queries with your custom GPT:</p>
+                            
+                            <div class="api-endpoint">
+                                <strong>Address Validation:</strong>
+                                <p>"Validate this address: 123 Business Ave, Austin, TX 78701"</p>
+                            </div>
+                            <div class="api-endpoint">
+                                <strong>Tax Calculation:</strong>
+                                <p>"Calculate sales tax for a $500 software license from Washington to California"</p>
+                            </div>
+                            <div class="api-endpoint">
+                                <strong>Transaction Creation:</strong>
+                                <p>"Create a committed transaction for invoice INV-2024-001 with $1,000 total"</p>
+                            </div>
+                            
+                            <h3>🌟 Alternative: OpenAI API Integration</h3>
+                            <p>For developers wanting to integrate AvaTax with OpenAI's API directly:</p>
+                            
+                            <ol>
+                                <li><strong>Use Function Calling:</strong> Define AvaTax functions in your API calls</li>
+                                <li><strong>Proxy Through MCP:</strong> Route OpenAI requests through the MCP server</li>
+                                <li><strong>Custom Implementation:</strong> Build your own integration using OpenAI SDK</li>
+                            </ol>
+                            
+                            <pre><code>// Example: OpenAI function calling with AvaTax
+const functions = [
+  {
+    name: "calculate_tax",
+    description: "Calculate sales tax for a transaction",
+    parameters: {
+      type: "object",
+      properties: {
+        amount: { type: "number" },
+        fromAddress: { type: "string" },
+        toAddress: { type: "string" }
+      }
+    }
+  }
+];</code></pre>
+                            
+                            <div class="help-section">
+                                <h4>🔧 Troubleshooting</h4>
+                                <ul>
+                                    <li><strong>GPT not responding to tax queries?</strong> Check that Actions are properly configured and authenticated</li>
+                                    <li><strong>Authentication errors?</strong> Verify your AvaTax credentials in the Configuration tab</li>
+                                    <li><strong>MCP connection issues?</strong> Ensure the AvaTax MCP Server is running from the Server Control tab</li>
+                                    <li><strong>Schema import failed?</strong> Try manually defining the AvaTax functions in the Actions configuration</li>
+                                </ul>
+                                
+                                <div class="status info" style="margin-top: 15px;">
+                                    <strong>🤖 Need Help?</strong> If you run into issues, ask ChatGPT itself for assistance! Try prompts like: <em>"Help me create a custom GPT that integrates with AvaTax for tax calculations"</em> - ChatGPT can guide you through the GPT creation process and troubleshoot configuration problems.
+                                    <br><br>
+                                    <a href="https://chat.openai.com/" target="_blank" rel="noopener" class="btn btn-secondary" style="display: inline-block; margin-top: 8px; padding: 8px 16px; text-decoration: none;">
+                                        🤖 Open ChatGPT
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <h3>💬 Usage Examples</h3>
+                            <p>Once configured, you can ask your ChatGPT:</p>
+                            <ul>
+                                <li>"Calculate sales tax for a $750 laptop sale from Seattle to Dallas"</li>
+                                <li>"Validate this shipping address and calculate tax: 456 Commerce St, Miami, FL 33131"</li>
+                                <li>"Create a committed transaction for invoice #INV-2024-0142 totaling $2,500"</li>
+                                <li>"What's the current sales tax rate in Austin, Texas?"</li>
+                                <li>"How do I handle tax exemptions for non-profit organizations?"</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- API Groups Reference -->
+                    <div id="api-groups-setup" class="setup-content">
+                        <h2>AvaTax API Reference Groups</h2>
+                        <p>Explore the comprehensive AvaTax API capabilities organized by functional area:</p>
+                        
+                        <div class="api-groups">
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('core-tax')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Core Tax Operations
+                                </h3>
+                                <div id="core-tax" class="api-group-content">
+                                    <div class="api-endpoint">
+                                        <strong>calculate_tax</strong> - Calculate tax for transactions
+                                        <p>Real-time tax calculation with line-item detail, exemptions, and jurisdiction breakdown</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_transaction</strong> - Create committed transactions
+                                        <p>Generate permanent tax records for compliance and reporting</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>ping_service</strong> - Test API connectivity
+                                        <p>Verify credentials and service availability</p>
+                                    </div>
+                                    <p><em>Coming Soon: adjust_transaction, void_transaction, commit_transaction</em></p>
+                                </div>
+                            </div>
+                            
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('address-validation')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Address & Location Services
+                                </h3>
+                                <div id="address-validation" class="api-group-content">
+                                    <div class="api-endpoint">
+                                        <strong>validate_address</strong> - Validate and normalize addresses
+                                        <p>Global address verification with standardization and geocoding</p>
+                                    </div>
+                                    <p><em>Coming Soon: resolve_address_post, get_locations, manage_locations</em></p>
+                                </div>
+                            </div>
+                            
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('company-management')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Company & Account Management
+                                </h3>
+                                <div id="company-management" class="api-group-content">
+                                    <p><em>Coming Soon: manage_companies, get_company_settings, update_company_configuration</em></p>
+                                </div>
+                            </div>
+                            
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('customer-certificates')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Customer Certificates & Exemptions
+                                </h3>
+                                <div id="customer-certificates" class="api-group-content">
+                                    <p><em>Coming Soon: manage_certificates, validate_exemptions, customer_management</em></p>
+                                </div>
+                            </div>
+                            
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('batch-operations')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Batch Operations
+                                </h3>
+                                <div id="batch-operations" class="api-group-content">
+                                    <p><em>Coming Soon: create_batch, process_batch_files, batch_status_monitoring</em></p>
+                                </div>
+                            </div>
+                            
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('tax-content')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Tax Content & Definitions
+                                </h3>
+                                <div id="tax-content" class="api-group-content">
+                                    <p><em>Coming Soon: get_tax_codes, query_jurisdictions, rate_tables</em></p>
+                                </div>
+                            </div>
+                            
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('compliance-reporting')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Compliance & Reporting
+                                </h3>
+                                <div id="compliance-reporting" class="api-group-content">
+                                    <p><em>Coming Soon: filing_reports, compliance_worksheets, audit_trails</em></p>
+                                </div>
+                            </div>
+                            
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('items-products')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Items & Product Classification
+                                </h3>
+                                <div id="items-products" class="api-group-content">
+                                    <p><em>Coming Soon: classify_items, manage_item_catalog, tax_code_assignment</em></p>
+                                </div>
+                            </div>
+                            
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('utilities')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Utilities & System Services
+                                </h3>
+                                <div id="utilities" class="api-group-content">
+                                    <div class="api-endpoint">
+                                        <strong>ping_service</strong> - Service health check
+                                        <p>Test connectivity and verify system status</p>
+                                    </div>
+                                    <p><em>Coming Soon: system_status, rate_limits, service_diagnostics</em></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h2>Getting Avalara Credentials</h2>
+                    <div class="credentials-section">
+                        <h3>🔑 Account Setup Process</h3>
+                        <ol>
+                            <li><strong>Sign up for Avalara AvaTax:</strong> Visit <a href="https://www.avalara.com/us/en/get-started.html" target="_blank" rel="noopener">avalara.com/get-started</a></li>
+                            <li><strong>Choose your plan:</strong> Free sandbox for development, paid plans for production</li>
+                            <li><strong>Access Admin Console:</strong> Log into your AvaTax account</li>
+                            <li><strong>Navigate to API Access:</strong> Settings → API Access Keys</li>
+                            <li><strong>Generate License Key:</strong> Create a new license key for your application</li>
+                            <li><strong>Find Account ID:</strong> Located in Account Settings or License Key section</li>
+                        </ol>
+                        
+                        <div class="credential-types">
+                            <div class="credential-card">
+                                <h4>🧪 Sandbox Environment</h4>
+                                <ul>
+                                    <li>Free for development and testing</li>
+                                    <li>Realistic tax calculations</li>
+                                    <li>No actual tax filing</li>
+                                    <li>Endpoint: https://sandbox-rest.avatax.com</li>
+                                </ul>
+                            </div>
+                            <div class="credential-card">
+                                <h4>🚀 Production Environment</h4>
+                                <ul>
+                                    <li>Live tax calculations and filing</li>
+                                    <li>Requires paid subscription</li>
+                                    <li>Real compliance reporting</li>
+                                    <li>Endpoint: https://rest.avatax.com</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="help-section">
+                            <h4>🆔 Required Credentials</h4>
+                            <ul>
+                                <li><strong>Account ID:</strong> Your unique Avalara account identifier (numeric)</li>
+                                <li><strong>License Key:</strong> API authentication token (long alphanumeric string)</li>
+                                <li><strong>Company Code:</strong> Your business identifier in AvaTax (default: "DEFAULT")</li>
+                                <li><strong>Environment:</strong> "sandbox" for testing, "production" for live operations</li>
+                            </ul>
+                        </div>
+                    </div>
                     
                     <h2>Installation & Upgrades</h2>
                     <div class="help-section">

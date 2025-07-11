@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.avataxConfig = exports.AVATAX_ENDPOINTS = void 0;
+exports.AVATAX_ENDPOINTS = void 0;
 exports.getBaseUrl = getBaseUrl;
 exports.createAvaTaxConfig = createAvaTaxConfig;
 exports.AVATAX_ENDPOINTS = {
@@ -26,11 +26,3 @@ function createAvaTaxConfig() {
         timeout: parseInt(process.env.AVATAX_TIMEOUT || '30000')
     };
 }
-// Legacy export for backward compatibility
-exports.avataxConfig = {
-    apiKey: process.env.AVATAX_API_KEY || '',
-    endpoint: process.env.AVATAX_ENDPOINT || 'https://api.avatax.com',
-    accountId: process.env.AVATAX_ACCOUNT_ID || '',
-    companyCode: process.env.AVATAX_COMPANY_CODE || '',
-    environment: process.env.AVATAX_ENVIRONMENT || 'production',
-};

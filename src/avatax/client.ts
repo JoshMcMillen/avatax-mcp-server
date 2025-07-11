@@ -72,12 +72,45 @@ class AvataxClient {
         throw new Error(`Network Error: ${error.message}`);
     }
 
-    public async calculateTax(transactionData: any) {
-        // Ensure companyCode is set if not provided
-        if (!transactionData.companyCode) {
-            transactionData.companyCode = this.config.companyCode;
+    private validateTransactionData(data: any): void {
+        // Validate required fields
+        if (!data.date || !data.customerCode || !data.lines) {
+            throw new Error('Missing required transaction fields');
         }
-        return this.sendRequest('/api/v2/transactions/create', 'POST', transactionData);
+        
+        // Validate date format
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(data.date)) {
+            throw new Error('Invalid date format. Use YYYY-MM-DD');
+        }
+        
+        // Validate lines
+        if (!Array.isArray(data.lines) || data.lines.length === 0) {
+            throw new Error('Transaction must have at least one line item');
+        }
+        
+        // Sanitize string inputs
+        if (data.customerCode) data.customerCode = this.sanitizeString(data.customerCode);
+        data.lines.forEach((line: any) => {
+            if (line.description) line.description = this.sanitizeString(line.description);
+            if (line.itemCode) line.itemCode = this.sanitizeString(line.itemCode);
+        });
+    }
+
+    private sanitizeString(input: string): string {
+        return input.replace(/[<>'"]/g, '');
+    }
+
+    public async calculateTax(transactionData: any) {
+        // Set default values
+        const data = {
+            ...transactionData,
+            companyCode: transactionData.companyCode || this.config.companyCode
+        };
+        
+        // Validate before sending
+        this.validateTransactionData(data);
+        
+        return this.sendRequest('/api/v2/transactions/create', 'POST', data);
     }
 
     public async validateAddress(addressData: any) {
@@ -85,11 +118,22 @@ class AvataxClient {
     }
 
     public async createTransaction(transactionData: any) {
-        // Ensure companyCode is set if not provided
-        if (!transactionData.companyCode) {
-            transactionData.companyCode = this.config.companyCode;
-        }
-        return this.sendRequest('/api/v2/transactions/create', 'POST', transactionData);
+        // Set default values
+        const data = {
+            type: transactionData.type || 'SalesInvoice',
+            companyCode: transactionData.companyCode || this.config.companyCode,
+            commit: transactionData.commit !== false, // Default to true
+            ...transactionData
+        };
+        
+        // Validate before sending
+        this.validateTransactionData(data);
+        
+        return this.sendRequest('/api/v2/transactions/create', 'POST', data);
+    }
+
+    public async ping() {
+        return await this.sendRequest('/api/v2/utilities/ping', 'GET');
     }
 }
 

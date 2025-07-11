@@ -3,8 +3,10 @@ node_modules/
 .env.local
 *.log
 .DS_Store
-# Build directory included for distribution
-# dist/
+
+# Build artifacts
+dist/
+release/
 
 # IDE files
 .vscode/
@@ -14,34 +16,26 @@ node_modules/
 
 # OS files
 Thumbs.db
-.DS_Store
 
-# Ignore build artifacts and installers
-release/*.exe
-release/*.blockmap
-release/.cache/
-# Ignore all build output and release artifacts
-release/**
-# Ignore sensitive certificate files
+# Sensitive certificate files
+*.p12
+*.pfx
+*.pem
+*.keystore
 codesign-cert.p12
+.codesign-password.txt
 
-# Ignore build artifacts
-release/
-dist/
+# Build and package files
 *.exe
 *.dmg
 *.AppImage
-
-# Ignore sensitive files
-*.p12
-*.pem
-*.keystore
-
-# Ignore temp files
-*.log
-npm-debug.log*
 *.tgz
 .tsbuildinfo
 .eslintcache
+
+# Cache directories
 node_modules/.cache/
 .parcel-cache/
+
+# Debug files
+npm-debug.log*

@@ -10,6 +10,87 @@ param(
     [string]$ReleaseNotes = "Bug fixes and improvements"
 )
 
+# Function to set up certificate password securely
+function Set-CertificatePassword {
+    # Check if CSC_KEY_PASSWORD is already set
+    if ($env:CSC_KEY_PASSWORD) {
+        Write-Host "Certificate password already configured." -ForegroundColor Green
+        return
+    }
+    
+    # Check if certificate file exists
+    if (-not (Test-Path 'codesign-cert.p12')) {
+        Write-Host "Warning: Code signing certificate 'codesign-cert.p12' not found." -ForegroundColor Yellow
+        Write-Host "The build will proceed without code signing." -ForegroundColor Yellow
+        $env:CSC_IDENTITY_AUTO_DISCOVERY = "false"
+        return
+    }
+    
+    # Try to get password from Windows Credential Manager first
+    try {
+        $credential = Get-StoredCredential -Target "AvaTax-MCP-CodeSigning" -ErrorAction SilentlyContinue
+        if ($credential) {
+            $env:CSC_KEY_PASSWORD = $credential.GetNetworkCredential().Password
+            Write-Host "Certificate password loaded from Windows Credential Manager." -ForegroundColor Green
+            return
+        }
+    } catch {
+        # Credential Manager not available or no stored credential
+    }
+    
+    # Check for password in a secure file (optional)
+    $securePasswordFile = ".codesign-password.txt"
+    if (Test-Path $securePasswordFile) {
+        try {
+            $env:CSC_KEY_PASSWORD = Get-Content $securePasswordFile -Raw
+            Write-Host "Certificate password loaded from secure file." -ForegroundColor Green
+            return
+        } catch {
+            Write-Host "Failed to read password from secure file." -ForegroundColor Yellow
+        }
+    }
+    
+    # Last resort: prompt for password and offer to save it
+    Write-Host ""
+    Write-Host "Certificate password required for code signing." -ForegroundColor Yellow
+    $securePassword = Read-Host -Prompt "Enter certificate password" -AsSecureString
+    $env:CSC_KEY_PASSWORD = [Runtime.InteropServices.Marshal]::PtrToStringAuto([Runtime.InteropServices.Marshal]::SecureStringToBSTR($securePassword))
+    
+    # Offer to save the password for future builds
+    $savePassword = Read-Host "Save password for future builds? (y/N)"
+    if ($savePassword -eq "y" -or $savePassword -eq "Y") {
+        try {
+            # Try to save to Windows Credential Manager
+            New-StoredCredential -Target "AvaTax-MCP-CodeSigning" -UserName "codesign" -Password $env:CSC_KEY_PASSWORD -Persist LocalMachine -ErrorAction Stop
+            Write-Host "Password saved to Windows Credential Manager." -ForegroundColor Green
+        } catch {
+            # Fallback: save to secure file
+            $env:CSC_KEY_PASSWORD | Out-File -FilePath $securePasswordFile -NoNewline
+            Write-Host "Password saved to secure file. Keep this file secure and don't commit it to git!" -ForegroundColor Yellow
+        }
+    }
+}
+
+# Function to check for required PowerShell modules
+function Install-RequiredModules {
+    $credentialManagerModule = "CredentialManager"
+    if (-not (Get-Module -ListAvailable -Name $credentialManagerModule)) {
+        Write-Host "Installing $credentialManagerModule module..." -ForegroundColor Yellow
+        try {
+            Install-Module -Name $credentialManagerModule -Force -Scope CurrentUser -ErrorAction Stop
+            Write-Host "$credentialManagerModule installed successfully." -ForegroundColor Green
+        } catch {
+            Write-Host "Failed to install $credentialManagerModule. Will use fallback method." -ForegroundColor Yellow
+        }
+    }
+}
+
+# Install required modules
+Install-RequiredModules
+
+# Set up certificate password
+Set-CertificatePassword
+
 # Get current version from package.json
 $packageJson = Get-Content "package.json" | ConvertFrom-Json
 $currentVersion = $packageJson.version
@@ -168,8 +249,3 @@ if ($createRelease -eq "y" -or $createRelease -eq "Y") {
 
 Write-Host ""
 Write-Host "Version $newVersion is ready!" -ForegroundColor Green
-
-if (-not (Test-Path 'codesign-cert.p12')) {
-    Write-Error 'Code signing certificate not found. Build aborted.'
-    exit 1
-}

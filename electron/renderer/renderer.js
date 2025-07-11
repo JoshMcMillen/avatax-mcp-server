@@ -1,3 +1,53 @@
+// Dark mode toggle functionality
+function toggleTheme() {
+    const body = document.body;
+    const themeToggle = document.querySelector('#themeToggle');
+    
+    if (themeToggle.checked) {
+        body.dataset.theme = 'dark';
+        localStorage.setItem('theme', 'dark');
+    } else {
+        body.dataset.theme = 'light';
+        localStorage.setItem('theme', 'light');
+    }
+    
+    // Add smooth transition effect
+    body.style.transition = 'all 0.3s ease';
+    setTimeout(() => {
+        body.style.transition = '';
+    }, 300);
+}
+
+// Load saved theme on startup
+function loadTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    const body = document.body;
+    const themeToggle = document.querySelector('#themeToggle');
+    
+    body.dataset.theme = savedTheme;
+    if (themeToggle) {
+        themeToggle.checked = savedTheme === 'dark';
+    }
+}
+
+// Interactive feature cards
+function showFeatureDetails(featureId) {
+    const detailsElement = document.getElementById(featureId + '-details');
+    if (detailsElement) {
+        if (detailsElement.classList.contains('hidden')) {
+            // Hide all other details first
+            const allDetails = document.querySelectorAll('.feature-details');
+            allDetails.forEach(detail => detail.classList.add('hidden'));
+            
+            // Show the selected details
+            detailsElement.classList.remove('hidden');
+        } else {
+            // Hide if already visible
+            detailsElement.classList.add('hidden');
+        }
+    }
+}
+
 // Tab management
 function showTab(tabName) {
     // Hide all tab contents
@@ -23,6 +73,7 @@ let currentConfig = {};
 
 // Load configuration on startup
 window.addEventListener('DOMContentLoaded', () => {
+    loadTheme(); // Load theme first
     loadConfiguration();
     getServerStatus();
     
@@ -54,6 +105,7 @@ function loadConfiguration() {
         
         showStatus('Configuration loaded successfully', 'success');
         generateClaudeConfig(config);
+        updateDocumentationTabs(); // Update dynamic documentation
     }).catch(error => {
         showStatus('No saved configuration found', 'info');
         hideClaudeConfig();
@@ -75,6 +127,7 @@ function saveConfiguration() {
     window.mcp.saveConfig(config).then(() => {
         showStatus('Configuration saved successfully!', 'success');
         generateClaudeConfig(config);
+        updateDocumentationTabs(); // Update dynamic documentation
     }).catch(error => {
         showStatus(`Failed to save configuration: ${error.message}`, 'error');
     });
@@ -87,6 +140,7 @@ function clearConfiguration() {
             showStatus('Configuration cleared', 'warning');
             currentConfig = {};
             hideClaudeConfig();
+            updateDocumentationTabs(); // Update dynamic documentation
         }).catch(error => {
             showStatus(`Failed to clear configuration: ${error.message}`, 'error');
         });
@@ -374,3 +428,181 @@ function handleInstallState(installState) {
 
 const sensitiveEnvVars = ['API_KEY', 'SECRET_KEY'];
 console.log('Sensitive environment variables are not exposed.');
+
+// Documentation tab management
+function showSetupTab(tabName) {
+    // Hide all setup content sections
+    const setupContents = document.querySelectorAll('.setup-content');
+    setupContents.forEach(content => content.classList.remove('active'));
+    
+    // Remove active class from all setup tabs
+    const setupTabs = document.querySelectorAll('.setup-tab');
+    setupTabs.forEach(tab => tab.classList.remove('active'));
+    
+    // Show selected setup content
+    const targetContent = document.getElementById(`${tabName}-setup`);
+    if (targetContent) {
+        targetContent.classList.add('active');
+    }
+    
+    // Add active class to the corresponding setup tab button
+    const targetTab = document.querySelector(`button[onclick="showSetupTab('${tabName}')"]`);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+}
+
+// Platform tab management (within setup tabs)
+function showPlatformTab(groupPrefix, platformName) {
+    // Hide all platform content sections for this group
+    const platformContents = document.querySelectorAll(`[id^="${groupPrefix}-"]`);
+    platformContents.forEach(content => content.classList.remove('active'));
+    
+    // Remove active class from all platform tabs for this group
+    const platformTabs = document.querySelectorAll(`button[onclick*="showPlatformTab('${groupPrefix}'"]`);
+    platformTabs.forEach(tab => tab.classList.remove('active'));
+    
+    // Show selected platform content
+    const targetContent = document.getElementById(`${groupPrefix}-${platformName}`);
+    if (targetContent) {
+        targetContent.classList.add('active');
+    }
+    
+    // Add active class to the corresponding platform tab button
+    const targetTab = document.querySelector(`button[onclick="showPlatformTab('${groupPrefix}', '${platformName}')"]`);
+    if (targetTab) {
+        targetTab.classList.add('active');
+    }
+}
+
+// API Group toggle functionality
+function toggleApiGroup(groupId) {
+    const group = document.getElementById(groupId);
+    const groupContainer = group.closest('.api-group');
+    
+    if (group.classList.contains('expanded')) {
+        group.classList.remove('expanded');
+        groupContainer.classList.remove('expanded');
+    } else {
+        // Close all other groups first (accordion behavior)
+        document.querySelectorAll('.api-group-content').forEach(content => {
+            content.classList.remove('expanded');
+            content.closest('.api-group').classList.remove('expanded');
+        });
+        
+        // Open the selected group
+        group.classList.add('expanded');
+        groupContainer.classList.add('expanded');
+    }
+}
+
+// Dynamic documentation generation functions
+function generateVSCodeConfig(config) {
+    if (!config || !config.AVATAX_ACCOUNT_ID) return '';
+    
+    const vsCodeConfig = {
+        "avatax": {
+            "command": "node",
+            "args": [`"${getApplicationPath()}/resources/app.asar/dist/index.js"`],
+            "env": {
+                "AVATAX_ACCOUNT_ID": config.AVATAX_ACCOUNT_ID,
+                "AVATAX_LICENSE_KEY": config.AVATAX_LICENSE_KEY,
+                "AVATAX_COMPANY_CODE": config.AVATAX_COMPANY_CODE || "DEFAULT",
+                "AVATAX_ENVIRONMENT": config.AVATAX_ENVIRONMENT || "sandbox",
+                "AVATAX_APP_NAME": config.AVATAX_APP_NAME || "AvaTax-MCP-Server",
+                "AVATAX_TIMEOUT": config.AVATAX_TIMEOUT || "30000"
+            }
+        }
+    };
+    
+    return JSON.stringify(vsCodeConfig, null, 2);
+}
+
+function generateChatGPTConfig(config) {
+    if (!config || !config.AVATAX_ACCOUNT_ID) return '';
+    
+    const chatGPTConfig = {
+        "mcp_servers": {
+            "avatax": {
+                "command": "node",
+                "args": [`"${getApplicationPath()}/resources/app.asar/dist/index.js"`],
+                "cwd": getApplicationPath(),
+                "env": {
+                    "AVATAX_ACCOUNT_ID": config.AVATAX_ACCOUNT_ID,
+                    "AVATAX_LICENSE_KEY": config.AVATAX_LICENSE_KEY,
+                    "AVATAX_COMPANY_CODE": config.AVATAX_COMPANY_CODE || "DEFAULT",
+                    "AVATAX_ENVIRONMENT": config.AVATAX_ENVIRONMENT || "sandbox"
+                }
+            }
+        }
+    };
+    
+    return JSON.stringify(chatGPTConfig, null, 2);
+}
+
+function updateDocumentationTabs() {
+    const config = currentConfig;
+    const hasConfig = config && config.AVATAX_ACCOUNT_ID;
+    
+    // Update VS Code tab with dynamic configuration
+    const vsCodeConfigElement = document.querySelector('#vscode-setup pre code');
+    const vsCodeNotice = document.getElementById('vscode-config-notice');
+    if (vsCodeConfigElement) {
+        if (hasConfig) {
+            vsCodeConfigElement.textContent = generateVSCodeConfig(config);
+            if (vsCodeNotice) vsCodeNotice.style.display = 'none';
+        } else {
+            if (vsCodeNotice) vsCodeNotice.style.display = 'block';
+        }
+    }
+    
+    // Update ChatGPT tab with dynamic configuration
+    const chatGPTConfigElement = document.querySelector('#chatgpt-setup pre code');
+    const chatGPTNotice = document.getElementById('chatgpt-config-notice');
+    if (chatGPTConfigElement) {
+        if (hasConfig) {
+            chatGPTConfigElement.textContent = generateChatGPTConfig(config);
+            if (chatGPTNotice) chatGPTNotice.style.display = 'none';
+        } else {
+            if (chatGPTNotice) chatGPTNotice.style.display = 'block';
+        }
+    }
+    
+    // Add dynamic status indicators
+    updateTabStatusIndicators(config);
+}
+
+function updateTabStatusIndicators(config) {
+    const hasConfig = config && config.AVATAX_ACCOUNT_ID;
+    
+    // Update tab labels with status
+    const vsCodeTab = document.querySelector('button[onclick="showSetupTab(\'vscode\')"]');
+    const chatGPTTab = document.querySelector('button[onclick="showSetupTab(\'chatgpt\')"]');
+    
+    if (vsCodeTab) {
+        vsCodeTab.innerHTML = hasConfig ? 'VS Code ✅' : 'VS Code';
+    }
+    
+    if (chatGPTTab) {
+        chatGPTTab.innerHTML = hasConfig ? 'ChatGPT ✅' : 'ChatGPT';
+    }
+}
+
+function getApplicationPath() {
+    // This will be replaced with actual application path detection
+    if (typeof process !== 'undefined' && process.execPath) {
+        return process.execPath.replace('AvaTax MCP Server.exe', '');
+    }
+    return 'path/to/avatax-mcp-server';
+}
+
+// Initialize documentation tabs on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize documentation with Claude tab active
+    showSetupTab('claude');
+    // Update documentation tabs with current config
+    updateDocumentationTabs();
+    
+    // Load saved theme
+    loadTheme();
+});

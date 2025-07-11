@@ -36,12 +36,3 @@ export function createAvaTaxConfig(): AvaTaxConfig {
         timeout: parseInt(process.env.AVATAX_TIMEOUT || '30000')
     };
 }
-
-// Legacy export for backward compatibility
-export const avataxConfig = {
-    apiKey: process.env.AVATAX_API_KEY || '',
-    endpoint: process.env.AVATAX_ENDPOINT || 'https://api.avatax.com',
-    accountId: process.env.AVATAX_ACCOUNT_ID || '',
-    companyCode: process.env.AVATAX_COMPANY_CODE || '',
-    environment: process.env.AVATAX_ENVIRONMENT || 'production',
-};
