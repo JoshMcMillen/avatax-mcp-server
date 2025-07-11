@@ -1,27 +1,36 @@
 # AvaTax MCP Server
 
-A Model Context Protocol (MCP) server that provides AvaTax API integration for tax calculation, address validation, and transaction management. This server can be used with Claude Desktop, VS Code Copilot, or any MCP-compatible client.
+A Model Context Protocol (MCP) server that provides AvaTax API integration for tax calculation, address validation, and transaction management. This server connects Claude Desktop to the AvaTax API for seamless tax calculations in your conversations.
 
-## 🚀 Quick Start with gitmcp.io
+## 🎯 Easy Installation
 
-The easiest way to use this MCP server is through [gitmcp.io](https://gitmcp.io/), which instantly creates a remote MCP server from this GitHub repository.
+Download the latest installer from [GitHub Releases](https://github.com/JoshMcMillen/avatax-mcp-server/releases) and run the setup wizard. The installer includes a modern desktop application for easy configuration and management.
 
-1. **Go to [gitmcp.io](https://gitmcp.io/)**
-2. **Enter this repository URL**: `https://github.com/yourusername/avatax-mcp-server`
-3. **Set your environment variables**:
-   - `AVATAX_ACCOUNT_ID`: Your AvaTax account ID
-   - `AVATAX_LICENSE_KEY`: Your AvaTax license key
-   - `AVATAX_ENVIRONMENT`: Set to `sandbox` for testing or `production` for live transactions
-   - `AVATAX_COMPANY_CODE`: Your AvaTax company code (required for transactions)
-4. **Copy the generated MCP server URL** and add it to your Claude Desktop configuration
+## 🖥️ Desktop Application Features
+
+- **Modern Tabbed Interface**: Welcome screen, configuration, server control, and documentation
+- **Easy Configuration**: Visual forms for AvaTax credentials with connection testing
+- **Server Management**: Start/stop the MCP server with real-time status
+- **Integrated Documentation**: Complete setup guide and Claude Desktop configuration
+- **Professional Installation**: Windows installer with upgrade detection and clean uninstall
+
+## 🚀 Quick Setup
+
+1. **Download** the installer from [Releases](https://github.com/JoshMcMillen/avatax-mcp-server/releases)
+2. **Run** the installer and launch the application
+3. **Configure** your AvaTax credentials in the Configuration tab
+4. **Test** your connection to ensure everything works
+5. **Start** the MCP server from the Server Control tab
+6. **Add** to Claude Desktop using the provided configuration
 
 ## Features
 
-- **Tax Calculation**: Calculate sales tax, VAT, and other transaction taxes
-- **Address Validation**: Validate and normalize addresses for accurate tax calculations
-- **Transaction Management**: Create committed transactions in AvaTax
+- **Tax Calculation**: Calculate sales tax, VAT, and other transaction taxes with line-item detail
+- **Address Validation**: Validate and normalize addresses for accurate tax calculations  
+- **Transaction Management**: Create committed transactions directly in AvaTax
 - **Multi-Environment Support**: Switch between sandbox and production environments
 - **Comprehensive Error Handling**: Detailed error messages for troubleshooting
+- **Secure Local Storage**: Credentials stored safely on your computer
 
 ## Available Tools
 
@@ -52,93 +61,42 @@ Create a committed transaction in AvaTax.
 - Same as `calculate_tax` plus:
 - `commit`: Whether to commit the transaction (default: true)
 
-## Environment Variables
+## Configuration
 
-When using gitmcp.io, set these environment variables:
+The desktop application provides an intuitive interface to configure your AvaTax credentials:
 
-> **Legend:** ✅ = Required, ❌ = Optional (uses default if not set; see below)
->
-> **Defaults:**
-> - `AVATAX_ENVIRONMENT`: Defaults to `sandbox`
-> - `AVATAX_APP_NAME`: Defaults to `AvaTax-MCP-Server`
-> - `AVATAX_TIMEOUT`: Defaults to `30000` (milliseconds)
-
-| Variable | Required | Description | Example |
-|----------|----------|-------------|---------|
-| `AVATAX_ACCOUNT_ID` | ✅ | Your AvaTax account ID | `1234567890` |
-| `AVATAX_LICENSE_KEY` | ✅ | Your AvaTax license key | `1A2B3C4D5E6F7G8H` |
-| `AVATAX_COMPANY_CODE` | ✅ | Your AvaTax company code | `DEFAULT` |
-| `AVATAX_ENVIRONMENT` | ❌ | Environment (`sandbox` or `production`). **Default:** `sandbox` | `sandbox` |
-| `AVATAX_APP_NAME` | ❌ | Application name. **Default:** `AvaTax-MCP-Server` | `AvaTax-MCP-Server` |
-| `AVATAX_TIMEOUT` | ❌ | API timeout in milliseconds. **Default:** `30000` | `30000` |
+| Setting | Required | Description | Example |
+|---------|----------|-------------|---------|
+| **Account ID** | ✅ | Your AvaTax account ID | `1234567890` |
+| **License Key** | ✅ | Your AvaTax license key | `1A2B3C4D5E6F7G8H` |
+| **Company Code** | ✅ | Your AvaTax company code | `DEFAULT` |
+| **Environment** | ✅ | Environment (`sandbox` or `production`) | `sandbox` |
+| **Application Name** | ❌ | Application identifier | `AvaTax-MCP-Server` |
+| **API Timeout** | ❌ | Timeout in milliseconds | `30000` |
 
 ## Getting AvaTax Credentials
 
 1. **Sign up** for an AvaTax account at [avalara.com](https://www.avalara.com/)
-2. **Get sandbox credentials** from the AvaTax Developer Portal
-3. **Find your company code** in the AvaTax portal under Companies > Company Settings
-4. **For production**: Contact Avalara sales for a production account
+2. **Access the AvaTax portal** and navigate to Settings > License Keys
+3. **Copy your Account ID and License Key**
+4. **Find your Company Code** under Companies > Company Settings
+5. **Start with sandbox** environment for testing
 
-> **Note**: The company code is essential for transactions. It identifies which company entity the transaction belongs to in your AvaTax account.
-
-## Building for gitmcp.io
-
-This repository includes built files in the `dist/` directory for gitmcp.io compatibility. If you make changes to the source code:
-
-```bash
-npm install
-npm run build
-git add dist/
-git commit -m "Update build files"
-git push
-```
-
-The build files are included in the repository so gitmcp.io can immediately use the server without needing to compile TypeScript.
-
-## Local Development
-
-If you want to run this server locally:
-
-## Local Development
-
-If you want to run this server locally:
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/yourusername/avatax-mcp-server.git
-   cd avatax-mcp-server
-   ```
-
-2. **Install dependencies**:
-   ```bash
-   npm install
-   ```
-
-3. **Set up environment variables**:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your AvaTax credentials
-   ```
-
-4. **Build and start**:
-   ```bash
-   npm run build
-   npm start
-   ```
+> **Note**: The company code identifies which company entity transactions belong to in your AvaTax account.
 
 ## Claude Desktop Configuration
 
-To use this MCP server with Claude Desktop, add it to your `claude_desktop_config.json`:
+The application provides the exact configuration needed for Claude Desktop. Add this to your `claude_desktop_config.json` file:
 
 ```json
 {
   "mcpServers": {
     "avatax": {
       "command": "node",
-      "args": ["/path/to/avatax-mcp-server/dist/index.js"],
+      "args": ["C:\\Users\\YourUsername\\AppData\\Local\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js"],
       "env": {
         "AVATAX_ACCOUNT_ID": "your_account_id",
-        "AVATAX_LICENSE_KEY": "your_license_key",
+        "AVATAX_LICENSE_KEY": "your_license_key", 
         "AVATAX_COMPANY_CODE": "your_company_code",
         "AVATAX_ENVIRONMENT": "sandbox"
       }
@@ -147,19 +105,94 @@ To use this MCP server with Claude Desktop, add it to your `claude_desktop_confi
 }
 ```
 
+### Finding claude_desktop_config.json
+
+The configuration file is located at:
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Linux**: `~/.config/Claude/claude_desktop_config.json`
+
 ## Example Usage
 
-Once connected, you can ask Claude to:
+Once connected to Claude Desktop, you can ask Claude to:
 
 - "Calculate sales tax for a $100 item shipped from California to New York"
 - "Validate this address: 123 Main St, Seattle, WA 98101"
-- "Create a sales transaction for my latest order"
+- "Create a committed sales transaction for order #12345"
+- "What's the tax rate for Austin, Texas?"
+- "Help me calculate taxes for my online store order"
+
+## Development
+
+### Local Development
+
+If you want to modify or contribute to this project:
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/JoshMcMillen/avatax-mcp-server.git
+   cd avatax-mcp-server
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Build the TypeScript code**:
+   ```bash
+   npm run build
+   ```
+
+4. **Run the MCP server directly**:
+   ```bash
+   npm start
+   ```
+
+5. **Run the Electron app for development**:
+   ```bash
+   npm run electron:dev
+   ```
+
+### Building Releases
+
+This project includes automated release scripts:
+
+1. **From VS Code**: Use Tasks → "Build and Release"
+2. **From terminal**: `scripts\create-release.ps1 -Version "1.0.2" -ReleaseNotes "Your changes"`
+3. **Automated**: Builds, creates GitHub release, and uploads installer
+
+### Project Structure
+
+```
+avatax-mcp-server/
+├── src/                 # TypeScript source code
+├── electron/            # Electron desktop application
+├── scripts/             # Build and release scripts
+├── dist/                # Compiled JavaScript
+└── release/             # Built installers (ignored in git)
+```
 
 ## API Reference
 
 This server uses the official AvaTax REST API v2. For detailed API documentation, visit:
 - [AvaTax API Documentation](https://developer.avalara.com/api-reference/avatax/rest/v2/)
 - [AvaTax Developer Guide](https://developer.avalara.com/avatax/dev-guide/)
+
+## Troubleshooting
+
+### Common Issues
+
+- **"Cannot find module 'electron-store'"**: This is resolved in v1.0.1+
+- **Server won't start**: Check your AvaTax credentials in the Configuration tab
+- **Connection timeout**: Verify your internet connection and AvaTax environment setting
+- **Invalid credentials**: Use the "Test Connection" button to verify your AvaTax credentials
+
+### Support Resources
+
+- **AvaTax API Issues**: Contact [Avalara Support](https://community.avalara.com/)
+- **Application Issues**: Open an issue on [GitHub](https://github.com/JoshMcMillen/avatax-mcp-server/issues)
+- **Documentation**: Check the [AvaTax Developer Portal](https://developer.avalara.com/)
 
 ## Contributing
 
@@ -170,12 +203,6 @@ Contributions are welcome! Please:
 3. Make your changes
 4. Add tests if applicable
 5. Submit a pull request
-
-## Support
-
-- **AvaTax API Issues**: Contact [Avalara Support](https://community.avalara.com/)
-- **MCP Server Issues**: Open an issue on this repository
-- **Documentation**: Check the [AvaTax Developer Portal](https://developer.avalara.com/)
 
 ## License
 

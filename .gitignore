@@ -3,8 +3,7 @@ node_modules/
 .env.local
 *.log
 .DS_Store
-# Build directory commented out for gitmcp.io compatibility
-# Remove the comment below if running locally and don't want to commit build files
+# Build directory included for distribution
 # dist/
 
 # IDE files
