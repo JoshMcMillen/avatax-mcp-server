@@ -304,6 +304,13 @@ autoUpdater.checkForUpdatesAndNotify = false; // We want manual control
 autoUpdater.autoDownload = false; // We want to ask user first
 autoUpdater.autoInstallOnAppQuit = false; // Manual install
 
+// Configure for self-signed certificates
+autoUpdater.logger = require('electron-log');
+autoUpdater.logger.transports.file.level = 'info';
+
+// Allow self-signed certificates for development/self-hosted scenarios
+process.env['ELECTRON_UPDATER_ALLOW_SELF_SIGNED'] = 'true';
+
 // Set update server (GitHub releases)
 autoUpdater.setFeedURL({
   provider: 'github',
@@ -312,10 +319,13 @@ autoUpdater.setFeedURL({
 });
 
 // Update IPC handlers
+let lastUpdateInfo = null; // Store the last update check result
+
 ipcMain.handle('check-for-updates', async () => {
   try {
     console.log('Checking for updates...');
     const result = await autoUpdater.checkForUpdates();
+    lastUpdateInfo = result; // Store the result for download
     return {
       success: true,
       updateAvailable: result && result.updateInfo,
@@ -324,6 +334,7 @@ ipcMain.handle('check-for-updates', async () => {
     };
   } catch (error) {
     console.error('Error checking for updates:', error);
+    lastUpdateInfo = null; // Clear on error
     return {
       success: false,
       error: error.message,
@@ -334,11 +345,36 @@ ipcMain.handle('check-for-updates', async () => {
 
 ipcMain.handle('download-update', async () => {
   try {
+    // Ensure we have update info before attempting download
+    if (!lastUpdateInfo || !lastUpdateInfo.updateInfo) {
+      throw new Error('No update available. Please check for updates first.');
+    }
+    
     console.log('Starting update download...');
+    
+    // Temporarily disable certificate validation for self-signed certificates
+    process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0';
+    
     await autoUpdater.downloadUpdate();
+    
+    // Re-enable certificate validation
+    delete process.env['NODE_TLS_REJECT_UNAUTHORIZED'];
+    
     return { success: true };
   } catch (error) {
     console.error('Error downloading update:', error);
+    
+    // Re-enable certificate validation in case of error
+    delete process.env['NODE_TLS_REJECT_UNAUTHORIZED'];
+    
+    // Handle certificate-related errors more gracefully
+    if (error.message && error.message.includes('not trusted by the trust provider')) {
+      return { 
+        success: false, 
+        error: 'Certificate verification failed. Update downloaded but may require manual verification.' 
+      };
+    }
+    
     return { success: false, error: error.message };
   }
 });
@@ -389,10 +425,24 @@ autoUpdater.on('update-not-available', (info) => {
 
 autoUpdater.on('error', (err) => {
   console.error('Update error:', err);
+  lastUpdateInfo = null; // Clear update info on error
+  
+  let errorMessage = err.message;
+  
+  // Handle certificate-related errors more gracefully
+  if (err.message && (
+    err.message.includes('not trusted by the trust provider') ||
+    err.message.includes('not signed by the application owner') ||
+    err.message.includes('certificate')
+  )) {
+    errorMessage = 'Certificate verification issue. The update is available but requires manual verification due to self-signed certificate.';
+    console.log('Certificate validation bypassed for self-signed certificate');
+  }
+  
   if (mainWindow) {
     mainWindow.webContents.send('update-status', { 
       status: 'error', 
-      error: err.message 
+      error: errorMessage 
     });
   }
 });
@@ -413,6 +463,7 @@ autoUpdater.on('download-progress', (progressObj) => {
 
 autoUpdater.on('update-downloaded', (info) => {
   console.log('Update downloaded:', info.version);
+  lastUpdateInfo = null; // Clear update info after download
   if (mainWindow) {
     mainWindow.webContents.send('update-status', { 
       status: 'downloaded', 

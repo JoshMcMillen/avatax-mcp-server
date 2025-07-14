@@ -209,13 +209,18 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host ""
 Write-Host "Build completed successfully!" -ForegroundColor Green
 
-# Check if release files exist
-$installerPath = "release\AvaTax MCP Server Setup $newVersion.exe"
-if (-not (Test-Path $installerPath)) {
-    Write-Host "Warning: Installer file not found at expected location: $installerPath" -ForegroundColor Yellow
-    Write-Host "Checking release directory..." -ForegroundColor Yellow
+# Check if release files exist - use dynamic file detection
+Write-Host "Checking for release files..." -ForegroundColor Yellow
+$installerFiles = Get-ChildItem "release\*Setup*$newVersion*.exe" -ErrorAction SilentlyContinue
+if ($installerFiles.Count -eq 0) {
+    Write-Host "Warning: No installer files found for version $newVersion in release directory" -ForegroundColor Yellow
+    Write-Host "Checking all .exe files in release directory..." -ForegroundColor Yellow
     Get-ChildItem "release\*.exe" | ForEach-Object { Write-Host "Found: $($_.Name)" -ForegroundColor Cyan }
     Write-Host ""
+    $installerPath = ""
+} else {
+    $installerPath = $installerFiles[0].FullName
+    Write-Host "Found installer: $($installerFiles[0].Name)" -ForegroundColor Green
 }
 
 # Ask if user wants to create GitHub release
@@ -227,11 +232,43 @@ if ($createRelease -eq "y" -or $createRelease -eq "Y") {
     
     Write-Host "Creating GitHub release v$newVersion..." -ForegroundColor Green
     
-    # Create GitHub release and upload installer
+    # Dynamically find the installer and related files
+    $installerFile = Get-ChildItem "release\*Setup*$newVersion*.exe" | Select-Object -First 1
+    $blockmapFile = Get-ChildItem "release\*Setup*$newVersion*.exe.blockmap" | Select-Object -First 1
+    $latestYmlPath = "release\latest.yml"
+    
+    # Check if all required files exist
+    $filesToUpload = @()
+    
+    if ($installerFile) {
+        $filesToUpload += $installerFile.FullName
+        Write-Host "Found installer file: $($installerFile.Name)" -ForegroundColor Cyan
+    } else {
+        Write-Host "Error: No installer file found for version $newVersion" -ForegroundColor Red
+        Write-Host "Cannot create release without installer file." -ForegroundColor Red
+        exit 1
+    }
+    
+    if ($blockmapFile) {
+        $filesToUpload += $blockmapFile.FullName
+        Write-Host "Found blockmap file: $($blockmapFile.Name)" -ForegroundColor Cyan
+    } else {
+        Write-Host "Warning: Blockmap file not found for version $newVersion" -ForegroundColor Yellow
+    }
+    
+    if (Test-Path $latestYmlPath) {
+        $filesToUpload += $latestYmlPath
+        Write-Host "Found latest.yml file: $latestYmlPath" -ForegroundColor Cyan
+    } else {
+        Write-Host "Warning: latest.yml file not found: $latestYmlPath" -ForegroundColor Yellow
+    }
+    
+    Write-Host "Uploading files: $($filesToUpload -join ', ')" -ForegroundColor Cyan
+    
     gh release create "v$newVersion" `
         --title "AvaTax MCP Server v$newVersion" `
         --notes "$ReleaseNotes" `
-        "$installerPath"
+        $filesToUpload
     
     if ($LASTEXITCODE -eq 0) {
         Write-Host ""
