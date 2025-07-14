@@ -125,10 +125,6 @@ Function .onInstSuccess
   ; Write current version for future upgrades
   WriteRegStr HKCU "Software\AvaTax MCP Server" "Version" "${VERSION}"
   
-  ; Show completion message
-  ${If} $IsUpgrade == "true"
-    MessageBox MB_OK|MB_ICONINFORMATION "AvaTax MCP Server has been successfully upgraded!$\n$\nYour previous configuration has been preserved.$\n$\nThe application will now launch automatically."
-  ${Else}
-    MessageBox MB_OK|MB_ICONINFORMATION "AvaTax MCP Server has been successfully installed!$\n$\nThe application will now launch automatically to help you configure your AvaTax credentials."
-  ${EndIf}
+  ; Don't show blocking message box - let the installer complete naturally
+  ; The application will handle showing appropriate messages when it launches
 FunctionEnd
