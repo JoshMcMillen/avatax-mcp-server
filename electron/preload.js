@@ -13,6 +13,12 @@ contextBridge.exposeInMainWorld('mcp', {
   clearConfig: () => ipcRenderer.invoke('clear-config'),
   testConnection: (config) => ipcRenderer.invoke('test-connection', config),
   
+  // Update management
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  downloadUpdate: () => ipcRenderer.invoke('download-update'),
+  installUpdate: () => ipcRenderer.invoke('install-update'),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  
   // Install state management
   getInstallState: () => ipcRenderer.invoke('get-install-state'),
   
@@ -41,5 +47,10 @@ contextBridge.exposeInMainWorld('mcp', {
     const subscription = (_event, state) => callback(state);
     ipcRenderer.on('install-state', subscription);
     return () => ipcRenderer.removeListener('install-state', subscription);
+  },
+  onUpdateStatus: (callback) => {
+    const subscription = (_event, status) => callback(status);
+    ipcRenderer.on('update-status', subscription);
+    return () => ipcRenderer.removeListener('update-status', subscription);
   }
 });

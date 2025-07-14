@@ -607,4 +607,223 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Load saved theme
     loadTheme();
+    
+    // Initialize update functionality
+    initializeUpdateSection();
 });
+
+// Update functionality
+let updateCheckInProgress = false;
+let downloadInProgress = false;
+
+async function initializeUpdateSection() {
+    try {
+        const currentVersion = await window.mcp.getAppVersion();
+        document.getElementById('currentVersion').textContent = `v${currentVersion}`;
+        
+        // Listen for update status events
+        window.mcp.onUpdateStatus((status) => {
+            handleUpdateStatus(status);
+        });
+    } catch (error) {
+        console.error('Error initializing update section:', error);
+        document.getElementById('currentVersion').textContent = 'Unknown';
+    }
+}
+
+async function checkForUpdates() {
+    if (updateCheckInProgress) return;
+    
+    updateCheckInProgress = true;
+    const checkBtn = document.getElementById('checkUpdateBtn');
+    const downloadBtn = document.getElementById('downloadUpdateBtn');
+    const installBtn = document.getElementById('installUpdateBtn');
+    
+    // Reset buttons
+    downloadBtn.classList.add('hidden');
+    installBtn.classList.add('hidden');
+    
+    // Update button state
+    checkBtn.disabled = true;
+    checkBtn.innerHTML = '🔄 Checking...';
+    
+    showUpdateStatus('Checking for updates...', 'checking');
+    
+    try {
+        const result = await window.mcp.checkForUpdates();
+        
+        if (result.success) {
+            if (result.updateAvailable) {
+                showUpdateStatus(
+                    `New version available: v${result.latestVersion}`, 
+                    'available'
+                );
+                downloadBtn.classList.remove('hidden');
+            } else {
+                showUpdateStatus(
+                    `You have the latest version (v${result.currentVersion})`, 
+                    'not-available'
+                );
+            }
+        } else {
+            showUpdateStatus(
+                `Error checking for updates: ${result.error}`, 
+                'error'
+            );
+        }
+    } catch (error) {
+        console.error('Error checking for updates:', error);
+        showUpdateStatus(`Error: ${error.message}`, 'error');
+    } finally {
+        updateCheckInProgress = false;
+        checkBtn.disabled = false;
+        checkBtn.innerHTML = '🔍 Check for Updates';
+    }
+}
+
+async function downloadUpdate() {
+    if (downloadInProgress) return;
+    
+    downloadInProgress = true;
+    const downloadBtn = document.getElementById('downloadUpdateBtn');
+    const installBtn = document.getElementById('installUpdateBtn');
+    
+    downloadBtn.disabled = true;
+    downloadBtn.innerHTML = '⬇️ Downloading...';
+    
+    showUpdateStatus('Starting download...', 'downloading');
+    showUpdateProgress(true);
+    
+    try {
+        const result = await window.mcp.downloadUpdate();
+        
+        if (result.success) {
+            showUpdateStatus('Update downloaded successfully!', 'downloaded');
+            hideUpdateProgress();
+            downloadBtn.classList.add('hidden');
+            installBtn.classList.remove('hidden');
+        } else {
+            showUpdateStatus(`Download failed: ${result.error}`, 'error');
+            hideUpdateProgress();
+        }
+    } catch (error) {
+        console.error('Error downloading update:', error);
+        showUpdateStatus(`Download error: ${error.message}`, 'error');
+        hideUpdateProgress();
+    } finally {
+        downloadInProgress = false;
+        downloadBtn.disabled = false;
+        downloadBtn.innerHTML = '⬇️ Download Update';
+    }
+}
+
+async function installUpdate() {
+    const installBtn = document.getElementById('installUpdateBtn');
+    
+    if (confirm('This will close the application and install the update. Do you want to continue?')) {
+        installBtn.disabled = true;
+        installBtn.innerHTML = '🚀 Installing...';
+        
+        showUpdateStatus('Installing update and restarting...', 'downloading');
+        
+        try {
+            await window.mcp.installUpdate();
+        } catch (error) {
+            console.error('Error installing update:', error);
+            showUpdateStatus(`Installation error: ${error.message}`, 'error');
+            installBtn.disabled = false;
+            installBtn.innerHTML = '🚀 Install & Restart';
+        }
+    }
+}
+
+function showUpdateStatus(message, type) {
+    const statusDiv = document.getElementById('updateStatus');
+    statusDiv.textContent = message;
+    statusDiv.className = `update-status show ${type}`;
+}
+
+function hideUpdateStatus() {
+    const statusDiv = document.getElementById('updateStatus');
+    statusDiv.classList.remove('show');
+}
+
+function showUpdateProgress(show = true) {
+    const progressDiv = document.getElementById('updateProgress');
+    if (show) {
+        progressDiv.classList.remove('hidden');
+    } else {
+        progressDiv.classList.add('hidden');
+    }
+}
+
+function hideUpdateProgress() {
+    showUpdateProgress(false);
+    updateProgressBar(0);
+}
+
+function updateProgressBar(percent, transferred = 0, total = 0, bytesPerSecond = 0) {
+    const progressFill = document.getElementById('progressFill');
+    const progressText = document.getElementById('progressText');
+    
+    progressFill.style.width = `${percent}%`;
+    
+    if (transferred && total) {
+        const transferredMB = (transferred / 1024 / 1024).toFixed(1);
+        const totalMB = (total / 1024 / 1024).toFixed(1);
+        const speedKB = (bytesPerSecond / 1024).toFixed(0);
+        
+        progressText.textContent = `${percent.toFixed(1)}% (${transferredMB}/${totalMB} MB) - ${speedKB} KB/s`;
+    } else {
+        progressText.textContent = `${percent.toFixed(1)}%`;
+    }
+}
+
+function handleUpdateStatus(status) {
+    console.log('Update status:', status);
+    
+    switch (status.status) {
+        case 'checking':
+            showUpdateStatus('Checking for updates...', 'checking');
+            break;
+            
+        case 'available':
+            showUpdateStatus(
+                `New version available: v${status.version}`, 
+                'available'
+            );
+            document.getElementById('downloadUpdateBtn').classList.remove('hidden');
+            break;
+            
+        case 'not-available':
+            showUpdateStatus(
+                `You have the latest version (v${status.version})`, 
+                'not-available'
+            );
+            break;
+            
+        case 'downloading':
+            if (status.progress !== undefined) {
+                showUpdateStatus('Downloading update...', 'downloading');
+                updateProgressBar(
+                    status.progress,
+                    status.transferred,
+                    status.total,
+                    status.bytesPerSecond
+                );
+            }
+            break;
+            
+        case 'downloaded':
+            showUpdateStatus('Update downloaded successfully!', 'downloaded');
+            hideUpdateProgress();
+            document.getElementById('downloadUpdateBtn').classList.add('hidden');
+            document.getElementById('installUpdateBtn').classList.remove('hidden');
+            break;
+            
+        case 'error':
+            showUpdateStatus(`Error: ${status.error}`, 'error');
+            hideUpdateProgress();
+            break;
+    }
+}

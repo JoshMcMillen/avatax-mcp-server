@@ -1269,6 +1269,169 @@
             color: var(--text-secondary);
         }
         
+        /* Update Section Styles */
+        .update-section {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border: 2px solid var(--accent-primary);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            box-shadow: 0 8px 25px var(--shadow-light);
+        }
+        
+        .update-section h3 {
+            color: var(--accent-primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .update-info {
+            background: var(--accent-secondary);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .current-version {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+        }
+        
+        .current-version .label {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        
+        .current-version .version {
+            background: var(--accent-primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .update-controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .update-status {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .update-status.show {
+            display: block;
+        }
+        
+        .update-status.checking {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #1976d2;
+        }
+        
+        .update-status.available {
+            background: #f3e5f5;
+            color: #7b1fa2;
+            border-left: 4px solid #7b1fa2;
+        }
+        
+        .update-status.not-available {
+            background: #e8f5e8;
+            color: #388e3c;
+            border-left: 4px solid #388e3c;
+        }
+        
+        .update-status.downloading {
+            background: #fff3e0;
+            color: #f57c00;
+            border-left: 4px solid #f57c00;
+        }
+        
+        .update-status.downloaded {
+            background: #e8f5e8;
+            color: #388e3c;
+            border-left: 4px solid #388e3c;
+        }
+        
+        .update-status.error {
+            background: #ffebee;
+            color: #d32f2f;
+            border-left: 4px solid #d32f2f;
+        }
+        
+        .update-progress {
+            margin: 15px 0;
+        }
+        
+        .progress-bar {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, var(--accent-primary), #f57c00);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+        
+        .progress-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+        
+        /* Dark mode styles for update section */
+        [data-theme="dark"] .update-section {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border-color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .update-status.checking {
+            background: rgba(25, 118, 210, 0.2);
+            color: #64b5f6;
+        }
+        
+        [data-theme="dark"] .update-status.available {
+            background: rgba(123, 31, 162, 0.2);
+            color: #ce93d8;
+        }
+        
+        [data-theme="dark"] .update-status.not-available {
+            background: rgba(56, 142, 60, 0.2);
+            color: #81c784;
+        }
+        
+        [data-theme="dark"] .update-status.downloading {
+            background: rgba(245, 124, 0, 0.2);
+            color: #ffb74d;
+        }
+        
+        [data-theme="dark"] .update-status.downloaded {
+            background: rgba(56, 142, 60, 0.2);
+            color: #81c784;
+        }
+        
+        [data-theme="dark"] .update-status.error {
+            background: rgba(211, 47, 47, 0.2);
+            color: #e57373;
+        }
+        
         @media (max-width: 768px) {
             .tabs {
                 flex-direction: column;
@@ -1588,6 +1751,39 @@
                 </form>
                 
                 <div id="configStatus"></div>
+                
+                <!-- Application Update Section -->
+                <div class="update-section">
+                    <h3>🔄 Application Updates</h3>
+                    <p>Keep your AvaTax MCP Server up to date with the latest features and bug fixes.</p>
+                    
+                    <div class="update-info">
+                        <div class="current-version">
+                            <span class="label">Current Version:</span>
+                            <span id="currentVersion" class="version">Loading...</span>
+                        </div>
+                    </div>
+                    
+                    <div class="update-controls">
+                        <button type="button" class="btn btn-secondary" onclick="checkForUpdates()" id="checkUpdateBtn">
+                            🔍 Check for Updates
+                        </button>
+                        <button type="button" class="btn btn-primary hidden" onclick="downloadUpdate()" id="downloadUpdateBtn">
+                            ⬇️ Download Update
+                        </button>
+                        <button type="button" class="btn btn-success hidden" onclick="installUpdate()" id="installUpdateBtn">
+                            🚀 Install & Restart
+                        </button>
+                    </div>
+                    
+                    <div id="updateStatus" class="update-status"></div>
+                    <div id="updateProgress" class="update-progress hidden">
+                        <div class="progress-bar">
+                            <div id="progressFill" class="progress-fill"></div>
+                        </div>
+                        <div id="progressText" class="progress-text"></div>
+                    </div>
+                </div>
                 
                 <!-- Claude Desktop Configuration Section -->
                 <div id="claudeConfigSection" class="claude-config-section hidden">

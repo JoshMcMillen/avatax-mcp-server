@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const { spawn } = require('child_process');
 const Store = require('electron-store');
 const path = require('path');
@@ -298,7 +299,136 @@ ipcMain.handle('get-install-state', () => {
   return checkInstallState();
 });
 
+// Auto-updater configuration
+autoUpdater.checkForUpdatesAndNotify = false; // We want manual control
+autoUpdater.autoDownload = false; // We want to ask user first
+autoUpdater.autoInstallOnAppQuit = false; // Manual install
+
+// Set update server (GitHub releases)
+autoUpdater.setFeedURL({
+  provider: 'github',
+  owner: 'JoshMcMillen',
+  repo: 'avatax-mcp-server'
+});
+
+// Update IPC handlers
+ipcMain.handle('check-for-updates', async () => {
+  try {
+    console.log('Checking for updates...');
+    const result = await autoUpdater.checkForUpdates();
+    return {
+      success: true,
+      updateAvailable: result && result.updateInfo,
+      currentVersion: app.getVersion(),
+      latestVersion: result?.updateInfo?.version
+    };
+  } catch (error) {
+    console.error('Error checking for updates:', error);
+    return {
+      success: false,
+      error: error.message,
+      currentVersion: app.getVersion()
+    };
+  }
+});
+
+ipcMain.handle('download-update', async () => {
+  try {
+    console.log('Starting update download...');
+    await autoUpdater.downloadUpdate();
+    return { success: true };
+  } catch (error) {
+    console.error('Error downloading update:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('install-update', () => {
+  try {
+    console.log('Installing update...');
+    autoUpdater.quitAndInstall();
+    return { success: true };
+  } catch (error) {
+    console.error('Error installing update:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
+});
+
+// Auto-updater event handlers
+autoUpdater.on('checking-for-update', () => {
+  console.log('Checking for update...');
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { status: 'checking' });
+  }
+});
+
+autoUpdater.on('update-available', (info) => {
+  console.log('Update available:', info.version);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { 
+      status: 'available', 
+      version: info.version,
+      releaseNotes: info.releaseNotes 
+    });
+  }
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  console.log('Update not available:', info.version);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { 
+      status: 'not-available', 
+      version: info.version 
+    });
+  }
+});
+
+autoUpdater.on('error', (err) => {
+  console.error('Update error:', err);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { 
+      status: 'error', 
+      error: err.message 
+    });
+  }
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  const logMessage = `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}% (${progressObj.transferred}/${progressObj.total})`;
+  console.log(logMessage);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { 
+      status: 'downloading', 
+      progress: progressObj.percent,
+      transferred: progressObj.transferred,
+      total: progressObj.total,
+      bytesPerSecond: progressObj.bytesPerSecond
+    });
+  }
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('Update downloaded:', info.version);
+  if (mainWindow) {
+    mainWindow.webContents.send('update-status', { 
+      status: 'downloaded', 
+      version: info.version 
+    });
+  }
+});
+
 app.on('window-all-closed', () => {
   if (child) child.kill();
   app.quit();
+});
+
+// Auto-updater
+app.on('ready', () => {
+  if (process.env.NODE_ENV === 'production') {
+    autoUpdater.checkForUpdatesAndNotify();
+  }
 });
