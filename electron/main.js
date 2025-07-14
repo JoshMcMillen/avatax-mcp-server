@@ -299,6 +299,74 @@ ipcMain.handle('get-install-state', () => {
   return checkInstallState();
 });
 
+// Company fetching handler
+ipcMain.handle('get-companies', async (_e, config) => {
+  // Defensive: default config to empty object
+  config = config || {};
+  const maskedAccountId = config.AVATAX_ACCOUNT_ID ? '***' + config.AVATAX_ACCOUNT_ID.slice(-4) : 'missing';
+  console.log('Get companies called with config:', {
+    accountId: maskedAccountId,
+    environment: config.AVATAX_ENVIRONMENT ?? 'missing'
+  });
+
+  // Fail fast if required config is missing
+  if (!config.AVATAX_ACCOUNT_ID || !config.AVATAX_LICENSE_KEY) {
+    return { success: false, error: 'Account ID or license key not supplied' };
+  }
+
+  try {
+    const https = require('https');
+    const hostname = config.AVATAX_ENVIRONMENT === 'production' ? 'rest.avatax.com' : 'sandbox-rest.avatax.com';
+    const credentials = Buffer.from(`${config.AVATAX_ACCOUNT_ID}:${config.AVATAX_LICENSE_KEY}`).toString('base64');
+    return await new Promise((resolve) => {
+      const req = https.request({
+        hostname,
+        port: 443,
+        path: '/api/v2/companies',
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'Content-Type': 'application/json'
+        }
+      }, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => {
+          if (res.statusCode === 200) {
+            try {
+              const responseData = JSON.parse(data);
+              // Extract just the companies array with relevant fields
+              const companies = responseData.value ? responseData.value.map(company => ({
+                id: company.id,
+                companyCode: company.companyCode,
+                name: company.name,
+                isActive: company.isActive,
+                isDefault: company.isDefault
+              })) : [];
+              resolve({ success: true, companies: companies });
+            } catch (parseError) {
+              resolve({ success: false, error: `Failed to parse response: ${parseError.message}` });
+            }
+          } else {
+            resolve({ success: false, error: `HTTP ${res.statusCode}: ${data}` });
+          }
+        });
+      });
+      const timeout = setTimeout(() => {
+        req.destroy();
+        resolve({ success: false, error: 'Connection timeout (10 s)' });
+      }, 10000);
+      req.on('error', (err) => {
+        clearTimeout(timeout);
+        resolve({ success: false, error: err.message });
+      });
+      req.end();
+    });
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+});
+
 // Auto-updater configuration
 autoUpdater.checkForUpdatesAndNotify = false; // We want manual control
 autoUpdater.autoDownload = false; // We want to ask user first

@@ -714,7 +714,7 @@
         }
         
         .hidden {
-            display: none;
+            display: none !important;
         }
         
         .config-link {
@@ -1596,6 +1596,199 @@
                 padding: 10px;
             }
         }
+        
+        /* Input group for company code field */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .input-group input {
+            flex: 1;
+        }
+        
+        .btn-small {
+            padding: 8px 12px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 15px;
+            padding: 0;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(135deg, var(--accent-primary) 0%, #F7931E 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            font-weight: 700;
+        }
+        
+        .close {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            background: none;
+            padding: 0;
+            line-height: 1;
+        }
+        
+        .close:hover {
+            opacity: 0.7;
+        }
+        
+        .modal-body {
+            padding: 25px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            background: var(--bg-secondary);
+            border-radius: 0 0 15px 15px;
+        }
+        
+        .search-box {
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+        
+        .search-box input:focus {
+            border-color: var(--accent-primary);
+            outline: none;
+            background: var(--bg-card);
+        }
+        
+        .company-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-secondary);
+        }
+        
+        .company-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .company-item:last-child {
+            border-bottom: none;
+        }
+        
+        .company-item:hover {
+            background: var(--accent-secondary);
+            border-color: var(--accent-primary);
+        }
+        
+        .company-info {
+            flex: 1;
+        }
+        
+        .company-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .company-code {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+        
+        .company-badges {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .company-badge {
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .company-badge.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .company-badge.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .company-badge.default {
+            background: #cce5ff;
+            color: #004085;
+        }
+        
+        .no-companies {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
+        
+        .loading-companies {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
     </style>
 </head>
 <body>
@@ -1800,8 +1993,34 @@
                                 Company Code 
                                 <span class="optional">(optional)</span>
                             </label>
-                            <input type="text" id="companyCode" name="companyCode" placeholder="Leave blank for interactive selection">
+                            <div class="input-group">
+                                <input type="text" id="companyCode" name="companyCode" placeholder="Leave blank for interactive selection">
+                                <button type="button" class="btn btn-secondary btn-small" onclick="getCompanies()" id="getCompaniesBtn">
+                                    📋 Get Companies
+                                </button>
+                            </div>
                             <small class="form-help">Leave blank to be prompted for company selection when calculating taxes</small>
+                            
+                            <!-- Company Selection Modal -->
+                            <div id="companySelectionModal" class="modal hidden">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h3>Select Company</h3>
+                                        <span class="close" onclick="closeCompanyModal()">&times;</span>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="search-box">
+                                            <input type="text" id="companySearch" placeholder="Search companies..." onkeyup="filterCompanies()">
+                                        </div>
+                                        <div id="companyList" class="company-list">
+                                            <!-- Companies will be populated here -->
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" onclick="closeCompanyModal()">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="environment">Environment</label>
@@ -1904,6 +2123,13 @@
                             <li><strong>macOS:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
                             <li><strong>Linux:</strong> <code>~/.config/Claude/claude_desktop_config.json</code></li>
                         </ul>
+                        
+                        <div class="help-section">
+                            <h4>⚠️ Important Configuration Notes</h4>
+                            <p><strong>For Installed Version:</strong> The configuration above uses the Electron executable path with <code>ELECTRON_RUN_AS_NODE=1</code> environment variable. This is required for the packaged installer version.</p>
+                            <p><strong>For Development Version:</strong> If you're running from source code, you can use <code>"command": "node"</code> with the path to your local <code>dist/index.js</code> file instead.</p>
+                        </div>
+                        
                         <p><strong>Next steps:</strong></p>
                         <ol>
                             <li>Copy the configuration above</li>
@@ -2044,9 +2270,10 @@
                             <pre><code>{
   "mcpServers": {
     "avatax": {
-      "command": "node",
+      "command": "C:\\Users\\YourUser\\AppData\\Local\\Programs\\AvaTax MCP Server\\AvaTax MCP Server.exe",
       "args": ["C:\\Users\\YourUser\\AppData\\Local\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js"],
       "env": {
+        "ELECTRON_RUN_AS_NODE": "1",
         "AVATAX_ACCOUNT_ID": "your_actual_account_id",
         "AVATAX_LICENSE_KEY": "your_actual_license_key", 
         "AVATAX_COMPANY_CODE": "your_actual_company_code",
@@ -2061,9 +2288,10 @@
                             <h5>📝 If the file already has MCP servers:</h5>
                             <p>Add just the AvaTax section inside the existing "mcpServers" object:</p>
                             <pre><code>"avatax": {
-  "command": "node",
+  "command": "C:\\Users\\YourUser\\AppData\\Local\\Programs\\AvaTax MCP Server\\AvaTax MCP Server.exe",
   "args": ["C:\\Users\\YourUser\\AppData\\Local\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js"],
   "env": {
+    "ELECTRON_RUN_AS_NODE": "1",
     "AVATAX_ACCOUNT_ID": "your_actual_account_id",
     "AVATAX_LICENSE_KEY": "your_actual_license_key", 
     "AVATAX_COMPANY_CODE": "your_actual_company_code",
@@ -2141,9 +2369,10 @@
                             <pre><code>{
   "mcp.servers": {
     "avatax": {
-      "command": "node",
+      "command": "C:\\Users\\YourUser\\AppData\\Local\\Programs\\AvaTax MCP Server\\AvaTax MCP Server.exe",
       "args": ["C:\\Users\\YourUser\\AppData\\Local\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js"],
       "env": {
+        "ELECTRON_RUN_AS_NODE": "1",
         "AVATAX_ACCOUNT_ID": "your_account_id",
         "AVATAX_LICENSE_KEY": "your_license_key",
         "AVATAX_COMPANY_CODE": "your_company_code",
@@ -2303,9 +2532,10 @@
                             <pre><code>{
   "mcp_servers": {
     "avatax": {
-      "command": "node",
+      "command": "C:\\Users\\YourUser\\AppData\\Local\\Programs\\AvaTax MCP Server\\AvaTax MCP Server.exe",
       "args": ["C:\\Users\\YourUser\\AppData\\Local\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js"],
       "env": {
+        "ELECTRON_RUN_AS_NODE": "1",
         "AVATAX_ACCOUNT_ID": "your_account_id",
         "AVATAX_LICENSE_KEY": "your_license_key",
         "AVATAX_COMPANY_CODE": "your_company_code",

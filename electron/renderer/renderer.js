@@ -334,17 +334,22 @@ function generateClaudeConfig(config) {
         return;
     }
     
-    // Get the actual application path
-    const appPath = window.mcp.platform === 'win32' 
+    // Get the correct executable and script paths for packaged Electron app
+    const executablePath = window.mcp.platform === 'win32' 
+        ? `${window.mcp.homedir}\\AppData\\Local\\Programs\\AvaTax MCP Server\\AvaTax MCP Server.exe`
+        : `${window.mcp.homedir}/Applications/AvaTax MCP Server.app/Contents/MacOS/AvaTax MCP Server`;
+    
+    const scriptPath = window.mcp.platform === 'win32' 
         ? `${window.mcp.homedir}\\AppData\\Local\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js`
         : `${window.mcp.homedir}/Applications/AvaTax MCP Server.app/Contents/Resources/app.asar/dist/index.js`;
     
     const claudeConfig = {
         "mcpServers": {
             "avatax": {
-                "command": "node",
-                "args": [appPath],
+                "command": executablePath,
+                "args": [scriptPath],
                 "env": {
+                    "ELECTRON_RUN_AS_NODE": "1",
                     "AVATAX_ACCOUNT_ID": config.AVATAX_ACCOUNT_ID,
                     "AVATAX_LICENSE_KEY": config.AVATAX_LICENSE_KEY,
                     "AVATAX_COMPANY_CODE": config.AVATAX_COMPANY_CODE,
@@ -498,15 +503,155 @@ function toggleApiGroup(groupId) {
     }
 }
 
+// Company selection functionality
+let availableCompanies = [];
+
+function getCompanies() {
+    const config = {
+        AVATAX_ACCOUNT_ID: document.getElementById('accountId').value,
+        AVATAX_LICENSE_KEY: document.getElementById('licenseKey').value,
+        AVATAX_ENVIRONMENT: document.getElementById('environment').value
+    };
+    
+    if (!config.AVATAX_ACCOUNT_ID || !config.AVATAX_LICENSE_KEY) {
+        showStatus('Account ID and License Key are required to fetch companies', 'error');
+        return;
+    }
+    
+    const btn = document.getElementById('getCompaniesBtn');
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '⏳ Loading...';
+    
+    // Show modal with loading state
+    const modal = document.getElementById('companySelectionModal');
+    const companyList = document.getElementById('companyList');
+    companyList.innerHTML = '<div class="loading-companies">🔄 Loading companies...</div>';
+    modal.classList.remove('hidden');
+    
+    window.mcp.getCompanies(config).then(result => {
+        btn.disabled = false;
+        btn.textContent = originalText;
+        
+        if (result.success) {
+            availableCompanies = result.companies || [];
+            displayCompanies(availableCompanies);
+            
+            if (availableCompanies.length === 0) {
+                companyList.innerHTML = '<div class="no-companies">No companies found in this account.</div>';
+            }
+        } else {
+            companyList.innerHTML = `<div class="no-companies">❌ Failed to load companies: ${result.error}</div>`;
+        }
+    }).catch(error => {
+        btn.disabled = false;
+        btn.textContent = originalText;
+        companyList.innerHTML = `<div class="no-companies">❌ Error loading companies: ${error.message}</div>`;
+    });
+}
+
+function displayCompanies(companies) {
+    const companyList = document.getElementById('companyList');
+    
+    if (companies.length === 0) {
+        companyList.innerHTML = '<div class="no-companies">No companies match your search.</div>';
+        return;
+    }
+    
+    companyList.innerHTML = companies.map(company => {
+        const badges = [];
+        if (company.isActive) {
+            badges.push('<span class="company-badge active">Active</span>');
+        } else {
+            badges.push('<span class="company-badge inactive">Inactive</span>');
+        }
+        if (company.isDefault) {
+            badges.push('<span class="company-badge default">Default</span>');
+        }
+        
+        return `
+            <div class="company-item" onclick="selectCompany('${company.companyCode}', '${company.name}')">
+                <div class="company-info">
+                    <div class="company-name">${company.name || 'Unnamed Company'}</div>
+                    <div class="company-code">Code: ${company.companyCode}</div>
+                </div>
+                <div class="company-badges">
+                    ${badges.join('')}
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function selectCompany(companyCode, companyName) {
+    document.getElementById('companyCode').value = companyCode;
+    closeCompanyModal();
+    showStatus(`✅ Selected company: ${companyName} (${companyCode})`, 'success');
+}
+
+function closeCompanyModal() {
+    const modal = document.getElementById('companySelectionModal');
+    modal.classList.add('hidden');
+    
+    // Clear search
+    document.getElementById('companySearch').value = '';
+    
+    // Reset display to show all companies
+    if (availableCompanies.length > 0) {
+        displayCompanies(availableCompanies);
+    }
+}
+
+function filterCompanies() {
+    const searchTerm = document.getElementById('companySearch').value.toLowerCase();
+    
+    if (!searchTerm) {
+        displayCompanies(availableCompanies);
+        return;
+    }
+    
+    const filteredCompanies = availableCompanies.filter(company => {
+        return (company.name && company.name.toLowerCase().includes(searchTerm)) ||
+               (company.companyCode && company.companyCode.toLowerCase().includes(searchTerm));
+    });
+    
+    displayCompanies(filteredCompanies);
+}
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('companySelectionModal');
+    if (event.target === modal) {
+        closeCompanyModal();
+    }
+});
+
+// Handle Escape key to close modal
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        const modal = document.getElementById('companySelectionModal');
+        if (!modal.classList.contains('hidden')) {
+            closeCompanyModal();
+        }
+    }
+});
+
 // Dynamic documentation generation functions
 function generateVSCodeConfig(config) {
     if (!config || !config.AVATAX_ACCOUNT_ID) return '';
     
+    const executablePath = window.mcp.platform === 'win32' 
+        ? `"${getApplicationPath()}/AvaTax MCP Server.exe"`
+        : `"${getApplicationPath()}/AvaTax MCP Server"`;
+    
+    const scriptPath = `"${getApplicationPath()}/resources/app.asar/dist/index.js"`;
+    
     const vsCodeConfig = {
         "avatax": {
-            "command": "node",
-            "args": [`"${getApplicationPath()}/resources/app.asar/dist/index.js"`],
+            "command": executablePath,
+            "args": [scriptPath],
             "env": {
+                "ELECTRON_RUN_AS_NODE": "1",
                 "AVATAX_ACCOUNT_ID": config.AVATAX_ACCOUNT_ID,
                 "AVATAX_LICENSE_KEY": config.AVATAX_LICENSE_KEY,
                 "AVATAX_COMPANY_CODE": config.AVATAX_COMPANY_CODE || "DEFAULT",
@@ -523,13 +668,20 @@ function generateVSCodeConfig(config) {
 function generateChatGPTConfig(config) {
     if (!config || !config.AVATAX_ACCOUNT_ID) return '';
     
+    const executablePath = window.mcp.platform === 'win32' 
+        ? `"${getApplicationPath()}/AvaTax MCP Server.exe"`
+        : `"${getApplicationPath()}/AvaTax MCP Server"`;
+    
+    const scriptPath = `"${getApplicationPath()}/resources/app.asar/dist/index.js"`;
+    
     const chatGPTConfig = {
         "mcp_servers": {
             "avatax": {
-                "command": "node",
-                "args": [`"${getApplicationPath()}/resources/app.asar/dist/index.js"`],
+                "command": executablePath,
+                "args": [scriptPath],
                 "cwd": getApplicationPath(),
                 "env": {
+                    "ELECTRON_RUN_AS_NODE": "1",
                     "AVATAX_ACCOUNT_ID": config.AVATAX_ACCOUNT_ID,
                     "AVATAX_LICENSE_KEY": config.AVATAX_LICENSE_KEY,
                     "AVATAX_COMPANY_CODE": config.AVATAX_COMPANY_CODE || "DEFAULT",
