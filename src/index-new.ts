@@ -25,8 +25,9 @@ const server = new Server(
 
 // Initialize AvaTax client
 let avataxClient: AvaTaxClient;
+let config: any;
 try {
-  const config = createAvaTaxConfig();
+  config = createAvaTaxConfig();
   avataxClient = new AvaTaxClient(config);
 } catch (error) {
   console.error('Failed to initialize AvaTax client:', error);
@@ -43,7 +44,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
   const { name, arguments: args } = request.params;
   
   try {
-    return await handleToolCall(name, args, avataxClient);
+    return await handleToolCall(name, args, avataxClient, config);
   } catch (error) {
     return {
       content: [{

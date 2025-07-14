@@ -26,7 +26,7 @@ export const TOOL_DEFINITIONS = [
         },
         shipFrom: {
           type: 'object',
-          description: 'Ship from address',
+          description: 'Ship from address (optional if default origin address is configured in settings)',
           properties: {
             line1: { type: 'string' },
             city: { type: 'string' },
@@ -114,7 +114,7 @@ export const TOOL_DEFINITIONS = [
         },
         shipFrom: {
           type: 'object',
-          description: 'Ship from address',
+          description: 'Ship from address (optional if default origin address is configured in settings)',
           properties: {
             line1: { type: 'string' },
             city: { type: 'string' },

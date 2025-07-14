@@ -294,6 +294,121 @@ ipcMain.handle('test-connection', async (_e, config) => {
   }
 });
 
+// Address validation handler
+ipcMain.handle('validate-address', async (_e, addressData) => {
+  console.log('Address validation called');
+
+  // Get current config for credentials
+  const config = store.get('config', {});
+  
+  // Check if credentials are configured
+  if (!config.AVATAX_ACCOUNT_ID || !config.AVATAX_LICENSE_KEY) {
+    return { valid: false, errors: ['AvaTax credentials not configured'] };
+  }
+
+  // Validate required address fields
+  if (!addressData || !addressData.line1 || !addressData.city || !addressData.region || !addressData.postalCode) {
+    return { valid: false, errors: ['Required address fields missing: line1, city, region, postalCode'] };
+  }
+
+  try {
+    const https = require('https');
+    const hostname = config.AVATAX_ENVIRONMENT === 'production' ? 'rest.avatax.com' : 'sandbox-rest.avatax.com';
+    const credentials = Buffer.from(`${config.AVATAX_ACCOUNT_ID}:${config.AVATAX_LICENSE_KEY}`).toString('base64');
+    
+    // Prepare address validation request
+    const addressPayload = {
+      line1: addressData.line1,
+      line2: addressData.line2 || undefined,
+      line3: addressData.line3 || undefined,
+      city: addressData.city,
+      region: addressData.region,
+      postalCode: addressData.postalCode,
+      country: addressData.country || 'US'
+    };
+
+    const postData = JSON.stringify(addressPayload);
+
+    return await new Promise((resolve) => {
+      const req = https.request({
+        hostname,
+        port: 443,
+        path: '/api/v2/addresses/resolve',
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(postData)
+        }
+      }, (res) => {
+        let data = '';
+        res.on('data', (chunk) => { data += chunk; });
+        res.on('end', () => {
+          try {
+            const result = JSON.parse(data);
+            
+            if (res.statusCode === 200) {
+              // Check if address was successfully validated
+              if (result.validatedAddresses && result.validatedAddresses.length > 0) {
+                const validatedAddress = result.validatedAddresses[0];
+                resolve({
+                  valid: true,
+                  normalized: {
+                    line1: validatedAddress.line1,
+                    line2: validatedAddress.line2,
+                    line3: validatedAddress.line3,
+                    city: validatedAddress.city,
+                    region: validatedAddress.region,
+                    postalCode: validatedAddress.postalCode,
+                    country: validatedAddress.country
+                  },
+                  coordinates: validatedAddress.latitude && validatedAddress.longitude ? {
+                    latitude: validatedAddress.latitude,
+                    longitude: validatedAddress.longitude
+                  } : undefined,
+                  messages: result.messages || []
+                });
+              } else {
+                resolve({
+                  valid: false,
+                  messages: result.messages || ['Address could not be validated'],
+                  errors: result.errors || ['No validated addresses returned']
+                });
+              }
+            } else {
+              resolve({
+                valid: false,
+                errors: [`HTTP ${res.statusCode}: ${result.error || result.message || data}`],
+                messages: result.messages || []
+              });
+            }
+          } catch (parseError) {
+            resolve({
+              valid: false,
+              errors: [`Failed to parse response: ${parseError.message}`]
+            });
+          }
+        });
+      });
+
+      const timeout = setTimeout(() => {
+        req.destroy();
+        resolve({ valid: false, errors: ['Address validation timeout (15 seconds)'] });
+      }, 15000);
+
+      req.on('error', (err) => {
+        clearTimeout(timeout);
+        resolve({ valid: false, errors: [`Network error: ${err.message}`] });
+      });
+
+      req.write(postData);
+      req.end();
+    });
+  } catch (err) {
+    return { valid: false, errors: [`Validation error: ${err.message}`] };
+  }
+});
+
 // Install state handler
 ipcMain.handle('get-install-state', () => {
   return checkInstallState();

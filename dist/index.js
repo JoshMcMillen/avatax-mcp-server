@@ -30,8 +30,9 @@ const server = new index_js_1.Server({
 });
 // Initialize AvaTax client
 let avataxClient;
+let config;
 try {
-    const config = (0, config_js_1.createAvaTaxConfig)();
+    config = (0, config_js_1.createAvaTaxConfig)();
     avataxClient = new client_js_1.default(config);
 }
 catch (error) {
@@ -48,7 +49,7 @@ server.setRequestHandler(types_js_1.ListToolsRequestSchema, () => __awaiter(void
 server.setRequestHandler(types_js_1.CallToolRequestSchema, (request) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, arguments: args } = request.params;
     try {
-        return yield (0, handlers_js_1.handleToolCall)(name, args, avataxClient);
+        return yield (0, handlers_js_1.handleToolCall)(name, args, avataxClient, config);
     }
     catch (error) {
         return {

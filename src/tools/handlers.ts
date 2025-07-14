@@ -1,8 +1,14 @@
 import AvaTaxClient from '../avatax/client.js';
+import { AvaTaxConfig } from '../avatax/config.js';
 
-export async function handleToolCall(name: string, args: any, avataxClient: AvaTaxClient) {
+export async function handleToolCall(name: string, args: any, avataxClient: AvaTaxClient, config: AvaTaxConfig) {
   switch (name) {
     case 'calculate_tax': {
+      // Inject default origin address if shipFrom is not provided
+      if (!args.shipFrom && config.originAddress) {
+        args.shipFrom = config.originAddress;
+      }
+      
       const result = await avataxClient.calculateTax(args);
       return { 
         content: [{ 
@@ -23,6 +29,11 @@ export async function handleToolCall(name: string, args: any, avataxClient: AvaT
     }
     
     case 'create_transaction': {
+      // Inject default origin address if shipFrom is not provided
+      if (!args.shipFrom && config.originAddress) {
+        args.shipFrom = config.originAddress;
+      }
+      
       const result = await avataxClient.createTransaction(args);
       return { 
         content: [{ 

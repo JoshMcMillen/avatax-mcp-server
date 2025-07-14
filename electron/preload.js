@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld('mcp', {
   clearConfig: () => ipcRenderer.invoke('clear-config'),
   testConnection: (config) => ipcRenderer.invoke('test-connection', config),
   getCompanies: (config) => ipcRenderer.invoke('get-companies', config),
+  validateAddress: (addressData) => ipcRenderer.invoke('validate-address', addressData),
   
   // Update management
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),

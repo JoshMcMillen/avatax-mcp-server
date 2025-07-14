@@ -399,6 +399,94 @@
             border-color: #adb5bd;
         }
         
+        /* Origin Address Section Styling */
+        .origin-address-section {
+            background: linear-gradient(135deg, rgba(255,107,53,0.05) 0%, rgba(247,147,30,0.05) 100%);
+            border: 2px solid rgba(255,107,53,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .origin-address-section h3 {
+            color: var(--accent-primary);
+            margin-bottom: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .section-description {
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+        
+        .optional {
+            color: #777;
+            font-size: 0.85em;
+            font-weight: normal;
+        }
+        
+        .address-validation-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .address-validation-result.success {
+            background: linear-gradient(135deg, rgba(34,197,94,0.1) 0%, rgba(34,197,94,0.05) 100%);
+            border: 1px solid rgba(34,197,94,0.2);
+            color: #059669;
+        }
+        
+        .address-validation-result.error {
+            background: linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(239,68,68,0.05) 100%);
+            border: 1px solid rgba(239,68,68,0.2);
+            color: #dc2626;
+        }
+        
+        .address-validation-result.warning {
+            background: linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(245,158,11,0.05) 100%);
+            border: 1px solid rgba(245,158,11,0.2);
+            color: #d97706;
+        }
+        
+        .address-validation-result.hidden {
+            display: none;
+        }
+        
+        .normalized-address {
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 6px;
+            border-left: 4px solid var(--accent-primary);
+        }
+        
+        .normalized-address strong {
+            color: var(--accent-primary);
+        }
+        
+        [data-theme="dark"] .origin-address-section {
+            background: linear-gradient(135deg, rgba(255,107,53,0.08) 0%, rgba(247,147,30,0.08) 100%);
+            border-color: rgba(255,107,53,0.15);
+        }
+        
+        [data-theme="dark"] .section-description {
+            color: var(--text-muted);
+        }
+        
+        [data-theme="dark"] .optional {
+            color: #8b949e;
+        }
+        
+        [data-theme="dark"] .normalized-address {
+            background: rgba(255,255,255,0.08);
+        }
+        
         .btn-danger {
             background: #e74c3c;
             color: white;
@@ -2039,6 +2127,70 @@
                         <div class="form-group">
                             <label for="timeout">API Timeout (ms)</label>
                             <input type="number" id="timeout" name="timeout" placeholder="30000" value="30000" min="5000" max="120000">
+                        </div>
+                    </div>
+                    
+                    <!-- Origin Address Configuration Section -->
+                    <div class="origin-address-section">
+                        <h3>📍 Default Origin Address (Optional)</h3>
+                        <p class="section-description">Configure a default ship-from address for tax calculations. This is optional and can be overridden per transaction.</p>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="originLine1">Street Address</label>
+                                <input type="text" id="originLine1" name="originLine1" placeholder="123 Main Street">
+                            </div>
+                            <div class="form-group">
+                                <label for="originLine2">Address Line 2 <span class="optional">(optional)</span></label>
+                                <input type="text" id="originLine2" name="originLine2" placeholder="Suite 100">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="originCity">City</label>
+                                <input type="text" id="originCity" name="originCity" placeholder="Irvine">
+                            </div>
+                            <div class="form-group">
+                                <label for="originRegion">State/Region</label>
+                                <input type="text" id="originRegion" name="originRegion" placeholder="CA">
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="originPostalCode">Postal Code</label>
+                                <input type="text" id="originPostalCode" name="originPostalCode" placeholder="92614">
+                            </div>
+                            <div class="form-group">
+                                <label for="originCountry">Country</label>
+                                <select id="originCountry" name="originCountry">
+                                    <option value="US">United States</option>
+                                    <option value="CA">Canada</option>
+                                    <option value="MX">Mexico</option>
+                                    <option value="GB">United Kingdom</option>
+                                    <option value="FR">France</option>
+                                    <option value="DE">Germany</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="JP">Japan</option>
+                                    <option value="BR">Brazil</option>
+                                    <option value="IN">India</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <button type="button" class="btn btn-secondary" onclick="validateOriginAddress()" id="validateOriginBtn">
+                                    🔍 Validate Address
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="clearOriginAddress()" id="clearOriginBtn">
+                                    🗑️ Clear Address
+                                </button>
+                            </div>
+                            <div class="form-group">
+                                <div id="addressValidationResult" class="address-validation-result hidden"></div>
+                            </div>
                         </div>
                     </div>
                     

@@ -95,6 +95,16 @@ window.addEventListener('DOMContentLoaded', () => {
             input.addEventListener('change', updateClaudeConfigPreview);
         }
     });
+    
+    // Add real-time config generation for origin address fields
+    const originConfigInputs = ['originLine1', 'originLine2', 'originCity', 'originRegion', 'originPostalCode', 'originCountry'];
+    originConfigInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('input', updateClaudeConfigPreview);
+            input.addEventListener('change', updateClaudeConfigPreview);
+        }
+    });
 });
 
 function loadConfiguration() {
@@ -106,6 +116,14 @@ function loadConfiguration() {
         if (config.AVATAX_ENVIRONMENT) document.getElementById('environment').value = config.AVATAX_ENVIRONMENT;
         if (config.AVATAX_APP_NAME) document.getElementById('appName').value = config.AVATAX_APP_NAME;
         if (config.AVATAX_TIMEOUT) document.getElementById('timeout').value = config.AVATAX_TIMEOUT;
+        
+        // Load origin address fields
+        if (config.ORIGIN_LINE1) document.getElementById('originLine1').value = config.ORIGIN_LINE1;
+        if (config.ORIGIN_LINE2) document.getElementById('originLine2').value = config.ORIGIN_LINE2;
+        if (config.ORIGIN_CITY) document.getElementById('originCity').value = config.ORIGIN_CITY;
+        if (config.ORIGIN_REGION) document.getElementById('originRegion').value = config.ORIGIN_REGION;
+        if (config.ORIGIN_POSTAL_CODE) document.getElementById('originPostalCode').value = config.ORIGIN_POSTAL_CODE;
+        if (config.ORIGIN_COUNTRY) document.getElementById('originCountry').value = config.ORIGIN_COUNTRY;
         
         showStatus('Configuration loaded successfully', 'success');
         generateClaudeConfig(config);
@@ -123,7 +141,15 @@ function saveConfiguration() {
         AVATAX_COMPANY_CODE: document.getElementById('companyCode').value || '', // Allow empty company code
         AVATAX_ENVIRONMENT: document.getElementById('environment').value,
         AVATAX_APP_NAME: document.getElementById('appName').value || 'AvaTax-MCP-Server',
-        AVATAX_TIMEOUT: document.getElementById('timeout').value || '30000'
+        AVATAX_TIMEOUT: document.getElementById('timeout').value || '30000',
+        
+        // Origin address fields (optional)
+        ORIGIN_LINE1: document.getElementById('originLine1').value || '',
+        ORIGIN_LINE2: document.getElementById('originLine2').value || '',
+        ORIGIN_CITY: document.getElementById('originCity').value || '',
+        ORIGIN_REGION: document.getElementById('originRegion').value || '',
+        ORIGIN_POSTAL_CODE: document.getElementById('originPostalCode').value || '',
+        ORIGIN_COUNTRY: document.getElementById('originCountry').value || 'US'
     };
     
     currentConfig = config;
@@ -1022,4 +1048,108 @@ function stopPeriodicStatusCheck() {
         clearInterval(statusCheckInterval);
         statusCheckInterval = null;
     }
+}
+
+// Origin Address Management Functions
+function validateOriginAddress() {
+    const line1 = document.getElementById('originLine1').value.trim();
+    const city = document.getElementById('originCity').value.trim();
+    const region = document.getElementById('originRegion').value.trim();
+    const postalCode = document.getElementById('originPostalCode').value.trim();
+    const country = document.getElementById('originCountry').value || 'US';
+    
+    // Check if required fields are provided
+    if (!line1 || !city || !region || !postalCode) {
+        showAddressValidationResult('error', 'Please fill in the required address fields (Street Address, City, State/Region, and Postal Code) before validating.');
+        return;
+    }
+    
+    // Check if credentials are configured
+    if (!currentConfig.AVATAX_ACCOUNT_ID || !currentConfig.AVATAX_LICENSE_KEY) {
+        showAddressValidationResult('error', 'Please configure your AvaTax credentials first in order to validate addresses.');
+        return;
+    }
+    
+    const validateBtn = document.getElementById('validateOriginBtn');
+    const originalText = validateBtn.textContent;
+    validateBtn.textContent = '🔄 Validating...';
+    validateBtn.disabled = true;
+    
+    // Prepare address data
+    const addressData = {
+        line1: line1,
+        line2: document.getElementById('originLine2').value.trim() || undefined,
+        city: city,
+        region: region,
+        postalCode: postalCode,
+        country: country
+    };
+    
+    // Call the address validation API
+    window.mcp.validateAddress(addressData).then(result => {
+        validateBtn.textContent = originalText;
+        validateBtn.disabled = false;
+        
+        if (result && result.valid) {
+            let message = '✅ Address is valid!';
+            if (result.normalized) {
+                message += `<div class="normalized-address">
+                    <strong>Normalized Address:</strong><br>
+                    ${result.normalized.line1}${result.normalized.line2 ? '<br>' + result.normalized.line2 : ''}<br>
+                    ${result.normalized.city}, ${result.normalized.region} ${result.normalized.postalCode}<br>
+                    ${result.normalized.country}
+                </div>`;
+                
+                // Optionally update fields with normalized values
+                if (confirm('Would you like to update the form with the normalized address values?')) {
+                    document.getElementById('originLine1').value = result.normalized.line1 || line1;
+                    if (result.normalized.line2) document.getElementById('originLine2').value = result.normalized.line2;
+                    document.getElementById('originCity').value = result.normalized.city || city;
+                    document.getElementById('originRegion').value = result.normalized.region || region;
+                    document.getElementById('originPostalCode').value = result.normalized.postalCode || postalCode;
+                    document.getElementById('originCountry').value = result.normalized.country || country;
+                }
+            }
+            showAddressValidationResult('success', message);
+        } else {
+            let message = '❌ Address validation failed.';
+            if (result && result.messages && result.messages.length > 0) {
+                message += '<br><br><strong>Issues found:</strong><ul>';
+                result.messages.forEach(msg => {
+                    message += `<li>${msg.summary || msg.details || msg}</li>`;
+                });
+                message += '</ul>';
+            }
+            showAddressValidationResult('error', message);
+        }
+    }).catch(error => {
+        validateBtn.textContent = originalText;
+        validateBtn.disabled = false;
+        showAddressValidationResult('error', `❌ Validation failed: ${error.message || error}`);
+    });
+}
+
+function clearOriginAddress() {
+    if (confirm('Are you sure you want to clear all origin address fields?')) {
+        document.getElementById('originLine1').value = '';
+        document.getElementById('originLine2').value = '';
+        document.getElementById('originCity').value = '';
+        document.getElementById('originRegion').value = '';
+        document.getElementById('originPostalCode').value = '';
+        document.getElementById('originCountry').value = 'US';
+        hideAddressValidationResult();
+        showStatus('Origin address fields cleared', 'info');
+    }
+}
+
+function showAddressValidationResult(type, message) {
+    const resultDiv = document.getElementById('addressValidationResult');
+    resultDiv.className = `address-validation-result ${type}`;
+    resultDiv.innerHTML = message;
+    resultDiv.classList.remove('hidden');
+}
+
+function hideAddressValidationResult() {
+    const resultDiv = document.getElementById('addressValidationResult');
+    resultDiv.classList.add('hidden');
 }
