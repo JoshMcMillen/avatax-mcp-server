@@ -21,9 +21,17 @@ Thumbs.db
 *.p12
 *.pfx
 *.pem
+*.key
 *.keystore
 codesign-cert.p12
 .codesign-password.txt
+
+# Test files (if you want to exclude them from tracking)
+# tests/
+
+# Additional sensitive files
+.env.*
+!.env.example
 
 # Build and package files
 *.exe
