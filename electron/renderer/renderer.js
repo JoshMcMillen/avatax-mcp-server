@@ -73,9 +73,13 @@ let currentConfig = {};
 
 // Load configuration on startup
 window.addEventListener('DOMContentLoaded', () => {
+    initializeStatusBar(); // Initialize status bar first
     loadTheme(); // Load theme first
     loadConfiguration();
     getServerStatus();
+    
+    // Start periodic status checking for the persistent status bar
+    startPeriodicStatusCheck();
     
     // Listen for install state updates from main process
     window.mcp.onInstallState((installState) => {
@@ -183,6 +187,7 @@ let isServerRunning = false;
 
 function startServer() {
     if (!currentConfig.AVATAX_ACCOUNT_ID || !currentConfig.AVATAX_LICENSE_KEY) {
+        updatePersistentStatusBar('error', '❌ Please configure AvaTax credentials first');
         showServerStatus('Please configure your AvaTax credentials first', 'error');
         return;
     }
@@ -193,19 +198,25 @@ function startServer() {
     startBtn.disabled = true;
     startBtnText.textContent = 'Starting...';
     
+    // Update status bar to show starting state
+    updatePersistentStatusBar('starting', '⏳ Starting AvaTax MCP Server...');
+    
     clearServerOutput();
     
     window.mcp.launch(currentConfig).then(result => {
         if (result.success) {
             isServerRunning = true;
+            updatePersistentStatusBar('running', '✅ AvaTax MCP Server is running');
             showServerStatus('✅ MCP Server started successfully! You can now use it with Claude Desktop.', 'success');
             startBtnText.textContent = 'Server Running';
         } else {
+            updatePersistentStatusBar('error', '❌ Failed to start server');
             showServerStatus(`❌ Failed to start server: ${result.error}`, 'error');
             startBtn.disabled = false;
             startBtnText.textContent = 'Start MCP Server';
         }
     }).catch(error => {
+        updatePersistentStatusBar('error', '❌ Server startup failed');
         showServerStatus(`❌ Server startup failed: ${error.message}`, 'error');
         startBtn.disabled = false;
         startBtnText.textContent = 'Start MCP Server';
@@ -213,9 +224,13 @@ function startServer() {
 }
 
 function stopServer() {
+    // Update status bar to show stopping state
+    updatePersistentStatusBar('starting', '⏳ Stopping AvaTax MCP Server...');
+    
     window.mcp.stop().then(result => {
         if (result.success) {
             isServerRunning = false;
+            updatePersistentStatusBar('stopped', '⏹️ AvaTax MCP Server is stopped');
             showServerStatus('Server stopped', 'warning');
             
             const startBtn = document.querySelector('button[onclick="startServer()"]');
@@ -223,32 +238,17 @@ function stopServer() {
             startBtn.disabled = false;
             startBtnText.textContent = 'Start MCP Server';
         } else {
+            updatePersistentStatusBar('error', '❌ Failed to stop server');
             showServerStatus(`Failed to stop server: ${result.error}`, 'error');
         }
     }).catch(error => {
+        updatePersistentStatusBar('error', '❌ Stop command failed');
         showServerStatus(`Stop command failed: ${error.message}`, 'error');
     });
 }
 
 function getServerStatus() {
-    window.mcp.getStatus().then(status => {
-        isServerRunning = status.running;
-        
-        const startBtn = document.querySelector('button[onclick="startServer()"]');
-        const startBtnText = document.getElementById('startBtnText');
-        
-        if (status.running) {
-            showServerStatus('✅ Server is currently running', 'success');
-            startBtn.disabled = true;
-            startBtnText.textContent = 'Server Running';
-        } else {
-            showServerStatus('Server is not running', 'info');
-            startBtn.disabled = false;
-            startBtnText.textContent = 'Start MCP Server';
-        }
-    }).catch(error => {
-        showServerStatus('Unable to get server status', 'warning');
-    });
+    checkAndUpdateServerStatus();
 }
 
 // Output handling
@@ -276,6 +276,8 @@ if (window.mcp) {
         const outputDiv = document.getElementById('serverOutput');
         outputDiv.innerHTML += `\nServer exited with code ${code}\n`;
         
+        // Update persistent status bar
+        updatePersistentStatusBar('stopped', '⏹️ AvaTax MCP Server stopped unexpectedly');
         showServerStatus(`Server stopped (exit code: ${code})`, 'warning');
         
         const startBtn = document.querySelector('button[onclick="startServer()"]');
@@ -598,6 +600,11 @@ function getApplicationPath() {
     return 'path/to/avatax-mcp-server';
 }
 
+// Initialize status bar immediately when DOM is loaded
+function initializeStatusBar() {
+    updatePersistentStatusBar('info', '⏹️ Server not started - waiting to be started');
+}
+
 // Initialize documentation tabs on page load
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize documentation with Claude tab active
@@ -610,6 +617,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize update functionality
     initializeUpdateSection();
+    
+    // Initialize status bar
+    initializeStatusBar();
 });
 
 // Update functionality
@@ -825,5 +835,39 @@ function handleUpdateStatus(status) {
             showUpdateStatus(`Error: ${status.error}`, 'error');
             hideUpdateProgress();
             break;
+    }
+}
+
+// Persistent Status Bar Management
+function updatePersistentStatusBar(status, message) {
+    const statusBar = document.getElementById('persistentStatusBar');
+    const statusText = document.getElementById('statusBarText');
+    
+    if (!statusBar || !statusText) return;
+    
+    // Remove all status classes
+    statusBar.classList.remove('running', 'stopped', 'starting', 'error', 'info');
+    
+    // Add the new status class
+    statusBar.classList.add(status);
+    
+    // Update the text
+    statusText.textContent = message;
+}
+
+// Periodic status checking to keep the status bar updated
+let statusCheckInterval;
+
+function startPeriodicStatusCheck() {
+    // Check status every 5 seconds
+    statusCheckInterval = setInterval(() => {
+        checkAndUpdateServerStatus();
+    }, 5000);
+}
+
+function stopPeriodicStatusCheck() {
+    if (statusCheckInterval) {
+        clearInterval(statusCheckInterval);
+        statusCheckInterval = null;
     }
 }

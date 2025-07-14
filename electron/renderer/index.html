@@ -192,6 +192,7 @@
             max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
+            padding-top: 50px;
         }
         
         .header {
@@ -1432,6 +1433,97 @@
             color: #e57373;
         }
         
+        /* Status Bar */
+        .status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            font-size: 14px;
+            color: white;
+            background: #6c757d;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .status-bar.running {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            animation: pulse-success 2s infinite;
+        }
+        
+        .status-bar.stopped {
+            background: linear-gradient(135deg, #dc3545, #e74c3c);
+        }
+        
+        .status-bar.starting {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            animation: pulse-warning 1.5s infinite;
+        }
+        
+        .status-bar.error {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            animation: pulse-error 1s infinite;
+        }
+        
+        .status-bar.info {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+        }
+        
+        .status-bar-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.9);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-bar.running .status-indicator {
+            animation: pulse-dot 2s infinite;
+        }
+        
+        .status-bar.starting .status-indicator {
+            animation: blink 0.8s infinite;
+        }
+        
+        /* Status bar animations */
+        @keyframes pulse-success {
+            0%, 100% { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            50% { box-shadow: 0 2px 20px rgba(40, 167, 69, 0.3); }
+        }
+        
+        @keyframes pulse-warning {
+            0%, 100% { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            50% { box-shadow: 0 2px 20px rgba(255, 193, 7, 0.3); }
+        }
+        
+        @keyframes pulse-error {
+            0%, 100% { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            50% { box-shadow: 0 2px 20px rgba(220, 53, 69, 0.3); }
+        }
+        
+        @keyframes pulse-dot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
         @media (max-width: 768px) {
             .tabs {
                 flex-direction: column;
@@ -1507,6 +1599,13 @@
     </style>
 </head>
 <body>
+    <div id="persistentStatusBar" class="status-bar info">
+        <div class="status-bar-content">
+            <div class="status-indicator"></div>
+            <span id="statusBarText">⏹️ Server not started - waiting to be started</span>
+        </div>
+    </div>
+    
     <div class="container">
         <div class="header">
             <div class="logo-container">
@@ -1908,7 +2007,7 @@
                                     </ol>
                                     <p><strong>Full path:</strong> <code>%APPDATA%\Roaming\Claude\claude_desktop_config.json</code></p>
                                 </div>
-                            </div>
+                                                       </div>
                             
                             <div id="claude-platforms-macos" class="platform-content">
                                 <div class="credential-card">
