@@ -44,9 +44,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
         properties: {
           type: { 
             type: 'string', 
-            description: 'Transaction type (SalesInvoice, PurchaseInvoice, etc.)',
+            description: 'Transaction type (SalesOrder for calculations, SalesInvoice for committed transactions)',
             enum: ['SalesInvoice', 'PurchaseInvoice', 'ReturnInvoice', 'SalesOrder', 'PurchaseOrder', 'InventoryTransferOutbound', 'InventoryTransferInbound'],
-            default: 'SalesInvoice'
+            default: 'SalesOrder'
           },
           companyCode: { 
             type: 'string', 

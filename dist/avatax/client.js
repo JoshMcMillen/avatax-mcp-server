@@ -97,7 +97,7 @@ class AvataxClient {
                 }
                 // Prepare the transaction model
                 const model = {
-                    type: transactionData.type || 'SalesInvoice',
+                    type: transactionData.type || 'SalesOrder',
                     companyCode: companyCode,
                     date: transactionData.date,
                     customerCode: transactionData.customerCode,

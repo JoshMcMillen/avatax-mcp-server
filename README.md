@@ -47,10 +47,10 @@ The app will start automatically after installation, and you can navigate to whi
 ## Available Tools
 
 ### `calculate_tax`
-Calculate tax for a transaction with detailed line items.
+Calculate tax for a transaction with detailed line items. Uses SalesOrder document type by default for non-committed tax estimates.
 
 **Parameters:**
-- `type`: Transaction type (SalesInvoice, PurchaseInvoice, etc.)
+- `type`: Transaction type (SalesOrder for estimates, SalesInvoice for final calculations, etc.)
 - `companyCode`: Your company code in AvaTax (optional if configured globally)
 - `date`: Transaction date (YYYY-MM-DD)
 - `customerCode`: Customer identifier
@@ -67,7 +67,7 @@ Validate and normalize an address.
 - `country`: Country code (ISO 3166-1 alpha-2)
 
 ### `create_transaction`
-Create a committed transaction in AvaTax.
+Create a committed transaction in AvaTax. Uses SalesInvoice document type by default for committed transactions.
 
 **Parameters:**
 - Same as `calculate_tax` plus:
