@@ -134,30 +134,47 @@ class AvataxClient {
 
     public async validateAddress(addressData: any) {
         try {
+            // Prepare the address model for the SDK
             const model = {
                 line1: addressData.line1,
-                line2: addressData.line2,
-                line3: addressData.line3,
+                line2: addressData.line2 || undefined,
+                line3: addressData.line3 || undefined,
                 city: addressData.city,
                 region: addressData.region,
                 postalCode: addressData.postalCode,
                 country: addressData.country || 'US'
             };
 
-            const result = await this.client.resolveAddress({ model });
+            // Use the AvaTax SDK's resolveAddress method
+            const result = await this.client.resolveAddress(model);
             
-            if (result.validatedAddresses && result.validatedAddresses.length > 0) {
+            // Check if address validation was successful
+            if (result && result.validatedAddresses && result.validatedAddresses.length > 0) {
+                const validatedAddress = result.validatedAddresses[0];
                 return {
                     valid: true,
-                    normalized: result.validatedAddresses[0],
+                    normalized: {
+                        line1: validatedAddress.line1,
+                        line2: validatedAddress.line2,
+                        line3: validatedAddress.line3,
+                        city: validatedAddress.city,
+                        region: validatedAddress.region,
+                        postalCode: validatedAddress.postalCode,
+                        country: validatedAddress.country
+                    },
+                    coordinates: validatedAddress.latitude && validatedAddress.longitude ? {
+                        latitude: validatedAddress.latitude,
+                        longitude: validatedAddress.longitude
+                    } : undefined,
                     messages: result.messages || []
                 };
             }
             
+            // Return validation failure with any available messages
             return {
                 valid: false,
-                messages: result.messages || [],
-                errors: result.errors || []
+                messages: result?.messages || [],
+                errors: result?.errors || ['Address could not be validated']
             };
         } catch (error: any) {
             this.handleError(error);
