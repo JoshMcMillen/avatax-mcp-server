@@ -54,7 +54,7 @@ server.setRequestHandler(types_js_1.ListToolsRequestSchema, () => __awaiter(void
                         },
                         companyCode: {
                             type: 'string',
-                            description: 'Company code in AvaTax (optional, uses default from config if not provided)'
+                            description: 'Company code in AvaTax (optional - if not provided and not configured globally, you will need to prompt the user to specify which company to use)'
                         },
                         date: {
                             type: 'string',
@@ -135,7 +135,7 @@ server.setRequestHandler(types_js_1.ListToolsRequestSchema, () => __awaiter(void
                             enum: ['SalesInvoice', 'PurchaseInvoice', 'ReturnInvoice', 'SalesOrder', 'PurchaseOrder', 'InventoryTransferOutbound', 'InventoryTransferInbound'],
                             default: 'SalesInvoice'
                         },
-                        companyCode: { type: 'string', description: 'Company code in AvaTax (optional, uses default from config if not provided)' },
+                        companyCode: { type: 'string', description: 'Company code in AvaTax (optional - if not provided and not configured globally, you will need to prompt the user to specify which company to use)' },
                         date: { type: 'string', description: 'Transaction date (YYYY-MM-DD)' },
                         customerCode: { type: 'string', description: 'Customer identifier' },
                         commit: { type: 'boolean', description: 'Whether to commit the transaction', default: true },
@@ -182,6 +182,19 @@ server.setRequestHandler(types_js_1.ListToolsRequestSchema, () => __awaiter(void
                 }
             },
             {
+                name: 'get_companies',
+                description: 'Get a list of companies in the AvaTax account with optional search filtering',
+                inputSchema: {
+                    type: 'object',
+                    properties: {
+                        filter: {
+                            type: 'string',
+                            description: 'Optional search filter to find companies by company code or name'
+                        }
+                    }
+                }
+            },
+            {
                 name: 'ping_service',
                 description: 'Test connectivity to AvaTax service and verify credentials',
                 inputSchema: {
@@ -221,6 +234,15 @@ server.setRequestHandler(types_js_1.CallToolRequestSchema, (request) => __awaite
                     content: [{
                             type: 'text',
                             text: `Transaction created successfully!\n\n${JSON.stringify(result, null, 2)}`
+                        }]
+                };
+            }
+            case 'get_companies': {
+                const result = yield avataxClient.getCompanies(args.filter);
+                return {
+                    content: [{
+                            type: 'text',
+                            text: `Found ${result.count} companies:\n\n${JSON.stringify(result, null, 2)}`
                         }]
                 };
             }

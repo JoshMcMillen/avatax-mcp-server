@@ -20,7 +20,7 @@ export function createAvaTaxConfig(): AvaTaxConfig {
         accountId: process.env.AVATAX_ACCOUNT_ID,
         licenseKey: process.env.AVATAX_LICENSE_KEY,
         environment,
-        companyCode: process.env.AVATAX_COMPANY_CODE || 'DEFAULT',
+        companyCode: process.env.AVATAX_COMPANY_CODE || '', // Default to empty string - company code is now optional
         appName: process.env.AVATAX_APP_NAME || 'AvaTax-MCP-Server',
         appVersion: process.env.AVATAX_APP_VERSION || '1.0.0',
         machineName: process.env.AVATAX_MACHINE_NAME || 'MCP-Server',

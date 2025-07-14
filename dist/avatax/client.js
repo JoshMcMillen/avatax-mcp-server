@@ -90,10 +90,15 @@ class AvataxClient {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d;
             try {
+                // Determine company code - require it for transactions
+                const companyCode = transactionData.companyCode || this.config.companyCode;
+                if (!companyCode) {
+                    throw new Error('Company code is required for tax calculations. Please specify a companyCode parameter or ask the user which company to use. Use the get_companies tool to see available companies.');
+                }
                 // Prepare the transaction model
                 const model = {
                     type: transactionData.type || 'SalesInvoice',
-                    companyCode: transactionData.companyCode || this.config.companyCode,
+                    companyCode: companyCode,
                     date: transactionData.date,
                     customerCode: transactionData.customerCode,
                     lines: transactionData.lines.map((line, index) => ({
@@ -163,10 +168,15 @@ class AvataxClient {
         return __awaiter(this, void 0, void 0, function* () {
             var _a, _b, _c, _d;
             try {
+                // Determine company code - require it for transactions
+                const companyCode = transactionData.companyCode || this.config.companyCode;
+                if (!companyCode) {
+                    throw new Error('Company code is required for creating transactions. Please specify a companyCode parameter or ask the user which company to use. Use the get_companies tool to see available companies.');
+                }
                 // Prepare the transaction model
                 const model = {
                     type: transactionData.type || 'SalesInvoice',
-                    companyCode: transactionData.companyCode || this.config.companyCode,
+                    companyCode: companyCode,
                     date: transactionData.date,
                     customerCode: transactionData.customerCode,
                     lines: transactionData.lines.map((line, index) => ({
@@ -209,6 +219,37 @@ class AvataxClient {
                     authenticated: result.authenticated,
                     version: result.version,
                     environment: this.config.environment
+                };
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    getCompanies(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
+            try {
+                const params = {};
+                // Add search filter if provided
+                if (filter) {
+                    params.$filter = `companyCode contains '${this.sanitizeString(filter)}' or name contains '${this.sanitizeString(filter)}'`;
+                }
+                // Limit results to make the response manageable
+                params.$top = 50;
+                params.$orderby = 'companyCode';
+                const result = yield this.client.queryCompanies(params);
+                // Return simplified company information
+                return {
+                    companies: ((_a = result.value) === null || _a === void 0 ? void 0 : _a.map((company) => ({
+                        id: company.id,
+                        companyCode: company.companyCode,
+                        name: company.name,
+                        isActive: company.isActive,
+                        isDefault: company.isDefault,
+                        defaultCountry: company.defaultCountry
+                    }))) || [],
+                    count: result['@recordsetCount'] || ((_b = result.value) === null || _b === void 0 ? void 0 : _b.length) || 0
                 };
             }
             catch (error) {

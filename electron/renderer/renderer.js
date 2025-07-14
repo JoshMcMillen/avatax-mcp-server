@@ -120,7 +120,7 @@ function saveConfiguration() {
     const config = {
         AVATAX_ACCOUNT_ID: document.getElementById('accountId').value,
         AVATAX_LICENSE_KEY: document.getElementById('licenseKey').value,
-        AVATAX_COMPANY_CODE: document.getElementById('companyCode').value || 'DEFAULT',
+        AVATAX_COMPANY_CODE: document.getElementById('companyCode').value || '', // Allow empty company code
         AVATAX_ENVIRONMENT: document.getElementById('environment').value,
         AVATAX_APP_NAME: document.getElementById('appName').value || 'AvaTax-MCP-Server',
         AVATAX_TIMEOUT: document.getElementById('timeout').value || '30000'

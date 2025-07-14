@@ -51,7 +51,7 @@ Calculate tax for a transaction with detailed line items.
 
 **Parameters:**
 - `type`: Transaction type (SalesInvoice, PurchaseInvoice, etc.)
-- `companyCode`: Your company code in AvaTax
+- `companyCode`: Your company code in AvaTax (optional if configured globally)
 - `date`: Transaction date (YYYY-MM-DD)
 - `customerCode`: Customer identifier
 - `lines`: Array of line items with quantities, amounts, and addresses
@@ -73,6 +73,15 @@ Create a committed transaction in AvaTax.
 - Same as `calculate_tax` plus:
 - `commit`: Whether to commit the transaction (default: true)
 
+### `get_companies`
+Get a list of companies in your AvaTax account.
+
+**Parameters:**
+- `filter`: Optional search filter to find companies by company code or name
+
+### `ping_service`
+Test connectivity to AvaTax service and verify credentials.
+
 ## Configuration
 
 The desktop application provides an intuitive interface to configure your AvaTax credentials:
@@ -81,7 +90,7 @@ The desktop application provides an intuitive interface to configure your AvaTax
 |---------|----------|-------------|---------|
 | **Account ID** | ✅ | Your AvaTax account ID | `1234567890` |
 | **License Key** | ✅ | Your AvaTax license key | `1A2B3C4D5E6F7G8H` |
-| **Company Code** | ✅ | Your AvaTax company code | `DEFAULT` |
+| **Company Code** | ❌ | Your AvaTax company code (optional - leave blank for interactive selection) | `DEFAULT` |
 | **Environment** | ✅ | Environment (`sandbox` or `production`) | `sandbox` |
 | **Application Name** | ❌ | Application identifier | `AvaTax-MCP-Server` |
 | **API Timeout** | ❌ | Timeout in milliseconds | `30000` |
@@ -91,8 +100,14 @@ The desktop application provides an intuitive interface to configure your AvaTax
 1. **Sign up** for an AvaTax account at [avalara.com](https://www.avalara.com/)
 2. **Access the AvaTax portal** and navigate to Settings > License Keys
 3. **Copy your Account ID and License Key**
-4. **Find your Company Code** under Companies > Company Settings
+4. **Optionally find your Company Code** under Companies > Company Settings (or leave blank for interactive selection)
 5. **Start with sandbox** environment for testing
+
+### Company Code Behavior
+
+- **If specified**: All tax calculations will use this company by default
+- **If left blank**: Claude will ask which company to use and provide a searchable list when needed
+- **Use `get_companies` tool**: Get a list of available companies with optional search filtering
 
 > **Note**: The company code identifies which company entity transactions belong to in your AvaTax account.
 
@@ -133,6 +148,8 @@ Once connected to Claude Desktop, you can ask Claude to:
 - "Create a committed sales transaction for order #12345"
 - "What's the tax rate for Austin, Texas?"
 - "Help me calculate taxes for my online store order"
+- "Show me all companies in my AvaTax account"
+- "Which companies do I have available for tax calculations?"
 
 ## Development
 

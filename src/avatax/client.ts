@@ -87,10 +87,16 @@ class AvataxClient {
 
     public async calculateTax(transactionData: any) {
         try {
+            // Determine company code - require it for transactions
+            const companyCode = transactionData.companyCode || this.config.companyCode;
+            if (!companyCode) {
+                throw new Error('Company code is required for tax calculations. Please specify a companyCode parameter or ask the user which company to use. Use the get_companies tool to see available companies.');
+            }
+
             // Prepare the transaction model
             const model = {
                 type: transactionData.type || 'SalesInvoice',
-                companyCode: transactionData.companyCode || this.config.companyCode,
+                companyCode: companyCode,
                 date: transactionData.date,
                 customerCode: transactionData.customerCode,
                 lines: transactionData.lines.map((line: any, index: number) => ({
@@ -160,10 +166,16 @@ class AvataxClient {
 
     public async createTransaction(transactionData: any) {
         try {
+            // Determine company code - require it for transactions
+            const companyCode = transactionData.companyCode || this.config.companyCode;
+            if (!companyCode) {
+                throw new Error('Company code is required for creating transactions. Please specify a companyCode parameter or ask the user which company to use. Use the get_companies tool to see available companies.');
+            }
+
             // Prepare the transaction model
             const model = {
                 type: transactionData.type || 'SalesInvoice',
-                companyCode: transactionData.companyCode || this.config.companyCode,
+                companyCode: companyCode,
                 date: transactionData.date,
                 customerCode: transactionData.customerCode,
                 lines: transactionData.lines.map((line: any, index: number) => ({
@@ -206,6 +218,38 @@ class AvataxClient {
                 authenticated: result.authenticated,
                 version: result.version,
                 environment: this.config.environment
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    public async getCompanies(filter?: string) {
+        try {
+            const params: any = {};
+            
+            // Add search filter if provided
+            if (filter) {
+                params.$filter = `companyCode contains '${this.sanitizeString(filter)}' or name contains '${this.sanitizeString(filter)}'`;
+            }
+            
+            // Limit results to make the response manageable
+            params.$top = 50;
+            params.$orderby = 'companyCode';
+            
+            const result = await this.client.queryCompanies(params);
+            
+            // Return simplified company information
+            return {
+                companies: result.value?.map((company: any) => ({
+                    id: company.id,
+                    companyCode: company.companyCode,
+                    name: company.name,
+                    isActive: company.isActive,
+                    isDefault: company.isDefault,
+                    defaultCountry: company.defaultCountry
+                })) || [],
+                count: result['@recordsetCount'] || result.value?.length || 0
             };
         } catch (error: any) {
             this.handleError(error);

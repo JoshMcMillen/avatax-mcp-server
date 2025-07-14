@@ -1800,7 +1800,8 @@
                                 Company Code 
                                 <span class="optional">(optional)</span>
                             </label>
-                            <input type="text" id="companyCode" name="companyCode" placeholder="DEFAULT">
+                            <input type="text" id="companyCode" name="companyCode" placeholder="Leave blank for interactive selection">
+                            <small class="form-help">Leave blank to be prompted for company selection when calculating taxes</small>
                         </div>
                         <div class="form-group">
                             <label for="environment">Environment</label>
@@ -2588,7 +2589,7 @@ const functions = [
                             <ul>
                                 <li><strong>Account ID:</strong> Your unique Avalara account identifier (numeric)</li>
                                 <li><strong>License Key:</strong> API authentication token (long alphanumeric string)</li>
-                                <li><strong>Company Code:</strong> Your business identifier in AvaTax (optional, defaults to "DEFAULT")</li>
+                                <li><strong>Company Code:</strong> Your business identifier in AvaTax (optional - leave blank for interactive selection)</li>
                                 <li><strong>Environment:</strong> "sandbox" for testing, "production" for live operations</li>
                             </ul>
                         </div>
