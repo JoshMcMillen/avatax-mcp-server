@@ -1031,8 +1031,9 @@
         }
         
         .api-group-content.expanded {
-            max-height: 500px;
+            max-height: 800px;
             padding: 20px;
+            overflow-y: auto;
         }
         
         .api-endpoint {
@@ -1098,8 +1099,9 @@
         }
         
         .api-group-content.expanded {
-            max-height: 500px;
+            max-height: 800px;
             padding: 20px;
+            overflow-y: auto;
         }
         
         .api-group.expanded .toggle-icon {
@@ -1943,18 +1945,18 @@
                     </div>
                     
                     <div class="feature-card interactive-card">
-                        <h3>📍 Global Address Validation</h3>
-                        <p>Validate, normalize, and geocode addresses worldwide for accurate tax determinations.</p>
+                        <h3>📍 US & Canada Address Validation</h3>
+                        <p>Validate, normalize, and geocode addresses in the United States and Canada for accurate tax determinations.</p>
                         <div class="feature-details hidden" id="address-validation-details">
                             <hr>
                             <ul>
-                                <li>✓ 75+ country coverage</li>
+                                <li>✓ US & Canada coverage</li>
                                 <li>✓ Address standardization</li>
                                 <li>✓ Geocoding and mapping</li>
                                 <li>✓ Tax jurisdiction assignment</li>
-                                <li>✓ Delivery validation</li>
+                                <li>✓ Postal code validation</li>
                             </ul>
-                            <p><em>Ask your AI: "Validate and standardize this shipping address"</em></p>
+                            <p><em>Ask your AI: "Validate and standardize this US shipping address"</em></p>
                         </div>
                     </div>
                     
@@ -1987,6 +1989,38 @@
                                 <li>✓ Cross-platform compatibility</li>
                             </ul>
                             <p><em>Universal AI integration through open standards</em></p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card interactive-card">
+                        <h3>🏢 Company Management</h3>
+                        <p>Manage multiple companies, locations, and business entities with centralized control.</p>
+                        <div class="feature-details hidden" id="company-management-details">
+                            <hr>
+                            <ul>
+                                <li>✓ Multi-company operations</li>
+                                <li>✓ Location-based settings</li>
+                                <li>✓ Nexus jurisdiction tracking</li>
+                                <li>✓ Business profile configuration</li>
+                                <li>✓ Entity relationship management</li>
+                            </ul>
+                            <p><em>Ask your AI: "List all companies and their active tax jurisdictions"</em></p>
+                        </div>
+                    </div>
+                    
+                    <div class="feature-card interactive-card">
+                        <h3>📋 Compliance Reporting</h3>
+                        <p>Automated tax filing, returns preparation, and regulatory compliance across jurisdictions.</p>
+                        <div class="feature-details hidden" id="compliance-reporting-details">
+                            <hr>
+                            <ul>
+                                <li>✓ Automated tax returns</li>
+                                <li>✓ Filing deadline tracking</li>
+                                <li>✓ Liability calculations</li>
+                                <li>✓ Audit documentation</li>
+                                <li>✓ Multi-state reporting</li>
+                            </ul>
+                            <p><em>Ask your AI: "Generate compliance report for Q4 2024"</em></p>
                         </div>
                     </div>
                 </div>
@@ -2721,7 +2755,7 @@
                                 
                                 <div class="credential-card">
                                     <h4>📝 Description</h4>
-                                    <p>Expert tax calculation assistant powered by Avalara AvaTax. Handles sales tax, VAT, GST calculations, address validation, and compliance workflows for 75+ countries.</p>
+                                    <p>Expert tax calculation assistant powered by Avalara AvaTax. Handles sales tax, VAT, GST calculations for 75+ countries, plus US & Canada address validation and compliance workflows.</p>
                                 </div>
                                 
                                 <div class="credential-card">
@@ -2730,7 +2764,7 @@
                                     <pre class="gpt-instructions"><code>You are a tax calculation expert with access to Avalara AvaTax API through MCP. You can:
 
 1. Calculate sales tax, VAT, and GST for transactions
-2. Validate and standardize addresses globally
+2. Validate and standardize addresses in the US and Canada
 3. Create committed tax transactions for compliance
 4. Provide tax rates and jurisdiction information
 5. Handle exemption certificates and special tax scenarios
@@ -2827,97 +2861,445 @@ const functions = [
                     <!-- API Groups Reference -->
                     <div id="api-groups-setup" class="setup-content">
                         <h2>AvaTax API Reference Groups</h2>
-                        <p>Explore the comprehensive AvaTax API capabilities organized by functional area:</p>
+                        <p>Explore the comprehensive AvaTax API capabilities organized by functional area. All 76 tools are now implemented and ready to use!</p>
                         
                         <div class="api-groups">
+                            <!-- Phase 1: Core Transaction Operations -->
                             <div class="api-group">
                                 <h3 onclick="toggleApiGroup('core-tax')" class="api-group-header">
-                                    <span class="toggle-icon">▶</span> Core Tax Operations
+                                    <span class="toggle-icon">▶</span> Phase 1: Core Transaction Operations (7 tools)
                                 </h3>
                                 <div id="core-tax" class="api-group-content">
                                     <div class="api-endpoint">
                                         <strong>calculate_tax</strong> - Calculate tax for transactions
                                         <p>Real-time tax calculation with line-item detail, exemptions, and jurisdiction breakdown</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Transactions/CreateTransaction" target="_blank" rel="noopener">📋 Swagger Reference</a>
                                     </div>
                                     <div class="api-endpoint">
                                         <strong>create_transaction</strong> - Create committed transactions
                                         <p>Generate permanent tax records for compliance and reporting</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Transactions/CreateTransaction" target="_blank" rel="noopener">📋 Swagger Reference</a>
                                     </div>
                                     <div class="api-endpoint">
-                                        <strong>ping_service</strong> - Test API connectivity
-                                        <p>Verify credentials and service availability</p>
+                                        <strong>void_transaction</strong> - Void existing transactions
+                                        <p>Cancel transactions that were previously committed</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Transactions/VoidTransaction" target="_blank" rel="noopener">📋 Swagger Reference</a>
                                     </div>
-                                    <p><em>Coming Soon: adjust_transaction, void_transaction, commit_transaction</em></p>
+                                    <div class="api-endpoint">
+                                        <strong>refund_transaction</strong> - Process transaction refunds
+                                        <p>Create return invoices for partial or full refunds</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Transactions/CreateTransaction" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>adjust_transaction</strong> - Adjust transaction details
+                                        <p>Modify existing transactions with proper audit trail</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Transactions/AdjustTransaction" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>settle_transaction</strong> - Mark transactions as settled
+                                        <p>Update payment status and settlement dates</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Transactions/SettleTransaction" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>verify_transaction</strong> - Retrieve transaction details
+                                        <p>Get comprehensive transaction information including line items</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Transactions/GetTransactionByCode" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>lock_transaction / unlock_transaction</strong> - Transaction locking
+                                        <p>Control transaction modification permissions</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Transactions/LockTransaction" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
                                 </div>
                             </div>
                             
+                            <!-- Phase 2: Batch Operations -->
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('batch-operations')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Phase 2: Batch Operations (4 tools)
+                                </h3>
+                                <div id="batch-operations" class="api-group-content">
+                                    <div class="api-endpoint">
+                                        <strong>create_batch</strong> - Create batch import jobs
+                                        <p>Process multiple transactions efficiently in batch format</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Batches/CreateBatches" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_batch_status</strong> - Monitor batch processing
+                                        <p>Check the progress and status of batch operations</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Batches/GetBatch" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>download_batch</strong> - Download batch results
+                                        <p>Retrieve processed batch data and results</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Batches/DownloadBatch" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>cancel_batch</strong> - Cancel batch operations
+                                        <p>Stop batch processing before completion</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Batches/CancelBatch" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Phase 3: Company & Configuration Management -->
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('company-management')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Phase 3: Company & Configuration Management (8 tools)
+                                </h3>
+                                <div id="company-management" class="api-group-content">
+                                    <div class="api-endpoint">
+                                        <strong>get_companies</strong> - List available companies
+                                        <p>Retrieve all companies accessible to your account</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Companies/QueryCompanies" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_company</strong> - Create new companies
+                                        <p>Set up new business entities in AvaTax</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Companies/CreateCompanies" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>update_company</strong> - Update company details
+                                        <p>Modify existing company information and settings</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Companies/UpdateCompany" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_company_configuration</strong> - Get company settings
+                                        <p>Retrieve company-specific configuration options</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Companies/ListCompanyConfigurations" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>set_company_configuration</strong> - Update company settings
+                                        <p>Configure company-specific options and preferences</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Companies/CreateCompanyConfigurations" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>list_company_locations</strong> - List company locations
+                                        <p>Get all locations associated with a company</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Locations/ListLocationsByCompany" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_company_location</strong> - Add company locations
+                                        <p>Create new business locations for tax nexus</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Locations/CreateLocations" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>update_company_location / delete_company_location</strong> - Manage locations
+                                        <p>Modify or remove existing company locations</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Locations/UpdateLocation" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Phase 4: Nexus Management -->
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('nexus-management')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Phase 4: Nexus Management (6 tools)
+                                </h3>
+                                <div id="nexus-management" class="api-group-content">
+                                    <div class="api-endpoint">
+                                        <strong>list_nexus</strong> - Get nexus declarations
+                                        <p>Retrieve all tax nexus declarations for a company</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Nexus/ListNexusByCompany" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_nexus</strong> - Declare tax nexus
+                                        <p>Establish tax obligations in specific jurisdictions</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Nexus/CreateNexus" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>update_nexus</strong> - Update nexus declarations
+                                        <p>Modify existing nexus relationships and dates</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Nexus/UpdateNexus" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>delete_nexus</strong> - Remove nexus declarations
+                                        <p>End tax obligations in specific jurisdictions</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Nexus/DeleteNexus" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_nexus_by_address</strong> - Check nexus obligations
+                                        <p>Determine tax nexus requirements for specific addresses</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Nexus/GetNexusByAddress" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>declare_nexus_by_address</strong> - Bulk nexus declaration
+                                        <p>Declare nexus for multiple addresses at once</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Nexus/DeclareNexusByAddress" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Phase 5: Tax Code & Item Management -->
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('tax-codes-items')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Phase 5: Tax Code & Item Management (8 tools)
+                                </h3>
+                                <div id="tax-codes-items" class="api-group-content">
+                                    <div class="api-endpoint">
+                                        <strong>list_tax_codes</strong> - Get available tax codes
+                                        <p>Retrieve system and company-specific tax codes</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/TaxCodes/ListTaxCodes" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_tax_code</strong> - Create custom tax codes
+                                        <p>Define company-specific tax classification codes</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/TaxCodes/CreateTaxCodes" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>update_tax_code / delete_tax_code</strong> - Manage tax codes
+                                        <p>Modify or remove custom tax codes</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/TaxCodes/UpdateTaxCode" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>list_items</strong> - Get company items
+                                        <p>Retrieve all items configured for a company</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Items/ListItemsByCompany" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_item</strong> - Add new items
+                                        <p>Create new product/service items with tax classifications</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Items/CreateItems" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>update_item / delete_item</strong> - Manage items
+                                        <p>Modify or remove existing company items</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Items/UpdateItem" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Phase 6: Location Management -->
                             <div class="api-group">
                                 <h3 onclick="toggleApiGroup('address-validation')" class="api-group-header">
-                                    <span class="toggle-icon">▶</span> Address & Location Services
+                                    <span class="toggle-icon">▶</span> Phase 6: Location Management (6 tools)
                                 </h3>
                                 <div id="address-validation" class="api-group-content">
                                     <div class="api-endpoint">
                                         <strong>validate_address</strong> - Validate and normalize addresses
-                                        <p>Global address verification with standardization and geocoding</p>
+                                        <p>US & Canada address verification with standardization and geocoding</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Addresses/ResolveAddress" target="_blank" rel="noopener">📋 Swagger Reference</a>
                                     </div>
-                                    <p><em>Coming Soon: resolve_address_post, get_locations, manage_locations</em></p>
+                                    <div class="api-endpoint">
+                                        <strong>resolve_address</strong> - Advanced address resolution
+                                        <p>Comprehensive address resolution with tax authority data</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Addresses/ResolveAddress" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>resolve_address_post</strong> - POST-based address resolution
+                                        <p>Alternative method for complex address resolution requests</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Addresses/ResolveAddressPost" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>list_locations_by_company</strong> - Company location listing
+                                        <p>Get all locations with advanced filtering and pagination</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Locations/ListLocationsByCompany" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_location</strong> - Add business locations
+                                        <p>Create detailed location records with address categorization</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Locations/CreateLocations" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>update_location / delete_location</strong> - Location management
+                                        <p>Comprehensive location lifecycle management</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Locations/UpdateLocation" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
                                 </div>
                             </div>
                             
+                            <!-- Phase 7: Customer Management -->
                             <div class="api-group">
-                                <h3 onclick="toggleApiGroup('company-management')" class="api-group-header">
-                                    <span class="toggle-icon">▶</span> Company & Account Management
+                                <h3 onclick="toggleApiGroup('customer-management')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Phase 7: Customer Management (7 tools)
                                 </h3>
-                                <div id="company-management" class="api-group-content">
-                                    <p><em>Coming Soon: manage_companies, get_company_settings, update_company_configuration</em></p>
+                                <div id="customer-management" class="api-group-content">
+                                    <div class="api-endpoint">
+                                        <strong>list_customers</strong> - Get company customers
+                                        <p>Retrieve all customers with filtering and pagination</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Customers/ListCustomers" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_customer</strong> - Add new customers
+                                        <p>Create customer records with address and contact information</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Customers/CreateCustomers" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_customer</strong> - Get customer details
+                                        <p>Retrieve comprehensive customer information and relationships</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Customers/GetCustomer" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>update_customer / delete_customer</strong> - Customer management
+                                        <p>Modify or remove customer records</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Customers/UpdateCustomer" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>list_customer_certificates</strong> - Get exemption certificates
+                                        <p>Retrieve tax exemption certificates for customers</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Certificates/ListCertificatesForCustomer" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_customer_certificate</strong> - Add exemption certificates
+                                        <p>Create tax exemption certificates for qualifying customers</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Certificates/CreateCertificates" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
                                 </div>
                             </div>
                             
-                            <div class="api-group">
-                                <h3 onclick="toggleApiGroup('customer-certificates')" class="api-group-header">
-                                    <span class="toggle-icon">▶</span> Customer Certificates & Exemptions
-                                </h3>
-                                <div id="customer-certificates" class="api-group-content">
-                                    <p><em>Coming Soon: manage_certificates, validate_exemptions, customer_management</em></p>
-                                </div>
-                            </div>
-                            
-                            <div class="api-group">
-                                <h3 onclick="toggleApiGroup('batch-operations')" class="api-group-header">
-                                    <span class="toggle-icon">▶</span> Batch Operations
-                                </h3>
-                                <div id="batch-operations" class="api-group-content">
-                                    <p><em>Coming Soon: create_batch, process_batch_files, batch_status_monitoring</em></p>
-                                </div>
-                            </div>
-                            
-                            <div class="api-group">
-                                <h3 onclick="toggleApiGroup('tax-content')" class="api-group-header">
-                                    <span class="toggle-icon">▶</span> Tax Content & Definitions
-                                </h3>
-                                <div id="tax-content" class="api-group-content">
-                                    <p><em>Coming Soon: get_tax_codes, query_jurisdictions, rate_tables</em></p>
-                                </div>
-                            </div>
-                            
+                            <!-- Phase 8: Reporting & Compliance -->
                             <div class="api-group">
                                 <h3 onclick="toggleApiGroup('compliance-reporting')" class="api-group-header">
-                                    <span class="toggle-icon">▶</span> Compliance & Reporting
+                                    <span class="toggle-icon">▶</span> Phase 8: Reporting & Compliance (10 tools)
                                 </h3>
                                 <div id="compliance-reporting" class="api-group-content">
-                                    <p><em>Coming Soon: filing_reports, compliance_worksheets, audit_trails</em></p>
+                                    <div class="api-endpoint">
+                                        <strong>list_transactions</strong> - Transaction reporting
+                                        <p>Get detailed transaction reports with filtering</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Transactions/ListTransactionsByCompany" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>export_transactions</strong> - Transaction data export
+                                        <p>Export transaction data in various formats for reporting</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Reports/ExportDocumentLine" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_filing_calendar</strong> - Filing schedule information
+                                        <p>Retrieve tax filing calendar and due dates</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Reports/GetFilingCalendar" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_filing_status</strong> - Filing status monitoring
+                                        <p>Check the status of tax return filings</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/FilingReturns/GetFilingReturns" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>approve_filing</strong> - Filing approval workflow
+                                        <p>Approve tax returns for submission to authorities</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/FilingReturns/ApproveFilingReturn" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_worksheet</strong> - Compliance worksheets
+                                        <p>Retrieve detailed compliance calculation worksheets</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/FilingReturns/GetFilingReturn" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_notices</strong> - Tax authority notices
+                                        <p>Retrieve and manage tax authority notices and correspondence</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Notices/QueryNotices" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_notice_responsibility</strong> - Notice responsibility
+                                        <p>Assign responsibility for handling tax notices</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Notices/CreateNoticeResponsibilities" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_multi_document</strong> - Multi-document transactions
+                                        <p>Retrieve complex multi-document transaction structures</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/MultiDocument/GetMultiDocumentByCode" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_audit_trail</strong> - Transaction audit trails
+                                        <p>Track all changes and activities for compliance auditing</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Transactions/AuditTransaction" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
                                 </div>
                             </div>
                             
+                            <!-- Phase 9: Advanced Features -->
                             <div class="api-group">
-                                <h3 onclick="toggleApiGroup('items-products')" class="api-group-header">
-                                    <span class="toggle-icon">▶</span> Items & Product Classification
+                                <h3 onclick="toggleApiGroup('advanced-features')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Phase 9: Advanced Features (8 tools)
                                 </h3>
-                                <div id="items-products" class="api-group-content">
-                                    <p><em>Coming Soon: classify_items, manage_item_catalog, tax_code_assignment</em></p>
+                                <div id="advanced-features" class="api-group-content">
+                                    <div class="api-endpoint">
+                                        <strong>get_tax_rates</strong> - Tax rate lookup
+                                        <p>Get current tax rates for specific addresses and dates</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/TaxRates/TaxRatesByAddress" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_jurisdictions</strong> - Jurisdiction information
+                                        <p>Retrieve tax jurisdiction details for addresses</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Addresses/ResolveAddress" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_certificate_request</strong> - Certificate requests
+                                        <p>Initiate exemption certificate collection workflows</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/CertExpressInvitations/CreateCertExpressInvitation" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_certificate_setup</strong> - Certificate configuration
+                                        <p>Get certificate management system settings and templates</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/CertExpressInvitations/ListCertExpressInvitations" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>test_connectivity</strong> - System diagnostics
+                                        <p>Test API connectivity and system health</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Utilities/Ping" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_settings</strong> - System settings
+                                        <p>Retrieve account and system configuration settings</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Settings/GetSettings" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>bulk_tax_calculation</strong> - Bulk processing
+                                        <p>Process multiple tax calculations efficiently in bulk</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Transactions/CreateTransaction" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_tax_content</strong> - Tax authority content
+                                        <p>Access tax authority information and content databases</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/TaxAuthorities/QueryTaxAuthorities" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
                                 </div>
                             </div>
                             
+                            <!-- Phase 10: User & Account Management -->
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('user-account-management')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Phase 10: User & Account Management (8 tools)
+                                </h3>
+                                <div id="user-account-management" class="api-group-content">
+                                    <div class="api-endpoint">
+                                        <strong>list_users</strong> - List account users
+                                        <p>Retrieve all users in the account with filtering and pagination</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Users/ListUsersByAccount" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_user</strong> - Create new users
+                                        <p>Add new users to the account with role assignments</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Users/CreateUsers" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_user</strong> - Get user details
+                                        <p>Retrieve comprehensive user information including roles and permissions</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Users/GetUser" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>update_user / delete_user</strong> - User management
+                                        <p>Modify user profiles or remove users from the account</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Users/UpdateUser" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_account</strong> - Account information
+                                        <p>Retrieve detailed account information and settings</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Accounts/GetAccount" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>update_account</strong> - Account management
+                                        <p>Update account settings and configuration</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Accounts/UpdateAccount" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_subscriptions</strong> - Service subscriptions
+                                        <p>View account subscriptions and service details</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Subscriptions/ListSubscriptionsByAccount" target="_blank" rel="noopener">📋 Swagger Reference</a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Utilities & System Services -->
                             <div class="api-group">
                                 <h3 onclick="toggleApiGroup('utilities')" class="api-group-header">
                                     <span class="toggle-icon">▶</span> Utilities & System Services
@@ -2926,8 +3308,41 @@ const functions = [
                                     <div class="api-endpoint">
                                         <strong>ping_service</strong> - Service health check
                                         <p>Test connectivity and verify system status</p>
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html#!/Utilities/Ping" target="_blank" rel="noopener">📋 Swagger Reference</a>
                                     </div>
-                                    <p><em>Coming Soon: system_status, rate_limits, service_diagnostics</em></p>
+                                    
+                                    <h4>📋 Additional AvaTax APIs Available (Coming Soon)</h4>
+                                    <p><em>The following AvaTax API endpoints are available in the full API but not yet implemented in this MCP server:</em></p>
+                                    <ul>
+                                        <li><strong>Definitions:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/Definitions" target="_blank" rel="noopener">Tax Code Definitions, Countries, Regions, etc.</a></li>
+                                        <li><strong>DataSources:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/DataSources" target="_blank" rel="noopener">External data source management</a></li>
+                                        <li><strong>DistanceThreshold:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/DistanceThreshold" target="_blank" rel="noopener">Distance-based tax calculations</a></li>
+                                        <li><strong>ECommerceTokens:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/ECommerceTokens" target="_blank" rel="noopener">E-commerce platform integration tokens</a></li>
+                                        <li><strong>ErrorTransactions:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/ErrorTransactions" target="_blank" rel="noopener">Error transaction management</a></li>
+                                        <li><strong>FirmClients:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/FirmClients" target="_blank" rel="noopener">Accounting firm client management</a></li>
+                                        <li><strong>FundingRequests:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/FundingRequests" target="_blank" rel="noopener">Payment and funding request management</a></li>
+                                        <li><strong>JurisdictionOverrides:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/JurisdictionOverrides" target="_blank" rel="noopener">Custom jurisdiction mappings</a></li>
+                                        <li><strong>LoginVerifiers:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/LoginVerifiers" target="_blank" rel="noopener">Multi-factor authentication</a></li>
+                                        <li><strong>MultiDocument:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/MultiDocument" target="_blank" rel="noopener">Advanced multi-document transactions</a></li>
+                                        <li><strong>PasswordChangeRequests:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/PasswordChangeRequests" target="_blank" rel="noopener">Password management workflows</a></li>
+                                        <li><strong>PointOfSaleDataRequests:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/PointOfSaleDataRequests" target="_blank" rel="noopener">POS system data requests</a></li>
+                                        <li><strong>Provisioning:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/Provisioning" target="_blank" rel="noopener">Account provisioning and setup</a></li>
+                                        <li><strong>Registrar:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/Registrar" target="_blank" rel="noopener">Account registration services</a></li>
+                                        <li><strong>ReportTasks:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/ReportTasks" target="_blank" rel="noopener">Asynchronous report generation</a></li>
+                                        <li><strong>ServiceTypes:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/ServiceTypes" target="_blank" rel="noopener">Service type definitions</a></li>
+                                        <li><strong>ShippingVerification:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/ShippingVerification" target="_blank" rel="noopener">Shipping address verification</a></li>
+                                        <li><strong>TaxProfile:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/TaxProfile" target="_blank" rel="noopener">Tax profile management</a></li>
+                                        <li><strong>TaxRules:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/TaxRules" target="_blank" rel="noopener">Custom tax rule definitions</a></li>
+                                        <li><strong>UPC:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/UPC" target="_blank" rel="noopener">Universal Product Code management</a></li>
+                                        <li><strong>Worksheets:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/Worksheets" target="_blank" rel="noopener">Advanced worksheet generation</a></li>
+                                    </ul>
+                                    
+                                    <div class="status info" style="margin-top: 15px;">
+                                        <strong>🚀 Complete Coverage:</strong> This MCP server implements 76 of the most commonly used AvaTax API endpoints across 10 functional phases, covering the vast majority of business use cases for tax calculation, compliance, and management.
+                                        <br><br>
+                                        <strong>📖 Full API Reference:</strong> For the complete AvaTax API documentation with all available endpoints, visit the 
+                                        <a href="https://rest.avatax.com/swagger/ui/index.html" target="_blank" rel="noopener">official AvaTax Swagger documentation</a>.
+                                    </div>
                                 </div>
                             </div>
                         </div>
