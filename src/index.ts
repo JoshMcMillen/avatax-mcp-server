@@ -249,7 +249,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request: any) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.log('AvaTax MCP Server running on stdio');
+  // Don't log to console in MCP mode - it interferes with JSON-RPC communication
 }
 
 main().catch((error) => {

@@ -251,7 +251,7 @@ function main() {
     return __awaiter(this, void 0, void 0, function* () {
         const transport = new stdio_js_1.StdioServerTransport();
         yield server.connect(transport);
-        console.log('AvaTax MCP Server running on stdio');
+        // Don't log to console in MCP mode - it interferes with JSON-RPC communication
     });
 }
 main().catch((error) => {
