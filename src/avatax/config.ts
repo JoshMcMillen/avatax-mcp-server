@@ -9,15 +9,6 @@ export interface AvaTaxConfig {
     timeout?: number;
 }
 
-export const AVATAX_ENDPOINTS = {
-    sandbox: 'https://sandbox-rest.avatax.com',
-    production: 'https://rest.avatax.com'
-};
-
-export function getBaseUrl(environment: 'sandbox' | 'production'): string {
-    return AVATAX_ENDPOINTS[environment];
-}
-
 export function createAvaTaxConfig(): AvaTaxConfig {
     const environment = (process.env.AVATAX_ENVIRONMENT || 'sandbox') as 'sandbox' | 'production';
     

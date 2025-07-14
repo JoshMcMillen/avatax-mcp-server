@@ -1,15 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AVATAX_ENDPOINTS = void 0;
-exports.getBaseUrl = getBaseUrl;
 exports.createAvaTaxConfig = createAvaTaxConfig;
-exports.AVATAX_ENDPOINTS = {
-    sandbox: 'https://sandbox-rest.avatax.com',
-    production: 'https://rest.avatax.com'
-};
-function getBaseUrl(environment) {
-    return exports.AVATAX_ENDPOINTS[environment];
-}
 function createAvaTaxConfig() {
     const environment = (process.env.AVATAX_ENVIRONMENT || 'sandbox');
     if (!process.env.AVATAX_ACCOUNT_ID || !process.env.AVATAX_LICENSE_KEY) {

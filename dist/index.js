@@ -64,6 +64,28 @@ server.setRequestHandler(types_js_1.ListToolsRequestSchema, () => __awaiter(void
                             type: 'string',
                             description: 'Customer identifier'
                         },
+                        shipFrom: {
+                            type: 'object',
+                            description: 'Ship from address',
+                            properties: {
+                                line1: { type: 'string' },
+                                city: { type: 'string' },
+                                region: { type: 'string' },
+                                postalCode: { type: 'string' },
+                                country: { type: 'string' }
+                            }
+                        },
+                        shipTo: {
+                            type: 'object',
+                            description: 'Ship to address',
+                            properties: {
+                                line1: { type: 'string' },
+                                city: { type: 'string' },
+                                region: { type: 'string' },
+                                postalCode: { type: 'string' },
+                                country: { type: 'string' }
+                            }
+                        },
                         lines: {
                             type: 'array',
                             description: 'Transaction line items',
@@ -75,38 +97,13 @@ server.setRequestHandler(types_js_1.ListToolsRequestSchema, () => __awaiter(void
                                     amount: { type: 'number', description: 'Line amount' },
                                     itemCode: { type: 'string', description: 'Item/product code' },
                                     description: { type: 'string', description: 'Line description' },
-                                    taxCode: { type: 'string', description: 'Tax code (optional)' },
-                                    addresses: {
-                                        type: 'object',
-                                        properties: {
-                                            shipFrom: {
-                                                type: 'object',
-                                                properties: {
-                                                    line1: { type: 'string' },
-                                                    city: { type: 'string' },
-                                                    region: { type: 'string' },
-                                                    postalCode: { type: 'string' },
-                                                    country: { type: 'string' }
-                                                }
-                                            },
-                                            shipTo: {
-                                                type: 'object',
-                                                properties: {
-                                                    line1: { type: 'string' },
-                                                    city: { type: 'string' },
-                                                    region: { type: 'string' },
-                                                    postalCode: { type: 'string' },
-                                                    country: { type: 'string' }
-                                                }
-                                            }
-                                        }
-                                    }
+                                    taxCode: { type: 'string', description: 'Tax code (optional)' }
                                 },
-                                required: ['number', 'quantity', 'amount', 'addresses']
+                                required: ['quantity', 'amount']
                             }
                         }
                     },
-                    required: ['type', 'date', 'customerCode', 'lines']
+                    required: ['date', 'customerCode', 'lines']
                 }
             },
             {
@@ -142,6 +139,28 @@ server.setRequestHandler(types_js_1.ListToolsRequestSchema, () => __awaiter(void
                         date: { type: 'string', description: 'Transaction date (YYYY-MM-DD)' },
                         customerCode: { type: 'string', description: 'Customer identifier' },
                         commit: { type: 'boolean', description: 'Whether to commit the transaction', default: true },
+                        shipFrom: {
+                            type: 'object',
+                            description: 'Ship from address',
+                            properties: {
+                                line1: { type: 'string' },
+                                city: { type: 'string' },
+                                region: { type: 'string' },
+                                postalCode: { type: 'string' },
+                                country: { type: 'string' }
+                            }
+                        },
+                        shipTo: {
+                            type: 'object',
+                            description: 'Ship to address',
+                            properties: {
+                                line1: { type: 'string' },
+                                city: { type: 'string' },
+                                region: { type: 'string' },
+                                postalCode: { type: 'string' },
+                                country: { type: 'string' }
+                            }
+                        },
                         lines: {
                             type: 'array',
                             description: 'Transaction line items',
@@ -153,34 +172,9 @@ server.setRequestHandler(types_js_1.ListToolsRequestSchema, () => __awaiter(void
                                     amount: { type: 'number' },
                                     itemCode: { type: 'string' },
                                     description: { type: 'string' },
-                                    taxCode: { type: 'string' },
-                                    addresses: {
-                                        type: 'object',
-                                        properties: {
-                                            shipFrom: {
-                                                type: 'object',
-                                                properties: {
-                                                    line1: { type: 'string' },
-                                                    city: { type: 'string' },
-                                                    region: { type: 'string' },
-                                                    postalCode: { type: 'string' },
-                                                    country: { type: 'string' }
-                                                }
-                                            },
-                                            shipTo: {
-                                                type: 'object',
-                                                properties: {
-                                                    line1: { type: 'string' },
-                                                    city: { type: 'string' },
-                                                    region: { type: 'string' },
-                                                    postalCode: { type: 'string' },
-                                                    country: { type: 'string' }
-                                                }
-                                            }
-                                        }
-                                    }
+                                    taxCode: { type: 'string' }
                                 },
-                                required: ['number', 'quantity', 'amount', 'addresses']
+                                required: ['quantity', 'amount']
                             }
                         }
                     },

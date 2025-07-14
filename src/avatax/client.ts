@@ -1,75 +1,60 @@
-import { AvaTaxConfig, AVATAX_ENDPOINTS } from './config.js';
-import axios, { AxiosInstance } from 'axios';
+import { AvaTaxConfig } from './config.js';
+import Avatax from 'avatax';
 
 class AvataxClient {
-    private client: AxiosInstance;
+    private client: any;
     private config: AvaTaxConfig;
 
     constructor(config: AvaTaxConfig) {
         this.config = config;
-        const credentials = Buffer.from(`${config.accountId}:${config.licenseKey}`).toString('base64');
         
-        this.client = axios.create({
-            baseURL: AVATAX_ENDPOINTS[config.environment],
-            timeout: config.timeout || 30000,
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Basic ${credentials}`,
-                'X-Avalara-Client': `${config.appName}; ${config.appVersion}; MCP; ${config.machineName}`
-            }
+        this.client = new Avatax({
+            appName: config.appName || 'AvaTax-MCP-Server',
+            appVersion: config.appVersion || '1.0.0',
+            environment: config.environment,
+            machineName: config.machineName || 'MCP-Server',
+            timeout: config.timeout || 30000
+        }).withSecurity({
+            username: config.accountId,
+            password: config.licenseKey
         });
-
-        // Add retry interceptor for rate limiting
-        this.client.interceptors.response.use(
-            response => response,
-            error => {
-                if (error.response?.status === 429) {
-                    const retryAfter = error.response.headers['retry-after'];
-                    throw new Error(`Rate limit exceeded. Retry after ${retryAfter} seconds.`);
-                }
-                throw error;
-            }
-        );
-    }
-
-    private async sendRequest(endpoint: string, method: string, body?: any) {
-        try {
-            const response = await this.client.request({
-                url: endpoint,
-                method: method as any,
-                data: body
-            });
-            return response.data;
-        } catch (error: any) {
-            this.handleError(error);
-        }
     }
 
     private handleError(error: any): never {
-        if (axios.isAxiosError(error)) {
-            const errorData = error.response?.data;
-            let errorMessage = `AvaTax API Error (${error.response?.status || 'Unknown'}): ${error.message}`;
+        let errorMessage = `AvaTax API Error: ${error.message || 'Unknown error'}`;
+        
+        // The Avatax SDK error structure is different
+        if (error.response?.data) {
+            const errorData = error.response.data;
             
-            if (errorData?.error) {
-                errorMessage = `AvaTax Error: ${errorData.error.message || errorData.error}`;
+            // Check for the standard AvaTax error response format
+            if (errorData.error) {
+                const err = errorData.error;
+                errorMessage = `AvaTax Error [${err.code || 'Unknown'}]: ${err.message || 'Unknown error'}`;
                 
                 // Include detailed error information if available
-                if (errorData.error.details && Array.isArray(errorData.error.details)) {
-                    const details = errorData.error.details.map((d: any) => 
+                if (err.details && Array.isArray(err.details)) {
+                    const details = err.details.map((d: any) => 
                         `  - ${d.message || d.description} ${d.code ? `(${d.code})` : ''}`
                     ).join('\n');
                     errorMessage += '\nDetails:\n' + details;
                 }
+            } else if (errorData.message) {
+                // Sometimes the error is directly in the data
+                errorMessage = `AvaTax Error: ${errorData.message}`;
             }
-            
-            if (error.response?.status === 429) {
-                const retryAfter = error.response.headers['retry-after'];
-                errorMessage = `AvaTax API rate limit exceeded. ${retryAfter ? `Retry after ${retryAfter} seconds.` : 'Please try again later.'}`;
-            }
-            
-            throw new Error(errorMessage);
         }
-        throw new Error(`Network Error: ${error.message}`);
+        
+        if (error.response?.status === 429) {
+            const retryAfter = error.response.headers?.['retry-after'];
+            errorMessage = `AvaTax API rate limit exceeded. ${retryAfter ? `Retry after ${retryAfter} seconds.` : 'Please try again later.'}`;
+        } else if (error.response?.status === 401) {
+            errorMessage = 'AvaTax Authentication failed. Please check your Account ID and License Key.';
+        } else if (error.response?.status === 403) {
+            errorMessage = 'AvaTax Authorization failed. Your account may not have access to this feature.';
+        }
+        
+        throw new Error(errorMessage);
     }
 
     private validateTransactionData(data: any): void {
@@ -101,39 +86,130 @@ class AvataxClient {
     }
 
     public async calculateTax(transactionData: any) {
-        // Set default values
-        const data = {
-            ...transactionData,
-            companyCode: transactionData.companyCode || this.config.companyCode
-        };
-        
-        // Validate before sending
-        this.validateTransactionData(data);
-        
-        return this.sendRequest('/api/v2/transactions/create', 'POST', data);
+        try {
+            // Prepare the transaction model
+            const model = {
+                type: transactionData.type || 'SalesInvoice',
+                companyCode: transactionData.companyCode || this.config.companyCode,
+                date: transactionData.date,
+                customerCode: transactionData.customerCode,
+                lines: transactionData.lines.map((line: any, index: number) => ({
+                    number: line.number || `${index + 1}`,
+                    quantity: line.quantity || 1,
+                    amount: line.amount,
+                    itemCode: line.itemCode,
+                    description: line.description,
+                    taxCode: line.taxCode || 'P0000000'
+                })),
+                // Addresses should be at the transaction level, not line level
+                addresses: {
+                    shipFrom: transactionData.lines[0]?.addresses?.shipFrom || transactionData.shipFrom,
+                    shipTo: transactionData.lines[0]?.addresses?.shipTo || transactionData.shipTo
+                },
+                commit: false
+            };
+
+            // Validate before sending
+            this.validateTransactionData(model);
+            
+            const result = await this.client.createTransaction({ model });
+            return {
+                totalAmount: result.totalAmount,
+                totalTax: result.totalTax,
+                totalTaxable: result.totalTaxable,
+                lines: result.lines,
+                taxDate: result.taxDate,
+                status: result.status
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
     }
 
     public async validateAddress(addressData: any) {
-        return this.sendRequest('/api/v2/addresses/resolve', 'POST', addressData);
+        try {
+            const model = {
+                line1: addressData.line1,
+                line2: addressData.line2,
+                line3: addressData.line3,
+                city: addressData.city,
+                region: addressData.region,
+                postalCode: addressData.postalCode,
+                country: addressData.country || 'US'
+            };
+
+            const result = await this.client.resolveAddress({ model });
+            
+            if (result.validatedAddresses && result.validatedAddresses.length > 0) {
+                return {
+                    valid: true,
+                    normalized: result.validatedAddresses[0],
+                    messages: result.messages || []
+                };
+            }
+            
+            return {
+                valid: false,
+                messages: result.messages || [],
+                errors: result.errors || []
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
     }
 
     public async createTransaction(transactionData: any) {
-        // Set default values
-        const data = {
-            type: transactionData.type || 'SalesInvoice',
-            companyCode: transactionData.companyCode || this.config.companyCode,
-            commit: transactionData.commit !== false, // Default to true
-            ...transactionData
-        };
-        
-        // Validate before sending
-        this.validateTransactionData(data);
-        
-        return this.sendRequest('/api/v2/transactions/create', 'POST', data);
+        try {
+            // Prepare the transaction model
+            const model = {
+                type: transactionData.type || 'SalesInvoice',
+                companyCode: transactionData.companyCode || this.config.companyCode,
+                date: transactionData.date,
+                customerCode: transactionData.customerCode,
+                lines: transactionData.lines.map((line: any, index: number) => ({
+                    number: line.number || `${index + 1}`,
+                    quantity: line.quantity || 1,
+                    amount: line.amount,
+                    itemCode: line.itemCode,
+                    description: line.description,
+                    taxCode: line.taxCode || 'P0000000'
+                })),
+                // Addresses should be at the transaction level
+                addresses: {
+                    shipFrom: transactionData.lines[0]?.addresses?.shipFrom || transactionData.shipFrom,
+                    shipTo: transactionData.lines[0]?.addresses?.shipTo || transactionData.shipTo
+                },
+                commit: transactionData.commit !== false // Default to true for createTransaction
+            };
+
+            // Validate before sending
+            this.validateTransactionData(model);
+            
+            const result = await this.client.createTransaction({ model });
+            return {
+                id: result.id,
+                code: result.code,
+                totalAmount: result.totalAmount,
+                totalTax: result.totalTax,
+                status: result.status,
+                committed: result.status === 'Committed'
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
     }
 
     public async ping() {
-        return await this.sendRequest('/api/v2/utilities/ping', 'GET');
+        try {
+            const result = await this.client.ping();
+            return {
+                authenticated: result.authenticated,
+                version: result.version,
+                environment: this.config.environment
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
     }
 }
 

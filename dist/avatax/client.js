@@ -12,66 +12,53 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const config_js_1 = require("./config.js");
-const axios_1 = __importDefault(require("axios"));
+const avatax_1 = __importDefault(require("avatax"));
 class AvataxClient {
     constructor(config) {
         this.config = config;
-        const credentials = Buffer.from(`${config.accountId}:${config.licenseKey}`).toString('base64');
-        this.client = axios_1.default.create({
-            baseURL: config_js_1.AVATAX_ENDPOINTS[config.environment],
-            timeout: config.timeout || 30000,
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Basic ${credentials}`,
-                'X-Avalara-Client': `${config.appName}; ${config.appVersion}; MCP; ${config.machineName}`
-            }
-        });
-        // Add retry interceptor for rate limiting
-        this.client.interceptors.response.use(response => response, error => {
-            var _a;
-            if (((_a = error.response) === null || _a === void 0 ? void 0 : _a.status) === 429) {
-                const retryAfter = error.response.headers['retry-after'];
-                throw new Error(`Rate limit exceeded. Retry after ${retryAfter} seconds.`);
-            }
-            throw error;
-        });
-    }
-    sendRequest(endpoint, method, body) {
-        return __awaiter(this, void 0, void 0, function* () {
-            try {
-                const response = yield this.client.request({
-                    url: endpoint,
-                    method: method,
-                    data: body
-                });
-                return response.data;
-            }
-            catch (error) {
-                this.handleError(error);
-            }
+        this.client = new avatax_1.default({
+            appName: config.appName || 'AvaTax-MCP-Server',
+            appVersion: config.appVersion || '1.0.0',
+            environment: config.environment,
+            machineName: config.machineName || 'MCP-Server',
+            timeout: config.timeout || 30000
+        }).withSecurity({
+            username: config.accountId,
+            password: config.licenseKey
         });
     }
     handleError(error) {
-        var _a, _b, _c;
-        if (axios_1.default.isAxiosError(error)) {
-            const errorData = (_a = error.response) === null || _a === void 0 ? void 0 : _a.data;
-            let errorMessage = `AvaTax API Error (${((_b = error.response) === null || _b === void 0 ? void 0 : _b.status) || 'Unknown'}): ${error.message}`;
-            if (errorData === null || errorData === void 0 ? void 0 : errorData.error) {
-                errorMessage = `AvaTax Error: ${errorData.error.message || errorData.error}`;
+        var _a, _b, _c, _d, _e;
+        let errorMessage = `AvaTax API Error: ${error.message || 'Unknown error'}`;
+        // The Avatax SDK error structure is different
+        if ((_a = error.response) === null || _a === void 0 ? void 0 : _a.data) {
+            const errorData = error.response.data;
+            // Check for the standard AvaTax error response format
+            if (errorData.error) {
+                const err = errorData.error;
+                errorMessage = `AvaTax Error [${err.code || 'Unknown'}]: ${err.message || 'Unknown error'}`;
                 // Include detailed error information if available
-                if (errorData.error.details && Array.isArray(errorData.error.details)) {
-                    const details = errorData.error.details.map((d) => `  - ${d.message || d.description} ${d.code ? `(${d.code})` : ''}`).join('\n');
+                if (err.details && Array.isArray(err.details)) {
+                    const details = err.details.map((d) => `  - ${d.message || d.description} ${d.code ? `(${d.code})` : ''}`).join('\n');
                     errorMessage += '\nDetails:\n' + details;
                 }
             }
-            if (((_c = error.response) === null || _c === void 0 ? void 0 : _c.status) === 429) {
-                const retryAfter = error.response.headers['retry-after'];
-                errorMessage = `AvaTax API rate limit exceeded. ${retryAfter ? `Retry after ${retryAfter} seconds.` : 'Please try again later.'}`;
+            else if (errorData.message) {
+                // Sometimes the error is directly in the data
+                errorMessage = `AvaTax Error: ${errorData.message}`;
             }
-            throw new Error(errorMessage);
         }
-        throw new Error(`Network Error: ${error.message}`);
+        if (((_b = error.response) === null || _b === void 0 ? void 0 : _b.status) === 429) {
+            const retryAfter = (_c = error.response.headers) === null || _c === void 0 ? void 0 : _c['retry-after'];
+            errorMessage = `AvaTax API rate limit exceeded. ${retryAfter ? `Retry after ${retryAfter} seconds.` : 'Please try again later.'}`;
+        }
+        else if (((_d = error.response) === null || _d === void 0 ? void 0 : _d.status) === 401) {
+            errorMessage = 'AvaTax Authentication failed. Please check your Account ID and License Key.';
+        }
+        else if (((_e = error.response) === null || _e === void 0 ? void 0 : _e.status) === 403) {
+            errorMessage = 'AvaTax Authorization failed. Your account may not have access to this feature.';
+        }
+        throw new Error(errorMessage);
     }
     validateTransactionData(data) {
         // Validate required fields
@@ -101,30 +88,132 @@ class AvataxClient {
     }
     calculateTax(transactionData) {
         return __awaiter(this, void 0, void 0, function* () {
-            // Set default values
-            const data = Object.assign(Object.assign({}, transactionData), { companyCode: transactionData.companyCode || this.config.companyCode });
-            // Validate before sending
-            this.validateTransactionData(data);
-            return this.sendRequest('/api/v2/transactions/create', 'POST', data);
+            var _a, _b, _c, _d;
+            try {
+                // Prepare the transaction model
+                const model = {
+                    type: transactionData.type || 'SalesInvoice',
+                    companyCode: transactionData.companyCode || this.config.companyCode,
+                    date: transactionData.date,
+                    customerCode: transactionData.customerCode,
+                    lines: transactionData.lines.map((line, index) => ({
+                        number: line.number || `${index + 1}`,
+                        quantity: line.quantity || 1,
+                        amount: line.amount,
+                        itemCode: line.itemCode,
+                        description: line.description,
+                        taxCode: line.taxCode || 'P0000000'
+                    })),
+                    // Addresses should be at the transaction level, not line level
+                    addresses: {
+                        shipFrom: ((_b = (_a = transactionData.lines[0]) === null || _a === void 0 ? void 0 : _a.addresses) === null || _b === void 0 ? void 0 : _b.shipFrom) || transactionData.shipFrom,
+                        shipTo: ((_d = (_c = transactionData.lines[0]) === null || _c === void 0 ? void 0 : _c.addresses) === null || _d === void 0 ? void 0 : _d.shipTo) || transactionData.shipTo
+                    },
+                    commit: false
+                };
+                // Validate before sending
+                this.validateTransactionData(model);
+                const result = yield this.client.createTransaction({ model });
+                return {
+                    totalAmount: result.totalAmount,
+                    totalTax: result.totalTax,
+                    totalTaxable: result.totalTaxable,
+                    lines: result.lines,
+                    taxDate: result.taxDate,
+                    status: result.status
+                };
+            }
+            catch (error) {
+                this.handleError(error);
+            }
         });
     }
     validateAddress(addressData) {
         return __awaiter(this, void 0, void 0, function* () {
-            return this.sendRequest('/api/v2/addresses/resolve', 'POST', addressData);
+            try {
+                const model = {
+                    line1: addressData.line1,
+                    line2: addressData.line2,
+                    line3: addressData.line3,
+                    city: addressData.city,
+                    region: addressData.region,
+                    postalCode: addressData.postalCode,
+                    country: addressData.country || 'US'
+                };
+                const result = yield this.client.resolveAddress({ model });
+                if (result.validatedAddresses && result.validatedAddresses.length > 0) {
+                    return {
+                        valid: true,
+                        normalized: result.validatedAddresses[0],
+                        messages: result.messages || []
+                    };
+                }
+                return {
+                    valid: false,
+                    messages: result.messages || [],
+                    errors: result.errors || []
+                };
+            }
+            catch (error) {
+                this.handleError(error);
+            }
         });
     }
     createTransaction(transactionData) {
         return __awaiter(this, void 0, void 0, function* () {
-            // Set default values
-            const data = Object.assign({ type: transactionData.type || 'SalesInvoice', companyCode: transactionData.companyCode || this.config.companyCode, commit: transactionData.commit !== false }, transactionData);
-            // Validate before sending
-            this.validateTransactionData(data);
-            return this.sendRequest('/api/v2/transactions/create', 'POST', data);
+            var _a, _b, _c, _d;
+            try {
+                // Prepare the transaction model
+                const model = {
+                    type: transactionData.type || 'SalesInvoice',
+                    companyCode: transactionData.companyCode || this.config.companyCode,
+                    date: transactionData.date,
+                    customerCode: transactionData.customerCode,
+                    lines: transactionData.lines.map((line, index) => ({
+                        number: line.number || `${index + 1}`,
+                        quantity: line.quantity || 1,
+                        amount: line.amount,
+                        itemCode: line.itemCode,
+                        description: line.description,
+                        taxCode: line.taxCode || 'P0000000'
+                    })),
+                    // Addresses should be at the transaction level
+                    addresses: {
+                        shipFrom: ((_b = (_a = transactionData.lines[0]) === null || _a === void 0 ? void 0 : _a.addresses) === null || _b === void 0 ? void 0 : _b.shipFrom) || transactionData.shipFrom,
+                        shipTo: ((_d = (_c = transactionData.lines[0]) === null || _c === void 0 ? void 0 : _c.addresses) === null || _d === void 0 ? void 0 : _d.shipTo) || transactionData.shipTo
+                    },
+                    commit: transactionData.commit !== false // Default to true for createTransaction
+                };
+                // Validate before sending
+                this.validateTransactionData(model);
+                const result = yield this.client.createTransaction({ model });
+                return {
+                    id: result.id,
+                    code: result.code,
+                    totalAmount: result.totalAmount,
+                    totalTax: result.totalTax,
+                    status: result.status,
+                    committed: result.status === 'Committed'
+                };
+            }
+            catch (error) {
+                this.handleError(error);
+            }
         });
     }
     ping() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield this.sendRequest('/api/v2/utilities/ping', 'GET');
+            try {
+                const result = yield this.client.ping();
+                return {
+                    authenticated: result.authenticated,
+                    version: result.version,
+                    environment: this.config.environment
+                };
+            }
+            catch (error) {
+                this.handleError(error);
+            }
         });
     }
 }
