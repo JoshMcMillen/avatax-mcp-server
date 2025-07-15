@@ -1,10 +1,13 @@
 {
   "name": "avatax-mcp-server",
-  "version": "2.3.3",
+  "version": "2.4.0",
   "description": "MCP server for AvaTax - calculate tax, validate addresses, and create transactions",
   "main": "electron/main.js",
   "scripts": {
     "build": "tsc",
+    "build:watch": "tsc --watch",
+    "dev": "npm run build && node dist/index.js",
+    "dev:watch": "tsc --watch & node dist/index.js",
     "prepare": "npm run build",
     "start": "node dist/index.js",
     "electron:dev": "electron .",

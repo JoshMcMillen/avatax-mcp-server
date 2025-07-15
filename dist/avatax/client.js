@@ -1604,5 +1604,363 @@ class AvataxClient {
             }
         });
     }
+    /**
+     * Item Management Methods
+     *
+     * Items are product catalog entries that simplify tax calculations by pre-configuring
+     * tax codes, parameters, and descriptions. Use items to:
+     * - Separate tax configuration from transaction creation
+     * - Centralize product tax settings
+     * - Simplify CreateTransaction calls with itemCode references
+     * - Enable tax compliance teams to manage product tax behavior independently
+     */
+    /**
+     * Retrieve items for a company
+     */
+    getCompanyItems(companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.filter)
+                    params.append('$filter', options.filter);
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                if (options === null || options === void 0 ? void 0 : options.orderBy)
+                    params.append('$orderBy', options.orderBy);
+                if (options === null || options === void 0 ? void 0 : options.tagName)
+                    params.append('tagName', options.tagName);
+                if (options === null || options === void 0 ? void 0 : options.itemStatus)
+                    params.append('itemStatus', options.itemStatus);
+                if (options === null || options === void 0 ? void 0 : options.taxCodeRecommendationStatus)
+                    params.append('taxCodeRecommendationStatus', options.taxCodeRecommendationStatus);
+                if (options === null || options === void 0 ? void 0 : options.hsCodeClassificationStatus)
+                    params.append('hsCodeClassificationStatus', options.hsCodeClassificationStatus);
+                const queryString = params.toString();
+                const endpoint = queryString
+                    ? `/api/v2/companies/${companyId}/items?${queryString}`
+                    : `/api/v2/companies/${companyId}/items`;
+                return yield this.makeRequest('GET', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Retrieve a specific item by ID
+     */
+    getCompanyItem(itemId, companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                const queryString = params.toString();
+                const endpoint = queryString
+                    ? `/api/v2/companies/${companyId}/items/${itemId}?${queryString}`
+                    : `/api/v2/companies/${companyId}/items/${itemId}`;
+                return yield this.makeRequest('GET', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Create new items in a company's product catalog
+     */
+    createCompanyItems(items, companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const params = new URLSearchParams();
+                if ((options === null || options === void 0 ? void 0 : options.processRecommendationsSynchronously) !== undefined) {
+                    params.append('processRecommendationsSynchronously', options.processRecommendationsSynchronously.toString());
+                }
+                const queryString = params.toString();
+                const endpoint = queryString
+                    ? `/api/v2/companies/${companyId}/items?${queryString}`
+                    : `/api/v2/companies/${companyId}/items`;
+                return yield this.makeRequest('POST', endpoint, items);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Update an existing item
+     */
+    updateCompanyItem(itemId, itemData, companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const params = new URLSearchParams();
+                if ((options === null || options === void 0 ? void 0 : options.processRecommendationsSynchronously) !== undefined) {
+                    params.append('processRecommendationsSynchronously', options.processRecommendationsSynchronously.toString());
+                }
+                const queryString = params.toString();
+                const endpoint = queryString
+                    ? `/api/v2/companies/${companyId}/items/${itemId}?${queryString}`
+                    : `/api/v2/companies/${companyId}/items/${itemId}`;
+                return yield this.makeRequest('PUT', endpoint, itemData);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Delete an item from a company's product catalog
+     */
+    deleteCompanyItem(itemId, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}`;
+                return yield this.makeRequest('DELETE', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Item Parameters Management
+     * Parameters store additional attributes like UPC codes, product summaries,
+     * dimensions, or custom fields that can affect tax calculations.
+     */
+    /**
+     * Get parameters for a specific item
+     */
+    getItemParameters(itemId, companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.filter)
+                    params.append('$filter', options.filter);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                if (options === null || options === void 0 ? void 0 : options.orderBy)
+                    params.append('$orderBy', options.orderBy);
+                const queryString = params.toString();
+                const endpoint = queryString
+                    ? `/api/v2/companies/${companyId}/items/${itemId}/parameters?${queryString}`
+                    : `/api/v2/companies/${companyId}/items/${itemId}/parameters`;
+                return yield this.makeRequest('GET', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Create parameters for an item
+     */
+    createItemParameters(itemId, parameters, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/parameters`;
+                return yield this.makeRequest('POST', endpoint, parameters);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Update a specific item parameter
+     */
+    updateItemParameter(itemId, parameterId, parameterData, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/parameters/${parameterId}`;
+                return yield this.makeRequest('PUT', endpoint, parameterData);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Delete a specific item parameter
+     */
+    deleteItemParameter(itemId, parameterId, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/parameters/${parameterId}`;
+                return yield this.makeRequest('DELETE', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Item Classifications Management
+     * Classifications include HS codes, NAICS codes, and other product classification
+     * systems used for trade and tax compliance.
+     */
+    /**
+     * Get classifications for a specific item
+     */
+    getItemClassifications(itemId, companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.filter)
+                    params.append('$filter', options.filter);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                if (options === null || options === void 0 ? void 0 : options.orderBy)
+                    params.append('$orderBy', options.orderBy);
+                const queryString = params.toString();
+                const endpoint = queryString
+                    ? `/api/v2/companies/${companyId}/items/${itemId}/classifications?${queryString}`
+                    : `/api/v2/companies/${companyId}/items/${itemId}/classifications`;
+                return yield this.makeRequest('GET', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Create classifications for an item
+     */
+    createItemClassifications(itemId, classifications, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/classifications`;
+                return yield this.makeRequest('POST', endpoint, classifications);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Update a specific item classification
+     */
+    updateItemClassification(itemId, classificationId, classificationData, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/classifications/${classificationId}`;
+                return yield this.makeRequest('PUT', endpoint, classificationData);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Delete a specific item classification
+     */
+    deleteItemClassification(itemId, classificationId, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/classifications/${classificationId}`;
+                return yield this.makeRequest('DELETE', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Item Tags Management
+     * Tags are labels that help organize and categorize items for easier management.
+     */
+    /**
+     * Get tags for a specific item
+     */
+    getItemTags(itemId, companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.filter)
+                    params.append('$filter', options.filter);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                if (options === null || options === void 0 ? void 0 : options.orderBy)
+                    params.append('$orderBy', options.orderBy);
+                const queryString = params.toString();
+                const endpoint = queryString
+                    ? `/api/v2/companies/${companyId}/items/${itemId}/tags?${queryString}`
+                    : `/api/v2/companies/${companyId}/items/${itemId}/tags`;
+                return yield this.makeRequest('GET', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Create tags for an item
+     */
+    createItemTags(itemId, tags, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/tags`;
+                return yield this.makeRequest('POST', endpoint, tags);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Delete a specific tag from an item
+     */
+    deleteItemTag(itemId, tagId, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/tags/${tagId}`;
+                return yield this.makeRequest('DELETE', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
 }
 exports.default = AvataxClient;

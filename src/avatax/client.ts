@@ -1680,6 +1680,375 @@ class AvataxClient {
             this.handleError(error);
         }
     }
+
+    /**
+     * Item Management Methods
+     * 
+     * Items are product catalog entries that simplify tax calculations by pre-configuring
+     * tax codes, parameters, and descriptions. Use items to:
+     * - Separate tax configuration from transaction creation
+     * - Centralize product tax settings
+     * - Simplify CreateTransaction calls with itemCode references
+     * - Enable tax compliance teams to manage product tax behavior independently
+     */
+
+    /**
+     * Retrieve items for a company
+     */
+    public async getCompanyItems(companyCode?: string, options?: {
+        filter?: string;
+        include?: string;
+        top?: number;
+        skip?: number;
+        orderBy?: string;
+        tagName?: string;
+        itemStatus?: string;
+        taxCodeRecommendationStatus?: string;
+        hsCodeClassificationStatus?: string;
+    }) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const params = new URLSearchParams();
+            if (options?.filter) params.append('$filter', options.filter);
+            if (options?.include) params.append('$include', options.include);
+            if (options?.top) params.append('$top', options.top.toString());
+            if (options?.skip) params.append('$skip', options.skip.toString());
+            if (options?.orderBy) params.append('$orderBy', options.orderBy);
+            if (options?.tagName) params.append('tagName', options.tagName);
+            if (options?.itemStatus) params.append('itemStatus', options.itemStatus);
+            if (options?.taxCodeRecommendationStatus) params.append('taxCodeRecommendationStatus', options.taxCodeRecommendationStatus);
+            if (options?.hsCodeClassificationStatus) params.append('hsCodeClassificationStatus', options.hsCodeClassificationStatus);
+
+            const queryString = params.toString();
+            const endpoint = queryString 
+                ? `/api/v2/companies/${companyId}/items?${queryString}`
+                : `/api/v2/companies/${companyId}/items`;
+
+            return await this.makeRequest('GET', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Retrieve a specific item by ID
+     */
+    public async getCompanyItem(itemId: number, companyCode?: string, options?: {
+        include?: string;
+    }) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const params = new URLSearchParams();
+            if (options?.include) params.append('$include', options.include);
+
+            const queryString = params.toString();
+            const endpoint = queryString 
+                ? `/api/v2/companies/${companyId}/items/${itemId}?${queryString}`
+                : `/api/v2/companies/${companyId}/items/${itemId}`;
+
+            return await this.makeRequest('GET', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Create new items in a company's product catalog
+     */
+    public async createCompanyItems(items: any[], companyCode?: string, options?: {
+        processRecommendationsSynchronously?: boolean;
+    }) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const params = new URLSearchParams();
+            if (options?.processRecommendationsSynchronously !== undefined) {
+                params.append('processRecommendationsSynchronously', options.processRecommendationsSynchronously.toString());
+            }
+
+            const queryString = params.toString();
+            const endpoint = queryString 
+                ? `/api/v2/companies/${companyId}/items?${queryString}`
+                : `/api/v2/companies/${companyId}/items`;
+
+            return await this.makeRequest('POST', endpoint, items);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Update an existing item
+     */
+    public async updateCompanyItem(itemId: number, itemData: any, companyCode?: string, options?: {
+        processRecommendationsSynchronously?: boolean;
+    }) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const params = new URLSearchParams();
+            if (options?.processRecommendationsSynchronously !== undefined) {
+                params.append('processRecommendationsSynchronously', options.processRecommendationsSynchronously.toString());
+            }
+
+            const queryString = params.toString();
+            const endpoint = queryString 
+                ? `/api/v2/companies/${companyId}/items/${itemId}?${queryString}`
+                : `/api/v2/companies/${companyId}/items/${itemId}`;
+
+            return await this.makeRequest('PUT', endpoint, itemData);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Delete an item from a company's product catalog
+     */
+    public async deleteCompanyItem(itemId: number, companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}`;
+            return await this.makeRequest('DELETE', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Item Parameters Management
+     * Parameters store additional attributes like UPC codes, product summaries, 
+     * dimensions, or custom fields that can affect tax calculations.
+     */
+
+    /**
+     * Get parameters for a specific item
+     */
+    public async getItemParameters(itemId: number, companyCode?: string, options?: {
+        filter?: string;
+        top?: number;
+        skip?: number;
+        orderBy?: string;
+    }) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const params = new URLSearchParams();
+            if (options?.filter) params.append('$filter', options.filter);
+            if (options?.top) params.append('$top', options.top.toString());
+            if (options?.skip) params.append('$skip', options.skip.toString());
+            if (options?.orderBy) params.append('$orderBy', options.orderBy);
+
+            const queryString = params.toString();
+            const endpoint = queryString 
+                ? `/api/v2/companies/${companyId}/items/${itemId}/parameters?${queryString}`
+                : `/api/v2/companies/${companyId}/items/${itemId}/parameters`;
+
+            return await this.makeRequest('GET', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Create parameters for an item
+     */
+    public async createItemParameters(itemId: number, parameters: any[], companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/parameters`;
+            return await this.makeRequest('POST', endpoint, parameters);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Update a specific item parameter
+     */
+    public async updateItemParameter(itemId: number, parameterId: number, parameterData: any, companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/parameters/${parameterId}`;
+            return await this.makeRequest('PUT', endpoint, parameterData);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Delete a specific item parameter
+     */
+    public async deleteItemParameter(itemId: number, parameterId: number, companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/parameters/${parameterId}`;
+            return await this.makeRequest('DELETE', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Item Classifications Management
+     * Classifications include HS codes, NAICS codes, and other product classification 
+     * systems used for trade and tax compliance.
+     */
+
+    /**
+     * Get classifications for a specific item
+     */
+    public async getItemClassifications(itemId: number, companyCode?: string, options?: {
+        filter?: string;
+        top?: number;
+        skip?: number;
+        orderBy?: string;
+    }) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const params = new URLSearchParams();
+            if (options?.filter) params.append('$filter', options.filter);
+            if (options?.top) params.append('$top', options.top.toString());
+            if (options?.skip) params.append('$skip', options.skip.toString());
+            if (options?.orderBy) params.append('$orderBy', options.orderBy);
+
+            const queryString = params.toString();
+            const endpoint = queryString 
+                ? `/api/v2/companies/${companyId}/items/${itemId}/classifications?${queryString}`
+                : `/api/v2/companies/${companyId}/items/${itemId}/classifications`;
+
+            return await this.makeRequest('GET', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Create classifications for an item
+     */
+    public async createItemClassifications(itemId: number, classifications: any[], companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/classifications`;
+            return await this.makeRequest('POST', endpoint, classifications);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Update a specific item classification
+     */
+    public async updateItemClassification(itemId: number, classificationId: number, classificationData: any, companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/classifications/${classificationId}`;
+            return await this.makeRequest('PUT', endpoint, classificationData);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Delete a specific item classification
+     */
+    public async deleteItemClassification(itemId: number, classificationId: number, companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/classifications/${classificationId}`;
+            return await this.makeRequest('DELETE', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Item Tags Management
+     * Tags are labels that help organize and categorize items for easier management.
+     */
+
+    /**
+     * Get tags for a specific item
+     */
+    public async getItemTags(itemId: number, companyCode?: string, options?: {
+        filter?: string;
+        top?: number;
+        skip?: number;
+        orderBy?: string;
+    }) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const params = new URLSearchParams();
+            if (options?.filter) params.append('$filter', options.filter);
+            if (options?.top) params.append('$top', options.top.toString());
+            if (options?.skip) params.append('$skip', options.skip.toString());
+            if (options?.orderBy) params.append('$orderBy', options.orderBy);
+
+            const queryString = params.toString();
+            const endpoint = queryString 
+                ? `/api/v2/companies/${companyId}/items/${itemId}/tags?${queryString}`
+                : `/api/v2/companies/${companyId}/items/${itemId}/tags`;
+
+            return await this.makeRequest('GET', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Create tags for an item
+     */
+    public async createItemTags(itemId: number, tags: any[], companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/tags`;
+            return await this.makeRequest('POST', endpoint, tags);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Delete a specific tag from an item
+     */
+    public async deleteItemTag(itemId: number, tagId: number, companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/tags/${tagId}`;
+            return await this.makeRequest('DELETE', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
 }
 
 export default AvataxClient;
