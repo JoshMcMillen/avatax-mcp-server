@@ -1967,17 +1967,20 @@
                     
                     <div class="feature-card interactive-card">
                         <h3>📊 Transaction Management</h3>
-                        <p>Create, commit, and manage tax transactions for complete compliance workflows.</p>
+                        <p>Complete transaction lifecycle management from creation to adjustment with full audit trails.</p>
                         <div class="feature-details hidden" id="transaction-management-details">
                             <hr>
                             <ul>
-                                <li>✓ Committed transactions</li>
+                                <li>✓ Transaction creation and calculation</li>
+                                <li>✓ Commit/uncommit transactions</li>
+                                <li>✓ Void and adjust transactions</li>
+                                <li>✓ Transaction search and filtering</li>
                                 <li>✓ Audit trail generation</li>
                                 <li>✓ Invoice integration</li>
                                 <li>✓ Compliance reporting</li>
                                 <li>✓ Multi-entity support</li>
                             </ul>
-                            <p><em>Ask your AI: "Create a committed transaction for invoice INV-2024-001"</em></p>
+                            <p><em>Ask your AI: "Show me uncommitted transactions from last month and commit transaction INV-2024-001"</em></p>
                         </div>
                     </div>
                     
@@ -2809,17 +2812,63 @@ const functions = [
                                 <div id="core-tax" class="api-group-content">
                                     <div class="api-endpoint">
                                         <strong>calculate_tax</strong> - Calculate tax for transactions
-                                        <p>Real-time tax calculation with line-item detail, exemptions, and jurisdiction breakdown</p>
+                                        <p>Real-time tax calculation with line-item detail, exemptions, and jurisdiction breakdown. Use SalesOrder for quotes/estimates (temporary), SalesInvoice for final transactions (permanent but uncommitted).</p>
                                     </div>
                                     <div class="api-endpoint">
                                         <strong>create_transaction</strong> - Create committed transactions
-                                        <p>Generate permanent tax records for compliance and reporting</p>
+                                        <p>Generate permanent tax records for compliance and reporting. Creates COMMITTED transactions that will be reported for tax filing.</p>
                                     </div>
                                     <div class="api-endpoint">
                                         <strong>ping_service</strong> - Test API connectivity
                                         <p>Verify credentials and service availability</p>
                                     </div>
-                                    <p><em>Coming Soon: adjust_transaction, void_transaction, commit_transaction</em></p>
+                                    <p><strong>📖 Swagger Reference:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/Transactions" target="_blank" rel="noopener">AvaTax Transactions API Documentation</a></p>
+                                </div>
+                            </div>
+                            
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('transaction-management')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Transaction Management & Lifecycle
+                                </h3>
+                                <div id="transaction-management" class="api-group-content">
+                                    <div class="api-endpoint">
+                                        <strong>list_transactions</strong> - List and search transactions
+                                        <p>Retrieve transactions with filtering by date, status, customer, and amount. Essential for finding existing transactions before modification.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_transaction</strong> - Retrieve specific transaction
+                                        <p>Get detailed information about a transaction by company code and transaction code. Use before making changes.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>commit_transaction</strong> - Commit transaction for reporting
+                                        <p>Move transaction from "Saved" to "Committed" status for tax reporting and compliance. Only uncommitted transactions can be committed.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>uncommit_transaction</strong> - Uncommit transaction
+                                        <p>Change committed transaction back to "Saved" status to allow modifications. Cannot uncommit locked transactions.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>void_transaction</strong> - Void/cancel transaction
+                                        <p>Permanently void a transaction for cancelled orders/invoices. Cannot void transactions reported to tax authorities.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>adjust_transaction</strong> - Adjust/correct committed transaction
+                                        <p>Create new version of committed transaction. Original becomes "Adjusted", new version becomes current. Cannot adjust locked transactions.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>change_transaction_code</strong> - Change transaction code
+                                        <p>Rename transaction code for uncommitted transactions. Useful for correcting codes before commitment.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>verify_transaction</strong> - Verify transaction compliance
+                                        <p>Validate transaction accuracy and compliance with tax rules before processing.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_transaction_audit</strong> - Get transaction audit trail
+                                        <p>Retrieve audit information including creation details, processing time, and API call information for compliance.</p>
+                                    </div>
+                                    <p><strong>📖 Swagger Reference:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/Transactions" target="_blank" rel="noopener">AvaTax Transactions API Documentation</a></p>
+                                    <p><em>Note: Transaction lifecycle follows: Saved → Committed → Locked → (Voided/Adjusted). Only certain operations are allowed at each stage.</em></p>
                                 </div>
                             </div>
                             
