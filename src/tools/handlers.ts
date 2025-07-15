@@ -760,7 +760,7 @@ You can use 'set_credentials' to add credentials for the current session, or cre
     }
 
     // Item Management Tools
-    case 'get_company_items': {
+    case 'list_items_by_company': {
       const result = await avataxClient.getCompanyItems(args.companyCode, {
         filter: args.filter,
         include: args.include,
@@ -780,19 +780,7 @@ You can use 'set_credentials' to add credentials for the current session, or cre
       };
     }
 
-    case 'get_company_item': {
-      const result = await avataxClient.getCompanyItem(args.itemId, args.companyCode, {
-        include: args.include
-      });
-      return {
-        content: [{
-          type: 'text',
-          text: `Item details:\n\n${JSON.stringify(result, null, 2)}`
-        }]
-      };
-    }
-
-    case 'create_company_items': {
+    case 'create_items': {
       const result = await avataxClient.createCompanyItems(args.items, args.companyCode, {
         processRecommendationsSynchronously: args.processRecommendationsSynchronously
       });
@@ -804,29 +792,20 @@ You can use 'set_credentials' to add credentials for the current session, or cre
       };
     }
 
-    case 'update_company_item': {
-      const itemData: any = {
-        itemCode: args.itemCode,
-        description: args.description,
-        taxCode: args.taxCode,
-        taxCodeId: args.taxCodeId,
-        itemGroup: args.itemGroup,
-        category: args.category,
-        itemType: args.itemType,
-        source: args.source,
-        sourceEntityId: args.sourceEntityId,
-        parameters: args.parameters,
-        properties: args.properties
-      };
-      
-      // Remove undefined properties
-      Object.keys(itemData).forEach(key => {
-        if (itemData[key] === undefined) {
-          delete itemData[key];
-        }
+    case 'get_item': {
+      const result = await avataxClient.getCompanyItem(args.itemId, args.companyCode, {
+        include: args.include
       });
+      return {
+        content: [{
+          type: 'text',
+          text: `Item details:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
 
-      const result = await avataxClient.updateCompanyItem(args.itemId, itemData, args.companyCode, {
+    case 'update_item': {
+      const result = await avataxClient.updateCompanyItem(args.itemId, args.item, args.companyCode, {
         processRecommendationsSynchronously: args.processRecommendationsSynchronously
       });
       return {
@@ -837,12 +816,38 @@ You can use 'set_credentials' to add credentials for the current session, or cre
       };
     }
 
-    case 'delete_company_item': {
+    case 'delete_item': {
       const result = await avataxClient.deleteCompanyItem(args.itemId, args.companyCode);
       return {
         content: [{
           type: 'text',
           text: `Item deleted successfully!\n\nItem ID ${args.itemId} has been removed from the product catalog.`
+        }]
+      };
+    }
+
+    case 'query_items_by_tag': {
+      const result = await avataxClient.queryItemsByTag(args.tag, args.companyCode, {
+        filter: args.filter,
+        include: args.include,
+        top: args.top,
+        skip: args.skip,
+        orderBy: args.orderBy
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Items with tag "${args.tag}":\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'bulk_upload_items': {
+      const result = await avataxClient.bulkUploadItems(args.items, args.companyCode);
+      return {
+        content: [{
+          type: 'text',
+          text: `Bulk uploaded items successfully!\n\n${JSON.stringify(result, null, 2)}`
         }]
       };
     }
@@ -857,7 +862,7 @@ You can use 'set_credentials' to add credentials for the current session, or cre
       return {
         content: [{
           type: 'text',
-          text: `Found ${result.count || 0} parameters for item ${args.itemId}:\n\n${JSON.stringify(result, null, 2)}`
+          text: `Item parameters:\n\n${JSON.stringify(result, null, 2)}`
         }]
       };
     }
@@ -867,30 +872,17 @@ You can use 'set_credentials' to add credentials for the current session, or cre
       return {
         content: [{
           type: 'text',
-          text: `Created ${Array.isArray(result) ? result.length : 1} parameter(s) for item ${args.itemId}!\n\n${JSON.stringify(result, null, 2)}`
+          text: `Created item parameters successfully!\n\n${JSON.stringify(result, null, 2)}`
         }]
       };
     }
 
     case 'update_item_parameter': {
-      const parameterData: any = {
-        name: args.name,
-        value: args.value,
-        unit: args.unit
-      };
-      
-      // Remove undefined properties
-      Object.keys(parameterData).forEach(key => {
-        if (parameterData[key] === undefined) {
-          delete parameterData[key];
-        }
-      });
-
-      const result = await avataxClient.updateItemParameter(args.itemId, args.parameterId, parameterData, args.companyCode);
+      const result = await avataxClient.updateItemParameter(args.itemId, args.parameterId, args.parameter, args.companyCode);
       return {
         content: [{
           type: 'text',
-          text: `Item parameter updated successfully!\n\n${JSON.stringify(result, null, 2)}`
+          text: `Updated item parameter successfully!\n\n${JSON.stringify(result, null, 2)}`
         }]
       };
     }
@@ -900,7 +892,7 @@ You can use 'set_credentials' to add credentials for the current session, or cre
       return {
         content: [{
           type: 'text',
-          text: `Parameter deleted successfully!\n\nParameter ID ${args.parameterId} has been removed from item ${args.itemId}.`
+          text: `Deleted item parameter successfully!\n\nParameter ID ${args.parameterId} has been removed.`
         }]
       };
     }
@@ -915,7 +907,7 @@ You can use 'set_credentials' to add credentials for the current session, or cre
       return {
         content: [{
           type: 'text',
-          text: `Found ${result.count || 0} classifications for item ${args.itemId}:\n\n${JSON.stringify(result, null, 2)}`
+          text: `Item classifications:\n\n${JSON.stringify(result, null, 2)}`
         }]
       };
     }
@@ -925,31 +917,17 @@ You can use 'set_credentials' to add credentials for the current session, or cre
       return {
         content: [{
           type: 'text',
-          text: `Created ${Array.isArray(result) ? result.length : 1} classification(s) for item ${args.itemId}!\n\n${JSON.stringify(result, null, 2)}`
+          text: `Created item classifications successfully!\n\n${JSON.stringify(result, null, 2)}`
         }]
       };
     }
 
     case 'update_item_classification': {
-      const classificationData: any = {
-        productCode: args.productCode,
-        systemCode: args.systemCode,
-        country: args.country,
-        isPremium: args.isPremium
-      };
-      
-      // Remove undefined properties
-      Object.keys(classificationData).forEach(key => {
-        if (classificationData[key] === undefined) {
-          delete classificationData[key];
-        }
-      });
-
-      const result = await avataxClient.updateItemClassification(args.itemId, args.classificationId, classificationData, args.companyCode);
+      const result = await avataxClient.updateItemClassification(args.itemId, args.classificationId, args.classification, args.companyCode);
       return {
         content: [{
           type: 'text',
-          text: `Item classification updated successfully!\n\n${JSON.stringify(result, null, 2)}`
+          text: `Updated item classification successfully!\n\n${JSON.stringify(result, null, 2)}`
         }]
       };
     }
@@ -959,7 +937,7 @@ You can use 'set_credentials' to add credentials for the current session, or cre
       return {
         content: [{
           type: 'text',
-          text: `Classification deleted successfully!\n\nClassification ID ${args.classificationId} has been removed from item ${args.itemId}.`
+          text: `Deleted item classification successfully!\n\nClassification ID ${args.classificationId} has been removed.`
         }]
       };
     }
@@ -974,7 +952,7 @@ You can use 'set_credentials' to add credentials for the current session, or cre
       return {
         content: [{
           type: 'text',
-          text: `Found ${result.count || 0} tags for item ${args.itemId}:\n\n${JSON.stringify(result, null, 2)}`
+          text: `Item tags:\n\n${JSON.stringify(result, null, 2)}`
         }]
       };
     }
@@ -984,17 +962,27 @@ You can use 'set_credentials' to add credentials for the current session, or cre
       return {
         content: [{
           type: 'text',
-          text: `Created ${Array.isArray(result) ? result.length : 1} tag(s) for item ${args.itemId}!\n\n${JSON.stringify(result, null, 2)}`
+          text: `Created item tags successfully!\n\n${JSON.stringify(result, null, 2)}`
         }]
       };
     }
 
     case 'delete_item_tag': {
-      const result = await avataxClient.deleteItemTag(args.itemId, args.tagId, args.companyCode);
+      const result = await avataxClient.deleteItemTag(args.itemId, args.itemTagDetailId, args.companyCode);
       return {
         content: [{
           type: 'text',
-          text: `Tag deleted successfully!\n\nTag ID ${args.tagId} has been removed from item ${args.itemId}.`
+          text: `Deleted item tag successfully!\n\nTag ID ${args.itemTagDetailId} has been removed.`
+        }]
+      };
+    }
+
+    case 'get_item_tax_code_recommendations': {
+      const result = await avataxClient.getItemTaxCodeRecommendations(args.itemId, args.companyCode);
+      return {
+        content: [{
+          type: 'text',
+          text: `Tax code recommendations for item:\n\n${JSON.stringify(result, null, 2)}`
         }]
       };
     }

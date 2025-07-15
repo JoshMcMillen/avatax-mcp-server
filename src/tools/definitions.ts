@@ -1675,10 +1675,10 @@ export const TOOL_DEFINITIONS = [
     }
   },
 
-  // Item Management Tools
+  // Item Management Tools - Based on actual AvaTax API endpoints
   {
-    name: 'get_company_items',
-    description: 'Retrieve items for a company. Items are product catalog entries that simplify tax calculations by pre-configuring tax codes, parameters, and descriptions. Use this to view existing items before creating transactions with itemCode references.',
+    name: 'list_items_by_company',
+    description: 'Retrieve items for this company. Items are a way of separating your tax calculation process from your tax configuration details. You can provide itemCode values for each CreateTransaction() API call rather than specifying tax codes, parameters, descriptions, and other data fields. AvaTax will automatically look up each itemCode and apply the correct tax codes and parameters from the item table instead.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -1688,68 +1688,54 @@ export const TOOL_DEFINITIONS = [
         },
         filter: {
           type: 'string',
-          description: 'OData filter criteria for items (e.g., "itemCode eq \'PROD001\'" or "category contains \'Electronics\'")'
+          description: 'A filter statement to identify specific records to retrieve. For more information on filtering, see Filtering in REST. Note: Not filterable: taxCode, source, sourceEntityId, itemType, upc, summary, classifications, parameters, tags, properties, itemStatus, taxCodeRecommendationStatus, taxCodeRecommendations, taxCodeDetails, hsCodeClassificationStatus'
         },
         include: {
           type: 'string',
-          description: 'Additional data to include (comma-separated): Parameters, Classifications, Tags, Properties, TaxCodeRecommendationStatus, HsCodeClassificationStatus, TaxCodeDetails'
+          description: 'A comma separated list of additional data to retrieve. Options: Parameters, Classifications, Tags, Properties, TaxCodeRecommendationStatus, HsCodeClassificationStatus, TaxCodeDetails'
         },
         top: {
           type: 'number',
-          description: 'Maximum number of records to return (default: 25, max: 1000)'
+          description: 'If nonzero, return no more than this number of results. Used with skip to provide pagination for large datasets. Maximum 1,000 records.'
         },
         skip: {
           type: 'number',
-          description: 'Number of records to skip for pagination (default: 0)'
+          description: 'If nonzero, skip this number of results before returning data. Used with top to provide pagination for large datasets.'
         },
         orderBy: {
           type: 'string',
-          description: 'Sort order (e.g., "itemCode asc", "description desc")'
+          description: 'A comma separated list of sort statements in the format (fieldname) [ASC|DESC], for example id ASC.'
         },
         tagName: {
           type: 'string',
-          description: 'Filter items by tag name'
+          description: 'Tag Name on the basis of which you want to filter Items'
         },
         itemStatus: {
           type: 'string',
-          description: 'Comma-separated list of item statuses to filter by'
+          description: 'A comma separated list of item status on the basis of which you want to filter Items'
         },
         taxCodeRecommendationStatus: {
           type: 'string',
-          description: 'Filter items by tax code recommendation status'
+          description: 'Tax code recommendation status on the basis of which you want to filter Items'
         },
         hsCodeClassificationStatus: {
           type: 'string',
-          description: 'Filter items by HS code classification status'
+          description: 'HS code classification status on the basis of which you want to filter items'
+        },
+        hsCodeExistsInCountries: {
+          type: 'string',
+          description: 'A comma-separated list of countries for which the HS code is assigned and based on which you want to filter the items'
+        },
+        hsCodeDoesNotExistsInCountries: {
+          type: 'string',
+          description: 'A comma-separated list of countries for which the HS code is not assigned and based on which you want to filter the items'
         }
       }
     }
   },
   {
-    name: 'get_company_item',
-    description: 'Retrieve a specific item by ID. Use this to examine detailed item configuration including tax codes, parameters, classifications, and tags before making changes.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        companyCode: {
-          type: 'string',
-          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
-        },
-        itemId: {
-          type: 'number',
-          description: 'The unique ID of the item to retrieve (required)'
-        },
-        include: {
-          type: 'string',
-          description: 'Additional data to include (comma-separated): Parameters, Classifications, Tags, Properties, TaxCodeRecommendationStatus, HsCodeClassificationStatus, TaxCodeDetails'
-        }
-      },
-      required: ['itemId']
-    }
-  },
-  {
-    name: 'create_company_items',
-    description: 'Create new items in a company\'s product catalog. Items simplify tax calculations by pre-configuring tax codes and parameters. When you create transactions with itemCode, AvaTax automatically applies the item\'s tax configuration.',
+    name: 'create_items',
+    description: 'Creates one or more new item objects attached to this company. Items are a way of separating your tax calculation process from your tax configuration details. This allows your CreateTransaction call to be as simple as possible, and your tax compliance team can manage your item catalog and adjust the tax behavior of items without having to modify your software. The tax code takes precedence over the tax code id if both are provided.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -1759,55 +1745,63 @@ export const TOOL_DEFINITIONS = [
         },
         items: {
           type: 'array',
-          description: 'Array of items to create',
+          description: 'The items you wish to create',
           items: {
             type: 'object',
             properties: {
               itemCode: {
                 type: 'string',
-                description: 'Unique code for this item (required, max 50 characters)'
+                description: 'A unique code representing this item (max 50 characters)'
               },
               description: {
                 type: 'string',
-                description: 'Friendly description of the item (required, max 255 characters)'
-              },
-              taxCode: {
-                type: 'string',
-                description: 'Tax code to apply when selling this item (optional, max 25 characters)'
+                description: 'A friendly description of this item in your product catalog (max 255 characters)'
               },
               taxCodeId: {
                 type: 'number',
-                description: 'Tax code ID to apply when selling this item (alternative to taxCode)'
+                description: 'The unique ID number of the tax code that is applied when selling this item'
+              },
+              taxCode: {
+                type: 'string',
+                description: 'The unique code string of the Tax Code that is applied when selling this item (max 25 characters)'
               },
               itemGroup: {
                 type: 'string',
-                description: 'Group name for similar items (optional, max 50 characters)'
+                description: 'A way to group similar items (max 50 characters)'
               },
               category: {
                 type: 'string',
-                description: 'Product category (optional, max 4000 characters)'
-              },
-              itemType: {
-                type: 'string',
-                description: 'Type of item (optional, max 100 characters)'
+                description: 'A category of product (max 4000 characters)'
               },
               source: {
                 type: 'string',
-                description: 'Source system that created this item (optional, max 20 characters)'
+                description: 'Source of creation of this item (max 20 characters)'
               },
               sourceEntityId: {
                 type: 'string',
-                description: 'Unique identifier from source system (optional, max 100 characters)'
+                description: 'The unique identifier of this item at the source (max 100 characters)'
+              },
+              itemType: {
+                type: 'string',
+                description: 'Type of item (max 100 characters)'
+              },
+              upc: {
+                type: 'string',
+                description: 'Universal unique code for item (max 50 characters) - DEPRECATED: Use parameter UPC instead'
+              },
+              summary: {
+                type: 'string',
+                description: 'Long Summary for Item (max 4000 characters) - DEPRECATED: Use parameter Summary instead'
               },
               parameters: {
                 type: 'array',
-                description: 'Item parameters for additional configuration',
+                description: 'List of item parameters',
                 items: {
                   type: 'object',
                   properties: {
                     name: {
                       type: 'string',
-                      description: 'Parameter name (e.g., "UPC", "Summary", "ScreenSize")'
+                      description: 'Parameter name (e.g., UPC, Summary, ScreenSize)'
                     },
                     value: {
                       type: 'string',
@@ -1815,7 +1809,7 @@ export const TOOL_DEFINITIONS = [
                     },
                     unit: {
                       type: 'string',
-                      description: 'Unit of measurement (optional, e.g., "inch", "kg")'
+                      description: 'Parameter unit (e.g., inch)'
                     }
                   },
                   required: ['name', 'value']
@@ -1823,7 +1817,7 @@ export const TOOL_DEFINITIONS = [
               },
               properties: {
                 type: 'object',
-                description: 'Additional key-value properties for the item',
+                description: 'Additional key-description of the product',
                 additionalProperties: {
                   type: 'string'
                 }
@@ -1834,7 +1828,7 @@ export const TOOL_DEFINITIONS = [
         },
         processRecommendationsSynchronously: {
           type: 'boolean',
-          description: 'Whether to process tax code recommendations synchronously (default: false)',
+          description: 'If true then Indix api will be called synchronously to get tax code recommendations',
           default: false
         }
       },
@@ -1842,8 +1836,8 @@ export const TOOL_DEFINITIONS = [
     }
   },
   {
-    name: 'update_company_item',
-    description: 'Update an existing item in a company\'s product catalog. IMPORTANT: This replaces all data in the item - any fields not provided will be set to null. Use get_company_item first to retrieve current values.',
+    name: 'get_item',
+    description: 'Get the Item object identified by this URL. Items are a way of separating your tax calculation process from your tax configuration details. AvaTax will automatically look up each itemCode and apply the correct tax codes and parameters from the item table instead.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -1853,85 +1847,295 @@ export const TOOL_DEFINITIONS = [
         },
         itemId: {
           type: 'number',
-          description: 'The unique ID of the item to update (required)'
+          description: 'The primary key of this item (required)'
         },
-        itemCode: {
+        include: {
           type: 'string',
-          description: 'Unique code for this item (required, max 50 characters)'
-        },
-        description: {
+          description: 'A comma separated list of additional data to retrieve'
+        }
+      },
+      required: ['itemId']
+    }
+  },
+  {
+    name: 'update_item',
+    description: 'Replace the existing Item object at this URL with an updated object. All data from the existing object will be replaced with data in the object you PUT. To set a field\'s value to null, you may either set its value to null or omit that field from the object you post. The tax code takes precedence over the tax code id if both are provided.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
           type: 'string',
-          description: 'Friendly description of the item (required, max 255 characters)'
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
         },
-        taxCode: {
-          type: 'string',
-          description: 'Tax code to apply when selling this item (optional, max 25 characters)'
-        },
-        taxCodeId: {
+        itemId: {
           type: 'number',
-          description: 'Tax code ID to apply when selling this item (alternative to taxCode)'
+          description: 'The ID of the item you wish to update (required)'
         },
-        itemGroup: {
-          type: 'string',
-          description: 'Group name for similar items (optional, max 50 characters)'
+        item: {
+          type: 'object',
+          description: 'The item object you wish to update with',
+          properties: {
+            itemCode: {
+              type: 'string',
+              description: 'A unique code representing this item (max 50 characters)'
+            },
+            description: {
+              type: 'string',
+              description: 'A friendly description of this item in your product catalog (max 255 characters)'
+            },
+            taxCodeId: {
+              type: 'number',
+              description: 'The unique ID number of the tax code that is applied when selling this item'
+            },
+            taxCode: {
+              type: 'string',
+              description: 'The unique code string of the Tax Code that is applied when selling this item (max 25 characters)'
+            },
+            itemGroup: {
+              type: 'string',
+              description: 'A way to group similar items (max 50 characters)'
+            },
+            category: {
+              type: 'string',
+              description: 'A category of product (max 4000 characters)'
+            },
+            source: {
+              type: 'string',
+              description: 'Source of creation of this item (max 20 characters)'
+            },
+            sourceEntityId: {
+              type: 'string',
+              description: 'The unique identifier of this item at the source (max 100 characters)'
+            },
+            itemType: {
+              type: 'string',
+              description: 'Type of item (max 100 characters)'
+            },
+            parameters: {
+              type: 'array',
+              description: 'List of item parameters',
+              items: {
+                type: 'object',
+                properties: {
+                  name: {
+                    type: 'string',
+                    description: 'Parameter name'
+                  },
+                  value: {
+                    type: 'string',
+                    description: 'Parameter value'
+                  },
+                  unit: {
+                    type: 'string',
+                    description: 'Parameter unit'
+                  }
+                },
+                required: ['name', 'value']
+              }
+            },
+            properties: {
+              type: 'object',
+              description: 'Additional key-description of the product',
+              additionalProperties: {
+                type: 'string'
+              }
+            }
+          },
+          required: ['itemCode', 'description']
         },
-        category: {
+        processRecommendationsSynchronously: {
+          type: 'boolean',
+          description: 'If true then Indix api will be called synchronously to get tax code recommendations',
+          default: false
+        }
+      },
+      required: ['itemId', 'item']
+    }
+  },
+  {
+    name: 'delete_item',
+    description: 'Delete the item object at this URL. Items that are referenced by transactions cannot be deleted.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
           type: 'string',
-          description: 'Product category (optional, max 4000 characters)'
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
         },
-        itemType: {
+        itemId: {
+          type: 'number',
+          description: 'The ID of the item you wish to delete (required)'
+        }
+      },
+      required: ['itemId']
+    }
+  },
+  {
+    name: 'query_items_by_tag',
+    description: 'Get multiple item objects associated with given tag. Items are a way of separating your tax calculation process from your tax configuration details. This allows your CreateTransaction call to be as simple as possible, and your tax compliance team can manage your item catalog and adjust the tax behavior of items without having to modify your software.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
           type: 'string',
-          description: 'Type of item (optional, max 100 characters)'
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
         },
-        source: {
+        tag: {
           type: 'string',
-          description: 'Source system that created this item (optional, max 20 characters)'
+          description: 'The master tag to be associated with item (required)'
         },
-        sourceEntityId: {
+        filter: {
           type: 'string',
-          description: 'Unique identifier from source system (optional, max 100 characters)'
+          description: 'A filter statement to identify specific records to retrieve'
+        },
+        include: {
+          type: 'string',
+          description: 'A comma separated list of additional data to retrieve'
+        },
+        top: {
+          type: 'number',
+          description: 'If nonzero, return no more than this number of results'
+        },
+        skip: {
+          type: 'number',
+          description: 'If nonzero, skip this number of results before returning data'
+        },
+        orderBy: {
+          type: 'string',
+          description: 'A comma separated list of sort statements in the format (fieldname) [ASC|DESC]'
+        }
+      },
+      required: ['tag']
+    }
+  },
+  {
+    name: 'bulk_upload_items',
+    description: 'Create/Update one or more item objects attached to this company. Items are a way of separating your tax calculation process from your tax configuration details. This allows your CreateTransaction call to be as simple as possible, and your tax compliance team can manage your item catalog and adjust the tax behavior of items without having to modify your software. The tax code takes precedence over the tax code id if both are provided.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        items: {
+          type: 'object',
+          description: 'The items you wish to upload',
+          properties: {
+            items: {
+              type: 'array',
+              description: 'List of items to upload',
+              items: {
+                type: 'object',
+                properties: {
+                  itemCode: {
+                    type: 'string',
+                    description: 'A unique code representing this item'
+                  },
+                  description: {
+                    type: 'string',
+                    description: 'A friendly description of this item'
+                  },
+                  taxCode: {
+                    type: 'string',
+                    description: 'The Tax Code applied when selling this item'
+                  },
+                  itemGroup: {
+                    type: 'string',
+                    description: 'A way to group similar items'
+                  },
+                  category: {
+                    type: 'string',
+                    description: 'A category of product'
+                  }
+                },
+                required: ['itemCode', 'description']
+              }
+            }
+          },
+          required: ['items']
+        }
+      },
+      required: ['items']
+    }
+  },
+  {
+    name: 'get_item_parameters',
+    description: 'Retrieve parameters for a specific item. Parameters store additional configuration that can affect tax calculations.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        itemId: {
+          type: 'number',
+          description: 'The unique ID of the item (required)'
+        },
+        filter: {
+          type: 'string',
+          description: 'A filter statement to identify specific records to retrieve'
+        },
+        top: {
+          type: 'number',
+          description: 'If nonzero, return no more than this number of results'
+        },
+        skip: {
+          type: 'number',
+          description: 'If nonzero, skip this number of results before returning data'
+        },
+        orderBy: {
+          type: 'string',
+          description: 'A comma separated list of sort statements'
+        }
+      },
+      required: ['itemId']
+    }
+  },
+  {
+    name: 'create_item_parameters',
+    description: 'Create one or more parameters for an item. Parameters store additional configuration that can affect tax calculations.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        itemId: {
+          type: 'number',
+          description: 'The unique ID of the item (required)'
         },
         parameters: {
           type: 'array',
-          description: 'Item parameters for additional configuration',
+          description: 'The item parameters you wish to create',
           items: {
             type: 'object',
             properties: {
               name: {
                 type: 'string',
-                description: 'Parameter name (e.g., "UPC", "Summary", "ScreenSize")'
+                description: 'The parameter name'
               },
               value: {
                 type: 'string',
-                description: 'Parameter value'
+                description: 'The parameter value'
               },
               unit: {
                 type: 'string',
-                description: 'Unit of measurement (optional, e.g., "inch", "kg")'
+                description: 'The parameter unit (optional)'
               }
             },
             required: ['name', 'value']
           }
-        },
-        properties: {
-          type: 'object',
-          description: 'Additional key-value properties for the item',
-          additionalProperties: {
-            type: 'string'
-          }
-        },
-        processRecommendationsSynchronously: {
-          type: 'boolean',
-          description: 'Whether to process tax code recommendations synchronously (default: false)',
-          default: false
         }
       },
-      required: ['itemId', 'itemCode', 'description']
+      required: ['itemId', 'parameters']
     }
   },
   {
-    name: 'delete_company_item',
-    description: 'Delete an item from a company\'s product catalog. IMPORTANT: This permanently removes the item. Items that are referenced in existing transactions cannot be deleted.',
+    name: 'update_item_parameter',
+    description: 'Update a single parameter belonging to an item.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -1941,7 +2145,303 @@ export const TOOL_DEFINITIONS = [
         },
         itemId: {
           type: 'number',
-          description: 'The unique ID of the item to delete (required)'
+          description: 'The unique ID of the item that owns this parameter (required)'
+        },
+        parameterId: {
+          type: 'number',
+          description: 'The unique ID of the parameter (required)'
+        },
+        parameter: {
+          type: 'object',
+          description: 'The item parameter you wish to update',
+          properties: {
+            name: {
+              type: 'string',
+              description: 'The parameter name'
+            },
+            value: {
+              type: 'string',
+              description: 'The parameter value'
+            },
+            unit: {
+              type: 'string',
+              description: 'The parameter unit (optional)'
+            }
+          },
+          required: ['name', 'value']
+        }
+      },
+      required: ['itemId', 'parameterId', 'parameter']
+    }
+  },
+  {
+    name: 'delete_item_parameter',
+    description: 'Delete a single parameter belonging to an item.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        itemId: {
+          type: 'number',
+          description: 'The unique ID of the item that owns this parameter (required)'
+        },
+        parameterId: {
+          type: 'number',
+          description: 'The unique ID of the parameter (required)'
+        }
+      },
+      required: ['itemId', 'parameterId']
+    }
+  },
+  {
+    name: 'get_item_classifications',
+    description: 'Retrieve classifications for a specific item. Classifications include HS codes and other product classification systems.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        itemId: {
+          type: 'number',
+          description: 'The unique ID of the item (required)'
+        },
+        filter: {
+          type: 'string',
+          description: 'A filter statement to identify specific records to retrieve'
+        },
+        top: {
+          type: 'number',
+          description: 'If nonzero, return no more than this number of results'
+        },
+        skip: {
+          type: 'number',
+          description: 'If nonzero, skip this number of results before returning data'
+        },
+        orderBy: {
+          type: 'string',
+          description: 'A comma separated list of sort statements'
+        }
+      },
+      required: ['itemId']
+    }
+  },
+  {
+    name: 'create_item_classifications',
+    description: 'Create one or more classifications for an item. Classifications assign HS codes and other product classification codes.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        itemId: {
+          type: 'number',
+          description: 'The unique ID of the item (required)'
+        },
+        classifications: {
+          type: 'array',
+          description: 'The classifications you wish to create',
+          items: {
+            type: 'object',
+            properties: {
+              productCode: {
+                type: 'string',
+                description: 'The product code (e.g., HS code)'
+              },
+              systemCode: {
+                type: 'string',
+                description: 'The classification system (e.g., TARIC, HTS)'
+              },
+              country: {
+                type: 'string',
+                description: 'Country code for this classification'
+              },
+              isPremium: {
+                type: 'boolean',
+                description: 'Whether this is a premium classification'
+              }
+            },
+            required: ['productCode', 'systemCode']
+          }
+        }
+      },
+      required: ['itemId', 'classifications']
+    }
+  },
+  {
+    name: 'update_item_classification',
+    description: 'Update a single classification for an item.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        itemId: {
+          type: 'number',
+          description: 'The unique ID of the item (required)'
+        },
+        classificationId: {
+          type: 'number',
+          description: 'The unique ID of the classification (required)'
+        },
+        classification: {
+          type: 'object',
+          description: 'The classification you wish to update',
+          properties: {
+            productCode: {
+              type: 'string',
+              description: 'The product code (e.g., HS code)'
+            },
+            systemCode: {
+              type: 'string',
+              description: 'The classification system (e.g., TARIC, HTS)'
+            },
+            country: {
+              type: 'string',
+              description: 'Country code for this classification'
+            },
+            isPremium: {
+              type: 'boolean',
+              description: 'Whether this is a premium classification'
+            }
+          },
+          required: ['productCode', 'systemCode']
+        }
+      },
+      required: ['itemId', 'classificationId', 'classification']
+    }
+  },
+  {
+    name: 'delete_item_classification',
+    description: 'Delete a single classification for an item.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        itemId: {
+          type: 'number',
+          description: 'The unique ID of the item (required)'
+        },
+        classificationId: {
+          type: 'number',
+          description: 'The unique ID of the classification (required)'
+        }
+      },
+      required: ['itemId', 'classificationId']
+    }
+  },
+  {
+    name: 'get_item_tags',
+    description: 'Retrieve tags for a specific item. Tags are organizational labels that help categorize items.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        itemId: {
+          type: 'number',
+          description: 'The unique ID of the item (required)'
+        },
+        filter: {
+          type: 'string',
+          description: 'A filter statement to identify specific records to retrieve'
+        },
+        top: {
+          type: 'number',
+          description: 'If nonzero, return no more than this number of results'
+        },
+        skip: {
+          type: 'number',
+          description: 'If nonzero, skip this number of results before returning data'
+        },
+        orderBy: {
+          type: 'string',
+          description: 'A comma separated list of sort statements'
+        }
+      },
+      required: ['itemId']
+    }
+  },
+  {
+    name: 'create_item_tags',
+    description: 'Create one or more tags for an item. Tags help organize and categorize items.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        itemId: {
+          type: 'number',
+          description: 'The unique ID of the item (required)'
+        },
+        tags: {
+          type: 'array',
+          description: 'The tags you wish to create',
+          items: {
+            type: 'object',
+            properties: {
+              tagName: {
+                type: 'string',
+                description: 'The tag name'
+              }
+            },
+            required: ['tagName']
+          }
+        }
+      },
+      required: ['itemId', 'tags']
+    }
+  },
+  {
+    name: 'delete_item_tag',
+    description: 'Delete a single tag for an item.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        itemId: {
+          type: 'number',
+          description: 'The unique ID of the item (required)'
+        },
+        itemTagDetailId: {
+          type: 'number',
+          description: 'The unique ID of the item tag detail (required)'
+        }
+      },
+      required: ['itemId', 'itemTagDetailId']
+    }
+  },
+  {
+    name: 'get_item_tax_code_recommendations',
+    description: 'Provides at least three tax-code recommendations for the given company ID and item ID. Use this to get suggested tax codes for items that need proper tax classification.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        itemId: {
+          type: 'number',
+          description: 'The unique ID of the item (required)'
         }
       },
       required: ['itemId']

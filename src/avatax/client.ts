@@ -2049,6 +2049,68 @@ class AvataxClient {
             this.handleError(error);
         }
     }
+
+    /**
+     * Query items by tag
+     */
+    public async queryItemsByTag(tag: string, companyCode?: string, options?: {
+        filter?: string;
+        include?: string;
+        top?: number;
+        skip?: number;
+        orderBy?: string;
+    }) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const params = new URLSearchParams();
+            if (options?.filter) params.append('$filter', options.filter);
+            if (options?.include) params.append('$include', options.include);
+            if (options?.top) params.append('$top', options.top.toString());
+            if (options?.skip) params.append('$skip', options.skip.toString());
+            if (options?.orderBy) params.append('$orderBy', options.orderBy);
+
+            const queryString = params.toString();
+            const endpoint = queryString 
+                ? `/api/v2/companies/${companyId}/items/bytags/${tag}?${queryString}`
+                : `/api/v2/companies/${companyId}/items/bytags/${tag}`;
+
+            return await this.makeRequest('GET', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Bulk upload items
+     */
+    public async bulkUploadItems(items: { items: any[] }, companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/api/v2/companies/${companyId}/items/upload`;
+            return await this.makeRequest('POST', endpoint, items);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Get tax code recommendations for an item
+     */
+    public async getItemTaxCodeRecommendations(itemId: number, companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/taxcoderecommendations`;
+            return await this.makeRequest('GET', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
 }
 
 export default AvataxClient;

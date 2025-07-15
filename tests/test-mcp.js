@@ -14,7 +14,7 @@ const testConfig = {
 console.log('Testing MCP server startup...');
 console.log('Environment variables will be set for the server');
 
-const scriptPath = path.join(__dirname, 'dist', 'index.js');
+const scriptPath = path.join(__dirname, '..', 'dist', 'index.js');
 console.log('Script path:', scriptPath);
 
 const child = spawn('node', [scriptPath], {

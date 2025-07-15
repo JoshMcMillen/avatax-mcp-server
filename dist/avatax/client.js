@@ -1962,5 +1962,67 @@ class AvataxClient {
             }
         });
     }
+    /**
+     * Query items by tag
+     */
+    queryItemsByTag(tag, companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.filter)
+                    params.append('$filter', options.filter);
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                if (options === null || options === void 0 ? void 0 : options.orderBy)
+                    params.append('$orderBy', options.orderBy);
+                const queryString = params.toString();
+                const endpoint = queryString
+                    ? `/api/v2/companies/${companyId}/items/bytags/${tag}?${queryString}`
+                    : `/api/v2/companies/${companyId}/items/bytags/${tag}`;
+                return yield this.makeRequest('GET', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Bulk upload items
+     */
+    bulkUploadItems(items, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/api/v2/companies/${companyId}/items/upload`;
+                return yield this.makeRequest('POST', endpoint, items);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Get tax code recommendations for an item
+     */
+    getItemTaxCodeRecommendations(itemId, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/taxcoderecommendations`;
+                return yield this.makeRequest('GET', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
 }
 exports.default = AvataxClient;
