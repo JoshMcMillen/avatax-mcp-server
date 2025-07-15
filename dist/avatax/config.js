@@ -49,11 +49,22 @@ function loadCredentials() {
     for (const credPath of possiblePaths) {
         if (fs.existsSync(credPath)) {
             try {
-                const content = fs.readFileSync(credPath, 'utf-8');
+                let content = fs.readFileSync(credPath, 'utf-8');
+                // Remove BOM if present (fixes Windows PowerShell UTF-8 files)
+                if (content.charCodeAt(0) === 0xFEFF) {
+                    content = content.slice(1);
+                }
+                // Trim whitespace and invisible characters
+                content = content.trim();
                 return JSON.parse(content);
             }
             catch (error) {
                 console.error(`Failed to load credentials from ${credPath}:`, error);
+                // If this is a JSON parse error, try to provide more helpful information
+                if (error.name === 'SyntaxError') {
+                    console.error(`The credentials file appears to have invalid JSON format. Please check the file: ${credPath}`);
+                    console.error('You may need to recreate the file with proper JSON formatting.');
+                }
             }
         }
     }
@@ -66,7 +77,9 @@ function saveCredentials(credentials) {
     if (!fs.existsSync(credentialsDir)) {
         fs.mkdirSync(credentialsDir, { recursive: true });
     }
-    fs.writeFileSync(credentialsPath, JSON.stringify(credentials, null, 2));
+    // Write the file without BOM to avoid JSON parsing issues
+    const jsonContent = JSON.stringify(credentials, null, 2);
+    fs.writeFileSync(credentialsPath, jsonContent, { encoding: 'utf8' });
 }
 function createAvaTaxConfig() {
     // First try to load from external credentials file
