@@ -529,5 +529,175 @@ class AvataxClient {
             }
         });
     }
+    // ===== NEXUS MANAGEMENT METHODS =====
+    /**
+     * Get all nexus declarations for a company - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus
+     */
+    getCompanyNexus(companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.filter)
+                    params.append('$filter', options.filter);
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                if (options === null || options === void 0 ? void 0 : options.orderBy)
+                    params.append('$orderBy', options.orderBy);
+                const queryString = params.toString();
+                const pathAfterCompanyId = queryString ? `/nexus?${queryString}` : '/nexus';
+                return yield this.makeCompanyIdRequest('GET', pathAfterCompanyId, resolvedCompanyCode);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Get a specific nexus declaration by ID - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus/{id}
+     */
+    getNexusById(id, companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!id || id <= 0) {
+                    throw new Error('Valid nexus ID is required.');
+                }
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                const queryString = params.toString();
+                const pathAfterCompanyId = queryString ? `/nexus/${id}?${queryString}` : `/nexus/${id}`;
+                return yield this.makeCompanyIdRequest('GET', pathAfterCompanyId, resolvedCompanyCode);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Create a new nexus declaration - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus
+     */
+    createNexus(nexusData, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!nexusData || !nexusData.country) {
+                    throw new Error('Nexus data with country is required.');
+                }
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                // Ensure we send an array of nexus declarations as AvaTax expects
+                const nexusArray = Array.isArray(nexusData) ? nexusData : [nexusData];
+                return yield this.makeCompanyIdRequest('POST', '/nexus', resolvedCompanyCode, nexusArray);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Update an existing nexus declaration - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus/{id}
+     */
+    updateNexus(id, nexusData, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!id || id <= 0) {
+                    throw new Error('Valid nexus ID is required.');
+                }
+                if (!nexusData) {
+                    throw new Error('Nexus data is required for update.');
+                }
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                return yield this.makeCompanyIdRequest('PUT', `/nexus/${id}`, resolvedCompanyCode, nexusData);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Delete a nexus declaration - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus/{id}
+     */
+    deleteNexus(id, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!id || id <= 0) {
+                    throw new Error('Valid nexus ID is required.');
+                }
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                return yield this.makeCompanyIdRequest('DELETE', `/nexus/${id}`, resolvedCompanyCode);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Get nexus declarations by form code - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus/byform/{formCode}
+     */
+    getNexusByFormCode(formCode, companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!formCode || formCode.trim() === '') {
+                    throw new Error('Form code is required.');
+                }
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                if (options === null || options === void 0 ? void 0 : options.filter)
+                    params.append('$filter', options.filter);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                if (options === null || options === void 0 ? void 0 : options.orderBy)
+                    params.append('$orderBy', options.orderBy);
+                const queryString = params.toString();
+                const encodedFormCode = encodeURIComponent(formCode.trim());
+                const pathAfterCompanyId = queryString
+                    ? `/nexus/byform/${encodedFormCode}?${queryString}`
+                    : `/nexus/byform/${encodedFormCode}`;
+                return yield this.makeCompanyIdRequest('GET', pathAfterCompanyId, resolvedCompanyCode);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Declare nexus by address - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus/byaddress
+     */
+    declareNexusByAddress(addressData, companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!addressData || !addressData.line1 || !addressData.city || !addressData.region || !addressData.country || !addressData.postalCode) {
+                    throw new Error('Complete address information is required (line1, city, region, country, postalCode).');
+                }
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.textCase)
+                    params.append('textCase', options.textCase);
+                if (options === null || options === void 0 ? void 0 : options.effectiveDate)
+                    params.append('effectiveDate', options.effectiveDate);
+                const queryString = params.toString();
+                const pathAfterCompanyId = queryString ? `/nexus/byaddress?${queryString}` : '/nexus/byaddress';
+                return yield this.makeCompanyIdRequest('POST', pathAfterCompanyId, resolvedCompanyCode, addressData);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
 }
 exports.default = AvataxClient;

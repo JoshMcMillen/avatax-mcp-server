@@ -542,6 +542,187 @@ class AvataxClient {
             this.handleError(error);
         }
     }
+
+    // ===== NEXUS MANAGEMENT METHODS =====
+
+    /**
+     * Get all nexus declarations for a company - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus
+     */
+    public async getCompanyNexus(companyCode?: string, options?: { 
+        filter?: string; 
+        include?: string; 
+        top?: number; 
+        skip?: number; 
+        orderBy?: string; 
+    }) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            
+            const params = new URLSearchParams();
+            if (options?.filter) params.append('$filter', options.filter);
+            if (options?.include) params.append('$include', options.include);
+            if (options?.top) params.append('$top', options.top.toString());
+            if (options?.skip) params.append('$skip', options.skip.toString());
+            if (options?.orderBy) params.append('$orderBy', options.orderBy);
+            
+            const queryString = params.toString();
+            const pathAfterCompanyId = queryString ? `/nexus?${queryString}` : '/nexus';
+            
+            return await this.makeCompanyIdRequest('GET', pathAfterCompanyId, resolvedCompanyCode);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Get a specific nexus declaration by ID - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus/{id}
+     */
+    public async getNexusById(id: number, companyCode?: string, options?: { include?: string }) {
+        try {
+            if (!id || id <= 0) {
+                throw new Error('Valid nexus ID is required.');
+            }
+
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            
+            const params = new URLSearchParams();
+            if (options?.include) params.append('$include', options.include);
+            
+            const queryString = params.toString();
+            const pathAfterCompanyId = queryString ? `/nexus/${id}?${queryString}` : `/nexus/${id}`;
+            
+            return await this.makeCompanyIdRequest('GET', pathAfterCompanyId, resolvedCompanyCode);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Create a new nexus declaration - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus
+     */
+    public async createNexus(nexusData: any, companyCode?: string) {
+        try {
+            if (!nexusData || !nexusData.country) {
+                throw new Error('Nexus data with country is required.');
+            }
+
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            
+            // Ensure we send an array of nexus declarations as AvaTax expects
+            const nexusArray = Array.isArray(nexusData) ? nexusData : [nexusData];
+            
+            return await this.makeCompanyIdRequest('POST', '/nexus', resolvedCompanyCode, nexusArray);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Update an existing nexus declaration - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus/{id}
+     */
+    public async updateNexus(id: number, nexusData: any, companyCode?: string) {
+        try {
+            if (!id || id <= 0) {
+                throw new Error('Valid nexus ID is required.');
+            }
+            if (!nexusData) {
+                throw new Error('Nexus data is required for update.');
+            }
+
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            
+            return await this.makeCompanyIdRequest('PUT', `/nexus/${id}`, resolvedCompanyCode, nexusData);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Delete a nexus declaration - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus/{id}
+     */
+    public async deleteNexus(id: number, companyCode?: string) {
+        try {
+            if (!id || id <= 0) {
+                throw new Error('Valid nexus ID is required.');
+            }
+
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            
+            return await this.makeCompanyIdRequest('DELETE', `/nexus/${id}`, resolvedCompanyCode);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Get nexus declarations by form code - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus/byform/{formCode}
+     */
+    public async getNexusByFormCode(formCode: string, companyCode?: string, options?: { 
+        include?: string; 
+        filter?: string; 
+        top?: number; 
+        skip?: number; 
+        orderBy?: string; 
+    }) {
+        try {
+            if (!formCode || formCode.trim() === '') {
+                throw new Error('Form code is required.');
+            }
+
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            
+            const params = new URLSearchParams();
+            if (options?.include) params.append('$include', options.include);
+            if (options?.filter) params.append('$filter', options.filter);
+            if (options?.top) params.append('$top', options.top.toString());
+            if (options?.skip) params.append('$skip', options.skip.toString());
+            if (options?.orderBy) params.append('$orderBy', options.orderBy);
+            
+            const queryString = params.toString();
+            const encodedFormCode = encodeURIComponent(formCode.trim());
+            const pathAfterCompanyId = queryString 
+                ? `/nexus/byform/${encodedFormCode}?${queryString}` 
+                : `/nexus/byform/${encodedFormCode}`;
+            
+            return await this.makeCompanyIdRequest('GET', pathAfterCompanyId, resolvedCompanyCode);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Declare nexus by address - uses companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/nexus/byaddress
+     */
+    public async declareNexusByAddress(addressData: any, companyCode?: string, options?: { 
+        textCase?: string; 
+        effectiveDate?: string; 
+    }) {
+        try {
+            if (!addressData || !addressData.line1 || !addressData.city || !addressData.region || !addressData.country || !addressData.postalCode) {
+                throw new Error('Complete address information is required (line1, city, region, country, postalCode).');
+            }
+
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            
+            const params = new URLSearchParams();
+            if (options?.textCase) params.append('textCase', options.textCase);
+            if (options?.effectiveDate) params.append('effectiveDate', options.effectiveDate);
+            
+            const queryString = params.toString();
+            const pathAfterCompanyId = queryString ? `/nexus/byaddress?${queryString}` : '/nexus/byaddress';
+            
+            return await this.makeCompanyIdRequest('POST', pathAfterCompanyId, resolvedCompanyCode, addressData);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
 }
 
 export default AvataxClient;
