@@ -1,8 +1,16 @@
-// Tool definitions for AvaTax MCP Server
+// Tool definitions for AvaTax MCP Server with enhanced guidance
 export const TOOL_DEFINITIONS = [
   {
     name: 'calculate_tax',
-    description: 'Calculate tax for a transaction using AvaTax API',
+    description: `Calculate sales tax for a transaction. This is the PRIMARY tool for tax calculations.
+    
+USE THIS WHEN: You need to calculate tax for any transaction
+BEFORE USING: Ensure you have addresses (validate them first if unsure)
+EXAMPLE: "Calculate tax on a $100 purchase from CA to NY"
+
+Required: date, customerCode, lines with amounts
+Optional: tax codes, addresses (will use default origin if configured)
+Always validates addresses automatically when possible.`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -68,7 +76,14 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'validate_address',
-    description: 'Validate and normalize an address using AvaTax',
+    description: `Validate and normalize US/Canada addresses for accurate tax calculation.
+    
+USE THIS WHEN: Before calculating tax, or when you need to verify an address
+ALWAYS USE: When addresses seem incomplete or incorrect
+EXAMPLE: "Validate address: 123 Main St, Seattle WA"
+
+Returns: Normalized address with proper formatting and tax jurisdiction info
+Coverage: United States and Canada only`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -85,7 +100,14 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'create_transaction',
-    description: 'Create a committed transaction in AvaTax',
+    description: `Create a committed transaction in AvaTax for permanent record-keeping.
+    
+USE THIS WHEN: You need to create a final, committed transaction for compliance
+AFTER: Successfully calculating tax with 'calculate_tax'
+WARNING: This creates permanent records - use calculate_tax for estimates
+
+Required: Same as calculate_tax but creates committed records
+Use for: Final invoices, completed sales, compliance reporting`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -156,7 +178,14 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'get_companies',
-    description: 'Get a list of companies in the AvaTax account with optional search filtering',
+    description: `List all companies in the account. Start here for company-related tasks.
+    
+USE THIS WHEN: You need to find a company or see what companies exist
+USE FIRST: Before trying company-specific operations
+EXAMPLE: "Show me all companies" or "Find company IBEEAC"
+
+Returns: Company list with codes, names, and basic info
+Essential for: Getting valid company codes for other operations`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -169,7 +198,14 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'ping_service',
-    description: 'Test connectivity to AvaTax service and verify credentials',
+    description: `Test connection to AvaTax service. Use this FIRST if other tools fail.
+    
+USE THIS WHEN: Any tool returns connection errors or to verify setup
+ALWAYS TRY: Before reporting API issues or when troubleshooting
+EXAMPLE: "Check if AvaTax is connected"
+
+Returns: Connection status and authentication verification
+Diagnoses: API connectivity, credential validity, service availability`,
     inputSchema: {
       type: 'object',
       properties: {}
@@ -1207,7 +1243,14 @@ export const TOOL_DEFINITIONS = [
   // Phase 6: Location Management
   {
     name: 'resolve_address',
-    description: 'Resolve and geocode a single address using AvaTax',
+    description: `Resolve and geocode a single address using AvaTax.
+    
+USE THIS WHEN: You have a single address to validate and geocode
+ALWAYS USE: For addresses not in your database or when accuracy is critical
+EXAMPLE: "Resolve address: 1600 Amphitheatre Parkway, Mountain View, CA"
+
+Returns: Detailed address components, latitude, longitude, and tax jurisdiction
+Coverage: United States and Canada primarily, international in some cases`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -1251,7 +1294,14 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'resolve_address_post',
-    description: 'Resolve multiple addresses in a single batch request',
+    description: `Resolve multiple addresses in a single batch request.
+    
+USE THIS WHEN: You have a list of addresses to validate and geocode
+ALWAYS USE: For bulk address processing to save time
+EXAMPLE: "Resolve these addresses: [array of addresses]"
+
+Returns: Array of resolved addresses with components, lat/long, and tax jurisdictions
+Coverage: United States and Canada primarily, international in some cases`,
     inputSchema: {
       type: 'object',
       properties: {
@@ -2420,6 +2470,42 @@ export const TOOL_DEFINITIONS = [
           description: 'Optional filter for subscriptions (e.g., "serviceTypeId eq \'Returns\'")'
         }
       }
+    }
+  },
+  // Help and Guidance Tool
+  {
+    name: 'get_tool_help',
+    description: `Get guidance on which tool to use for your task and workflow instructions.
+    
+USE THIS WHEN: You're unsure which tool to use or need workflow guidance
+PROVIDES: Step-by-step instructions for common tasks
+EXAMPLE: "How do I calculate tax?" or "What tools do I need for nexus?"
+
+Returns: Detailed workflow instructions and recommended tool sequence`,
+    inputSchema: {
+      type: 'object',
+      properties: {
+        task: {
+          type: 'string',
+          description: 'What are you trying to accomplish?',
+          enum: [
+            'calculate_tax',
+            'validate_address', 
+            'find_company',
+            'check_nexus',
+            'view_transactions',
+            'manage_certificates',
+            'test_connection',
+            'troubleshoot',
+            'other'
+          ]
+        },
+        details: {
+          type: 'string',
+          description: 'Additional details about your task (optional)'
+        }
+      },
+      required: ['task']
     }
   }
 ]
