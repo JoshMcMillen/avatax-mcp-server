@@ -2501,5 +2501,263 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['itemId']
     }
+  },
+  // Tax Code Management Endpoints
+  {
+    name: 'get_system_tax_codes',
+    description: 'Retrieve the full list of Avalara-supported system tax codes. WHEN TO USE: 1) Find standard tax codes for common products and services, 2) Research available tax codes before creating custom company tax codes, 3) Validate tax code assignments against Avalara standards, 4) Browse tax codes by type or description for classification guidance. These are the standard Avalara tax codes that provide correct tax rates and taxability rules across all supported jurisdictions.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        filter: {
+          type: 'string',
+          description: 'OData filter criteria to search tax codes (e.g., "description contains \'clothing\'" or "taxCodeTypeId eq \'P\'")'
+        },
+        top: {
+          type: 'number',
+          description: 'Maximum number of records to return (default: 25, max: 1000)'
+        },
+        skip: {
+          type: 'number',
+          description: 'Number of records to skip for pagination'
+        },
+        orderBy: {
+          type: 'string',
+          description: 'Sort order (e.g., "taxCode asc", "description desc")'
+        }
+      }
+    }
+  },
+  {
+    name: 'get_tax_code_types',
+    description: 'Retrieve the full list of Avalara-supported tax code types. WHEN TO USE: 1) Understand broad categories of tax codes available (Physical goods, Digital products, Services, etc.), 2) Filter tax codes by type when searching for appropriate classifications, 3) Plan tax code structure for your product catalog, 4) Browse high-level tax categories before diving into specific tax codes.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        top: {
+          type: 'number',
+          description: 'Maximum number of records to return (default: 25, max: 1000)'
+        },
+        skip: {
+          type: 'number',
+          description: 'Number of records to skip for pagination'
+        }
+      }
+    }
+  },
+  {
+    name: 'get_company_tax_codes',
+    description: 'Retrieve all custom tax codes created for a specific company. WHEN TO USE: 1) Review company-specific tax codes that have been customized beyond standard Avalara codes, 2) Audit existing tax code configurations before making changes, 3) List available tax codes for use in transactions, 4) Manage and organize company tax code catalog. Custom tax codes override system defaults for specific business needs.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        filter: {
+          type: 'string',
+          description: 'OData filter criteria to search tax codes (e.g., "isActive eq true" or "description contains \'custom\'")'
+        },
+        include: {
+          type: 'string',
+          description: 'Additional data to include in response (comma-separated)'
+        },
+        top: {
+          type: 'number',
+          description: 'Maximum number of records to return (default: 25, max: 1000)'
+        },
+        skip: {
+          type: 'number',
+          description: 'Number of records to skip for pagination'
+        },
+        orderBy: {
+          type: 'string',
+          description: 'Sort order (e.g., "taxCode asc", "description desc")'
+        }
+      }
+    }
+  },
+  {
+    name: 'get_tax_code',
+    description: 'Retrieve a specific tax code by ID from a company. WHEN TO USE: 1) Get detailed information about a specific tax code before using it in transactions, 2) Review tax code properties like description, type, and activity status, 3) Validate tax code exists before assignment to items or transactions, 4) Examine tax code configuration for troubleshooting.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        id: {
+          type: 'number',
+          description: 'The unique ID of the tax code to retrieve (required)'
+        }
+      },
+      required: ['id']
+    }
+  },
+  {
+    name: 'create_tax_code',
+    description: 'Create one or more custom tax codes for a company. WHEN TO USE: 1) Define company-specific tax codes that differ from standard Avalara codes, 2) Create specialized tax codes for unique products or services, 3) Establish tax codes with specific rules for particular jurisdictions, 4) Set up tax codes for business-specific exemptions or special handling. Custom tax codes should follow a clear naming convention.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        taxCodes: {
+          type: 'array',
+          description: 'The tax codes to create',
+          items: {
+            type: 'object',
+            properties: {
+              taxCode: {
+                type: 'string',
+                description: 'A code string that identifies this tax code (max 25 characters, required)',
+                maxLength: 25
+              },
+              taxCodeTypeId: {
+                type: 'string',
+                description: 'The type of this tax code (required): P=Physical goods, D=Digital products, S=Services, N=Non-taxable',
+                maxLength: 2
+              },
+              description: {
+                type: 'string',
+                description: 'A friendly description of this tax code (max 255 characters)',
+                maxLength: 255
+              },
+              parentTaxCode: {
+                type: 'string',
+                description: 'If this tax code is a subset of a different tax code, this identifies the parent code',
+                maxLength: 25
+              },
+              goodsServiceCode: {
+                type: 'number',
+                description: 'The Avalara Goods and Service Code represented by this tax code'
+              },
+              entityUseCode: {
+                type: 'string',
+                description: 'The Avalara Entity Use Code represented by this tax code (max 40 characters)',
+                maxLength: 40
+              },
+              isActive: {
+                type: 'boolean',
+                description: 'True if this tax code is active and can be used in transactions (default: true)',
+                default: true
+              },
+              isSSTCertified: {
+                type: 'boolean',
+                description: 'True if this tax code has been certified by the Streamlined Sales Tax governing board'
+              }
+            },
+            required: ['taxCode', 'taxCodeTypeId']
+          }
+        }
+      },
+      required: ['taxCodes']
+    }
+  },
+  {
+    name: 'update_tax_code',
+    description: 'Update an existing custom tax code for a company. WHEN TO USE: 1) Modify tax code description or properties as business needs change, 2) Activate or deactivate tax codes based on product lifecycle, 3) Update tax code relationships or parent codes, 4) Correct tax code configuration errors. Changes only affect future transactions.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        id: {
+          type: 'number',
+          description: 'The unique ID of the tax code to update (required)'
+        },
+        taxCode: {
+          type: 'string',
+          description: 'Updated code string that identifies this tax code (max 25 characters)',
+          maxLength: 25
+        },
+        taxCodeTypeId: {
+          type: 'string',
+          description: 'Updated type of this tax code: P=Physical goods, D=Digital products, S=Services, N=Non-taxable',
+          maxLength: 2
+        },
+        description: {
+          type: 'string',
+          description: 'Updated friendly description of this tax code (max 255 characters)',
+          maxLength: 255
+        },
+        parentTaxCode: {
+          type: 'string',
+          description: 'Updated parent tax code if this is a subset of a different tax code',
+          maxLength: 25
+        },
+        goodsServiceCode: {
+          type: 'number',
+          description: 'Updated Avalara Goods and Service Code represented by this tax code'
+        },
+        entityUseCode: {
+          type: 'string',
+          description: 'Updated Avalara Entity Use Code represented by this tax code (max 40 characters)',
+          maxLength: 40
+        },
+        isActive: {
+          type: 'boolean',
+          description: 'Whether this tax code is active and can be used in transactions'
+        },
+        isSSTCertified: {
+          type: 'boolean',
+          description: 'Whether this tax code has been certified by the Streamlined Sales Tax governing board'
+        }
+      },
+      required: ['id']
+    }
+  },
+  {
+    name: 'delete_tax_code',
+    description: 'Delete a custom tax code from a company. IMPORTANT: This marks the tax code as deleted and cannot be undone. WHEN TO USE: 1) Remove obsolete tax codes that are no longer needed, 2) Clean up test or incorrectly created tax codes, 3) Remove duplicate tax codes, 4) Maintain clean tax code catalog. Ensure tax code is not actively used in transactions before deletion.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        id: {
+          type: 'number',
+          description: 'The unique ID of the tax code to delete (required)'
+        }
+      },
+      required: ['id']
+    }
+  },
+  {
+    name: 'query_all_tax_codes',
+    description: 'Query tax codes across all companies in the account. WHEN TO USE: 1) Search for tax codes across multiple companies for consistency, 2) Find similar tax codes used by different companies, 3) Audit tax code usage across the entire account, 4) Compare tax code implementations between companies. Useful for multi-company scenarios.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        filter: {
+          type: 'string',
+          description: 'OData filter criteria to search tax codes across all companies (e.g., "companyId eq 12345" or "description contains \'service\'")'
+        },
+        include: {
+          type: 'string',
+          description: 'Additional data to include in response (comma-separated)'
+        },
+        top: {
+          type: 'number',
+          description: 'Maximum number of records to return (default: 25, max: 1000)'
+        },
+        skip: {
+          type: 'number',
+          description: 'Number of records to skip for pagination'
+        },
+        orderBy: {
+          type: 'string',
+          description: 'Sort order (e.g., "companyId asc, taxCode asc")'
+        }
+      }
+    }
   }
 ];

@@ -2024,5 +2024,176 @@ class AvataxClient {
             }
         });
     }
+    // ======= Tax Code Management Methods =======
+    /**
+     * Get the full list of Avalara-supported system tax codes
+     */
+    getSystemTaxCodes(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.filter)
+                    params.append('$filter', options.filter);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                if (options === null || options === void 0 ? void 0 : options.orderBy)
+                    params.append('$orderBy', options.orderBy);
+                const queryString = params.toString();
+                const endpoint = queryString
+                    ? `/definitions/taxcodes?${queryString}`
+                    : `/definitions/taxcodes`;
+                return yield this.makeRequest('GET', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Get the full list of Avalara-supported tax code types
+     */
+    getTaxCodeTypes(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                const queryString = params.toString();
+                const endpoint = queryString
+                    ? `/definitions/taxcodetypes?${queryString}`
+                    : `/definitions/taxcodetypes`;
+                return yield this.makeRequest('GET', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Retrieve tax codes for a specific company
+     */
+    getCompanyTaxCodes(companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.filter)
+                    params.append('$filter', options.filter);
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                if (options === null || options === void 0 ? void 0 : options.orderBy)
+                    params.append('$orderBy', options.orderBy);
+                const queryString = params.toString();
+                const endpoint = queryString
+                    ? `/companies/${companyId}/taxcodes?${queryString}`
+                    : `/companies/${companyId}/taxcodes`;
+                return yield this.makeRequest('GET', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Retrieve a single tax code by ID
+     */
+    getTaxCode(id, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/companies/${companyId}/taxcodes/${id}`;
+                return yield this.makeRequest('GET', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Create one or more tax codes for a company
+     */
+    createTaxCodes(taxCodes, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/companies/${companyId}/taxcodes`;
+                return yield this.makeRequest('POST', endpoint, taxCodes);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Update a single tax code
+     */
+    updateTaxCode(id, taxCodeData, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/companies/${companyId}/taxcodes/${id}`;
+                return yield this.makeRequest('PUT', endpoint, taxCodeData);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Delete a single tax code
+     */
+    deleteTaxCode(id, companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const companyId = yield this.getCompanyId(resolvedCompanyCode);
+                const endpoint = `/companies/${companyId}/taxcodes/${id}`;
+                return yield this.makeRequest('DELETE', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Query tax codes across all companies
+     */
+    queryAllTaxCodes(options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.filter)
+                    params.append('$filter', options.filter);
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                if (options === null || options === void 0 ? void 0 : options.orderBy)
+                    params.append('$orderBy', options.orderBy);
+                const queryString = params.toString();
+                const endpoint = queryString
+                    ? `/taxcodes?${queryString}`
+                    : `/taxcodes`;
+                return yield this.makeRequest('GET', endpoint);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
 }
 exports.default = AvataxClient;

@@ -134,6 +134,39 @@ Automatically create nexus declarations based on business addresses.
 #### `update_nexus` / `delete_nexus`
 Manage existing nexus declarations.
 
+### 🏷️ **Tax Code Management**
+
+#### `get_system_tax_codes`
+Retrieve Avalara's standard tax codes for common products and services.
+
+#### `get_tax_code_types`
+Get broad categories of tax codes (Physical, Digital, Services, Non-taxable).
+
+#### `get_company_tax_codes`
+List custom tax codes created for your company.
+
+#### `get_tax_code`
+Get detailed information about a specific tax code.
+
+#### `create_tax_code`
+Create custom tax codes for specialized products or services.
+
+#### `update_tax_code` / `delete_tax_code`
+Manage existing company tax codes.
+
+#### `query_all_tax_codes`
+Search tax codes across all companies in your account.
+
+**Key Features:**
+- **System Tax Codes**: Pre-defined by Avalara for standard products
+- **Custom Tax Codes**: Company-specific codes for unique requirements  
+- **Tax Code Types**: P=Physical, D=Digital, S=Services, N=Non-taxable
+- **Smart Search**: Filter by description, type, or activity status
+
+### 📦 **Item Management**
+
+*Full item management capabilities available - see [Item Documentation](docs/ITEMS.md) for complete details.*
+
 ### ⚙️ **System & Credentials**
 
 #### `ping_service`

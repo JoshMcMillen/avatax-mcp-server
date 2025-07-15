@@ -2111,6 +2111,179 @@ class AvataxClient {
             this.handleError(error);
         }
     }
+
+    // ======= Tax Code Management Methods =======
+
+    /**
+     * Get the full list of Avalara-supported system tax codes
+     */
+    public async getSystemTaxCodes(options?: {
+        filter?: string;
+        top?: number;
+        skip?: number;
+        orderBy?: string;
+    }) {
+        try {
+            const params = new URLSearchParams();
+            if (options?.filter) params.append('$filter', options.filter);
+            if (options?.top) params.append('$top', options.top.toString());
+            if (options?.skip) params.append('$skip', options.skip.toString());
+            if (options?.orderBy) params.append('$orderBy', options.orderBy);
+
+            const queryString = params.toString();
+            const endpoint = queryString 
+                ? `/definitions/taxcodes?${queryString}`
+                : `/definitions/taxcodes`;
+
+            return await this.makeRequest('GET', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Get the full list of Avalara-supported tax code types
+     */
+    public async getTaxCodeTypes(options?: {
+        top?: number;
+        skip?: number;
+    }) {
+        try {
+            const params = new URLSearchParams();
+            if (options?.top) params.append('$top', options.top.toString());
+            if (options?.skip) params.append('$skip', options.skip.toString());
+
+            const queryString = params.toString();
+            const endpoint = queryString 
+                ? `/definitions/taxcodetypes?${queryString}`
+                : `/definitions/taxcodetypes`;
+
+            return await this.makeRequest('GET', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Retrieve tax codes for a specific company
+     */
+    public async getCompanyTaxCodes(companyCode?: string, options?: {
+        filter?: string;
+        include?: string;
+        top?: number;
+        skip?: number;
+        orderBy?: string;
+    }) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const params = new URLSearchParams();
+            if (options?.filter) params.append('$filter', options.filter);
+            if (options?.include) params.append('$include', options.include);
+            if (options?.top) params.append('$top', options.top.toString());
+            if (options?.skip) params.append('$skip', options.skip.toString());
+            if (options?.orderBy) params.append('$orderBy', options.orderBy);
+
+            const queryString = params.toString();
+            const endpoint = queryString 
+                ? `/companies/${companyId}/taxcodes?${queryString}`
+                : `/companies/${companyId}/taxcodes`;
+
+            return await this.makeRequest('GET', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Retrieve a single tax code by ID
+     */
+    public async getTaxCode(id: number, companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/companies/${companyId}/taxcodes/${id}`;
+            return await this.makeRequest('GET', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Create one or more tax codes for a company
+     */
+    public async createTaxCodes(taxCodes: any[], companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/companies/${companyId}/taxcodes`;
+            return await this.makeRequest('POST', endpoint, taxCodes);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Update a single tax code
+     */
+    public async updateTaxCode(id: number, taxCodeData: any, companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/companies/${companyId}/taxcodes/${id}`;
+            return await this.makeRequest('PUT', endpoint, taxCodeData);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Delete a single tax code
+     */
+    public async deleteTaxCode(id: number, companyCode?: string) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            const companyId = await this.getCompanyId(resolvedCompanyCode);
+
+            const endpoint = `/companies/${companyId}/taxcodes/${id}`;
+            return await this.makeRequest('DELETE', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Query tax codes across all companies
+     */
+    public async queryAllTaxCodes(options?: {
+        filter?: string;
+        include?: string;
+        top?: number;
+        skip?: number;
+        orderBy?: string;
+    }) {
+        try {
+            const params = new URLSearchParams();
+            if (options?.filter) params.append('$filter', options.filter);
+            if (options?.include) params.append('$include', options.include);
+            if (options?.top) params.append('$top', options.top.toString());
+            if (options?.skip) params.append('$skip', options.skip.toString());
+            if (options?.orderBy) params.append('$orderBy', options.orderBy);
+
+            const queryString = params.toString();
+            const endpoint = queryString 
+                ? `/taxcodes?${queryString}`
+                : `/taxcodes`;
+
+            return await this.makeRequest('GET', endpoint);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
 }
 
 export default AvataxClient;

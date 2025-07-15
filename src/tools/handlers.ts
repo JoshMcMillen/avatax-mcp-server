@@ -987,6 +987,125 @@ You can use 'set_credentials' to add credentials for the current session, or cre
       };
     }
 
+    // Tax Code Management Tools
+    case 'get_system_tax_codes': {
+      const result = await avataxClient.getSystemTaxCodes({
+        filter: args.filter,
+        top: args.top,
+        skip: args.skip,
+        orderBy: args.orderBy
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Found ${result.count || 0} system tax codes:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'get_tax_code_types': {
+      const result = await avataxClient.getTaxCodeTypes({
+        top: args.top,
+        skip: args.skip
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Tax code types:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'get_company_tax_codes': {
+      const result = await avataxClient.getCompanyTaxCodes(args.companyCode, {
+        filter: args.filter,
+        include: args.include,
+        top: args.top,
+        skip: args.skip,
+        orderBy: args.orderBy
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Found ${result.count || 0} company tax codes:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'get_tax_code': {
+      const result = await avataxClient.getTaxCode(args.id, args.companyCode);
+      return {
+        content: [{
+          type: 'text',
+          text: `Tax code details:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'create_tax_code': {
+      const result = await avataxClient.createTaxCodes(args.taxCodes, args.companyCode);
+      return {
+        content: [{
+          type: 'text',
+          text: `Created tax codes successfully!\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'update_tax_code': {
+      const updateData: any = {
+        taxCode: args.taxCode,
+        taxCodeTypeId: args.taxCodeTypeId,
+        description: args.description,
+        parentTaxCode: args.parentTaxCode,
+        goodsServiceCode: args.goodsServiceCode,
+        entityUseCode: args.entityUseCode,
+        isActive: args.isActive,
+        isSSTCertified: args.isSSTCertified
+      };
+      
+      // Remove undefined properties
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined) {
+          delete updateData[key];
+        }
+      });
+
+      const result = await avataxClient.updateTaxCode(args.id, updateData, args.companyCode);
+      return {
+        content: [{
+          type: 'text',
+          text: `Updated tax code successfully!\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'delete_tax_code': {
+      const result = await avataxClient.deleteTaxCode(args.id, args.companyCode);
+      return {
+        content: [{
+          type: 'text',
+          text: `Deleted tax code successfully!\n\nTax code ID ${args.id} has been removed.`
+        }]
+      };
+    }
+
+    case 'query_all_tax_codes': {
+      const result = await avataxClient.queryAllTaxCodes({
+        filter: args.filter,
+        include: args.include,
+        top: args.top,
+        skip: args.skip,
+        orderBy: args.orderBy
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Found ${result.count || 0} tax codes across all companies:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
