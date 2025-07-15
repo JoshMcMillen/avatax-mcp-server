@@ -2,15 +2,15 @@
 export const TOOL_DEFINITIONS = [
   {
     name: 'calculate_tax',
-    description: 'Calculate tax for a transaction using AvaTax API',
+    description: 'Calculate tax for a transaction using AvaTax API. IMPORTANT: This creates an UNCOMMITTED transaction for tax calculation only. Use document type "SalesOrder" for quotes/estimates (temporary, not saved), "SalesInvoice" for final transactions (permanent but uncommitted). To create a committed transaction, use create_transaction instead.',
     inputSchema: {
       type: 'object',
       properties: {
         type: { 
           type: 'string', 
-          description: 'Transaction type (SalesInvoice, PurchaseInvoice, etc.)',
-          enum: ['SalesInvoice', 'PurchaseInvoice', 'ReturnInvoice', 'SalesOrder', 'PurchaseOrder', 'InventoryTransferOutbound', 'InventoryTransferInbound'],
-          default: 'SalesInvoice'
+          description: 'Document type - controls whether transaction is temporary or permanent, and how it\'s processed:\n• SalesOrder: Temporary estimate/quote (not saved to tax history, use for pricing quotes)\n• SalesInvoice: Permanent transaction but uncommitted (saved to AvaTax, can be committed later)\n• PurchaseOrder: Temporary purchase estimate\n• PurchaseInvoice: Permanent purchase transaction\n• ReturnOrder: Temporary refund estimate\n• ReturnInvoice: Permanent refund transaction\n• InventoryTransferOrder: Temporary inventory movement estimate\n• InventoryTransferInvoice: Permanent inventory movement',
+          enum: ['SalesOrder', 'SalesInvoice', 'PurchaseOrder', 'PurchaseInvoice', 'ReturnOrder', 'ReturnInvoice', 'InventoryTransferOrder', 'InventoryTransferInvoice', 'InventoryTransferOutboundOrder', 'InventoryTransferOutboundInvoice'],
+          default: 'SalesOrder'
         },
         companyCode: { 
           type: 'string', 
@@ -85,14 +85,14 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'create_transaction',
-    description: 'Create a committed transaction in AvaTax',
+    description: 'Create a committed transaction in AvaTax. IMPORTANT: This creates a COMMITTED transaction that will be reported for tax filing. Use this for final invoices and transactions that need to be recorded permanently. The transaction will be immediately available for tax reporting and compliance.',
     inputSchema: {
       type: 'object',
       properties: {
         type: { 
           type: 'string', 
-          description: 'Transaction type',
-          enum: ['SalesInvoice', 'PurchaseInvoice', 'ReturnInvoice', 'SalesOrder', 'PurchaseOrder', 'InventoryTransferOutbound', 'InventoryTransferInbound'],
+          description: 'Document type - determines transaction permanence and reporting:\n• SalesInvoice: Final committed sale (recommended for most sales)\n• PurchaseInvoice: Final committed purchase\n• ReturnInvoice: Final committed refund/return\n• InventoryTransferInvoice: Final committed inventory movement\nNOTE: Order types (SalesOrder, PurchaseOrder) are not recommended for committed transactions',
+          enum: ['SalesInvoice', 'PurchaseInvoice', 'ReturnInvoice', 'InventoryTransferInvoice', 'InventoryTransferOutboundInvoice'],
           default: 'SalesInvoice'
         },
         companyCode: { 
@@ -152,6 +152,302 @@ export const TOOL_DEFINITIONS = [
         }
       },
       required: ['date', 'customerCode', 'lines']
+    }
+  },
+  {
+    name: 'list_transactions',
+    description: 'List transactions for a company with optional filtering. IMPORTANT: Must include a date filter or defaults to last 30 days. Use this to find existing transactions before committing, voiding, or adjusting them.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        filter: {
+          type: 'string',
+          description: 'OData filter criteria. REQUIRED: Must include date filter (e.g., "date ge \'2024-01-01\' and date le \'2024-01-31\'"). Other filters: status, customerCode, type, totalAmount, etc.'
+        },
+        include: {
+          type: 'string',
+          description: 'Additional data to include: Lines, Details, Summary, Addresses, SummaryOnly, LinesOnly'
+        },
+        top: {
+          type: 'number',
+          description: 'Maximum records to return (max 1000, default varies)'
+        },
+        skip: {
+          type: 'number',
+          description: 'Records to skip for pagination'
+        },
+        orderBy: {
+          type: 'string',
+          description: 'Sort order (e.g., "date desc, code asc")'
+        }
+      },
+      required: ['filter']
+    }
+  },
+  {
+    name: 'get_transaction',
+    description: 'Retrieve a specific transaction by company code and transaction code. Use this to examine transaction details before making changes like committing, voiding, or adjusting.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (required)'
+        },
+        transactionCode: {
+          type: 'string',
+          description: 'Transaction code to retrieve (required)'
+        },
+        documentType: {
+          type: 'string',
+          description: 'Document type if multiple transactions exist with same code (optional, defaults to SalesInvoice)',
+          enum: ['SalesOrder', 'SalesInvoice', 'PurchaseOrder', 'PurchaseInvoice', 'ReturnOrder', 'ReturnInvoice', 'InventoryTransferOrder', 'InventoryTransferInvoice', 'InventoryTransferOutboundOrder', 'InventoryTransferOutboundInvoice']
+        },
+        include: {
+          type: 'string',
+          description: 'Additional data to include: Lines, Details, Summary, Addresses, SummaryOnly, LinesOnly'
+        }
+      },
+      required: ['companyCode', 'transactionCode']
+    }
+  },
+  {
+    name: 'commit_transaction',
+    description: 'Commit an existing uncommitted transaction for tax reporting. IMPORTANT: Once committed, transactions are available for Avalara Managed Returns and tax filing. Only transactions in "Saved" status can be committed. Cannot commit transactions that are already committed, voided, or locked.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        transactionCode: {
+          type: 'string',
+          description: 'Transaction code to commit (required)'
+        },
+        documentType: {
+          type: 'string',
+          description: 'Document type if multiple transactions exist with same code (optional, defaults to SalesInvoice)',
+          enum: ['SalesOrder', 'SalesInvoice', 'PurchaseOrder', 'PurchaseInvoice', 'ReturnOrder', 'ReturnInvoice', 'InventoryTransferOrder', 'InventoryTransferInvoice', 'InventoryTransferOutboundOrder', 'InventoryTransferOutboundInvoice']
+        },
+        commit: {
+          type: 'boolean',
+          description: 'Set to true to commit the transaction (required for this operation)',
+          default: true
+        }
+      },
+      required: ['transactionCode']
+    }
+  },
+  {
+    name: 'void_transaction',
+    description: 'Void a transaction, marking it as cancelled. IMPORTANT: This permanently voids the transaction - use for cancelled orders/invoices. Cannot void transactions that have been reported to tax authorities via Managed Returns. Voided transactions cannot be committed or adjusted.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        transactionCode: {
+          type: 'string',
+          description: 'Transaction code to void (required)'
+        },
+        documentType: {
+          type: 'string',
+          description: 'Document type if multiple transactions exist with same code (optional, defaults to SalesInvoice)',
+          enum: ['SalesOrder', 'SalesInvoice', 'PurchaseOrder', 'PurchaseInvoice', 'ReturnOrder', 'ReturnInvoice', 'InventoryTransferOrder', 'InventoryTransferInvoice', 'InventoryTransferOutboundOrder', 'InventoryTransferOutboundInvoice']
+        },
+        code: {
+          type: 'string',
+          description: 'Void reason code - must be "DocVoided" for transaction voiding',
+          enum: ['DocVoided'],
+          default: 'DocVoided'
+        }
+      },
+      required: ['transactionCode']
+    }
+  },
+  {
+    name: 'adjust_transaction',
+    description: 'Adjust/correct a committed transaction by creating a new version. IMPORTANT: Only committed transactions can be adjusted. The original transaction becomes "Adjusted" status and the new version becomes the current transaction. Cannot adjust locked transactions (already reported to tax authorities).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        transactionCode: {
+          type: 'string',
+          description: 'Transaction code to adjust (required)'
+        },
+        documentType: {
+          type: 'string',
+          description: 'Document type if multiple transactions exist with same code (optional, defaults to SalesInvoice)',
+          enum: ['SalesOrder', 'SalesInvoice', 'PurchaseOrder', 'PurchaseInvoice', 'ReturnOrder', 'ReturnInvoice', 'InventoryTransferOrder', 'InventoryTransferInvoice', 'InventoryTransferOutboundOrder', 'InventoryTransferOutboundInvoice']
+        },
+        newTransaction: {
+          type: 'object',
+          description: 'New transaction data to replace the existing transaction',
+          properties: {
+            date: { type: 'string', description: 'Transaction date (YYYY-MM-DD)' },
+            customerCode: { type: 'string', description: 'Customer identifier' },
+            lines: {
+              type: 'array',
+              description: 'Updated transaction line items',
+              items: {
+                type: 'object',
+                properties: {
+                  number: { type: 'string', description: 'Line number' },
+                  quantity: { type: 'number', description: 'Quantity' },
+                  amount: { type: 'number', description: 'Line amount' },
+                  itemCode: { type: 'string', description: 'Item/product code' },
+                  description: { type: 'string', description: 'Line description' },
+                  taxCode: { type: 'string', description: 'Tax code (optional)' }
+                },
+                required: ['quantity', 'amount']
+              }
+            },
+            shipFrom: {
+              type: 'object',
+              description: 'Ship from address',
+              properties: {
+                line1: { type: 'string' },
+                city: { type: 'string' },
+                region: { type: 'string' },
+                postalCode: { type: 'string' },
+                country: { type: 'string' }
+              }
+            },
+            shipTo: {
+              type: 'object',
+              description: 'Ship to address',
+              properties: {
+                line1: { type: 'string' },
+                city: { type: 'string' },
+                region: { type: 'string' },
+                postalCode: { type: 'string' },
+                country: { type: 'string' }
+              }
+            }
+          },
+          required: ['date', 'customerCode', 'lines']
+        }
+      },
+      required: ['transactionCode', 'newTransaction']
+    }
+  },
+  {
+    name: 'uncommit_transaction',
+    description: 'Uncommit a committed transaction, changing its status back to "Saved". IMPORTANT: This removes the transaction from tax reporting. Only committed transactions that have not been locked (reported to tax authorities) can be uncommitted. Use this to make changes to a committed transaction.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        transactionCode: {
+          type: 'string',
+          description: 'Transaction code to uncommit (required)'
+        },
+        documentType: {
+          type: 'string',
+          description: 'Document type if multiple transactions exist with same code (optional, defaults to SalesInvoice)',
+          enum: ['SalesOrder', 'SalesInvoice', 'PurchaseOrder', 'PurchaseInvoice', 'ReturnOrder', 'ReturnInvoice', 'InventoryTransferOrder', 'InventoryTransferInvoice', 'InventoryTransferOutboundOrder', 'InventoryTransferOutboundInvoice']
+        }
+      },
+      required: ['transactionCode']
+    }
+  },
+  {
+    name: 'get_transaction_audit',
+    description: 'Get audit information about a transaction including creation details, server processing time, and original API call information. Use this for debugging and compliance audit trails.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        transactionCode: {
+          type: 'string',
+          description: 'Transaction code to audit (required)'
+        }
+      },
+      required: ['transactionCode']
+    }
+  },
+  {
+    name: 'change_transaction_code',
+    description: 'Change the transaction code of an existing transaction. IMPORTANT: Use this to rename a transaction code. The transaction must not be committed, voided, or locked. Useful for correcting transaction codes before commitment.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        transactionCode: {
+          type: 'string',
+          description: 'Current transaction code (required)'
+        },
+        documentType: {
+          type: 'string',
+          description: 'Document type if multiple transactions exist with same code (optional, defaults to SalesInvoice)',
+          enum: ['SalesOrder', 'SalesInvoice', 'PurchaseOrder', 'PurchaseInvoice', 'ReturnOrder', 'ReturnInvoice', 'InventoryTransferOrder', 'InventoryTransferInvoice', 'InventoryTransferOutboundOrder', 'InventoryTransferOutboundInvoice']
+        },
+        newCode: {
+          type: 'string',
+          description: 'New transaction code to assign (required)'
+        }
+      },
+      required: ['transactionCode', 'newCode']
+    }
+  },
+  {
+    name: 'verify_transaction',
+    description: 'Verify a transaction by checking its accuracy and compliance with tax rules. Use this to validate transaction data and ensure it meets AvaTax requirements before processing.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code in AvaTax (optional - if not provided and not configured globally, will prompt user)'
+        },
+        transactionCode: {
+          type: 'string',
+          description: 'Transaction code to verify (required)'
+        },
+        documentType: {
+          type: 'string',
+          description: 'Document type if multiple transactions exist with same code (optional, defaults to SalesInvoice)',
+          enum: ['SalesOrder', 'SalesInvoice', 'PurchaseOrder', 'PurchaseInvoice', 'ReturnOrder', 'ReturnInvoice', 'InventoryTransferOrder', 'InventoryTransferInvoice', 'InventoryTransferOutboundOrder', 'InventoryTransferOutboundInvoice']
+        }
+      },
+      required: ['transactionCode']
+    }
+  },
+  {
+    name: 'validate_address',
+    description: 'Validate and normalize an address using AvaTax',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        line1: { type: 'string', description: 'Street address line 1' },
+        line2: { type: 'string', description: 'Street address line 2 (optional)' },
+        line3: { type: 'string', description: 'Street address line 3 (optional)' },
+        city: { type: 'string', description: 'City name' },
+        region: { type: 'string', description: 'State/Province/Region code' },
+        postalCode: { type: 'string', description: 'Postal/ZIP code' },
+        country: { type: 'string', description: 'Country code (ISO 3166-1 alpha-2)' }
+      },
+      required: ['line1', 'city', 'region', 'postalCode', 'country']
     }
   },
   {

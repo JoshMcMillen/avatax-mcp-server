@@ -379,7 +379,121 @@ You can use 'set_credentials' to add credentials for the current session, or cre
         }]
       };
     }
-    
+
+    // Transaction Management Handlers
+    case 'list_transactions': {
+      const result = await avataxClient.listTransactions(args.companyCode, {
+        filter: args.filter,
+        include: args.include,
+        top: args.top,
+        skip: args.skip,
+        orderBy: args.orderBy
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Found ${result.count} transactions:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'get_transaction': {
+      const result = await avataxClient.getTransaction(args.companyCode, args.transactionCode, {
+        documentType: args.documentType,
+        include: args.include
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Transaction details:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'commit_transaction': {
+      const result = await avataxClient.commitTransaction(args.companyCode, args.transactionCode, {
+        documentType: args.documentType,
+        commit: args.commit
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Transaction committed successfully!\n\nStatus: ${result.status}\nCommitted: ${result.committed}\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'void_transaction': {
+      const result = await avataxClient.voidTransaction(args.companyCode, args.transactionCode, {
+        documentType: args.documentType,
+        code: args.code
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Transaction voided successfully!\n\nStatus: ${result.status}\nVoided: ${result.voided}\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'adjust_transaction': {
+      const result = await avataxClient.adjustTransaction(args.companyCode, args.transactionCode, args.newTransaction, {
+        documentType: args.documentType
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Transaction adjusted successfully!\n\nNew Status: ${result.status}\nAdjusted: ${result.adjusted}\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'uncommit_transaction': {
+      const result = await avataxClient.uncommitTransaction(args.companyCode, args.transactionCode, {
+        documentType: args.documentType
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Transaction uncommitted successfully!\n\nStatus: ${result.status}\nUncommitted: ${result.uncommitted}\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'get_transaction_audit': {
+      const result = await avataxClient.getTransactionAudit(args.companyCode, args.transactionCode);
+      return {
+        content: [{
+          type: 'text',
+          text: `Transaction audit information:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'change_transaction_code': {
+      const result = await avataxClient.changeTransactionCode(args.companyCode, args.transactionCode, args.newCode, {
+        documentType: args.documentType
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Transaction code changed successfully!\n\nNew Code: ${result.code}\nStatus: ${result.status}\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'verify_transaction': {
+      const result = await avataxClient.verifyTransaction(args.companyCode, args.transactionCode, {
+        documentType: args.documentType
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Transaction verified successfully!\n\nStatus: ${result.status}\nVerified: ${result.verified}\nMessages: ${result.messages.length}\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

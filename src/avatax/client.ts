@@ -864,6 +864,345 @@ class AvataxClient {
             this.handleError(error);
         }
     }
+
+    // ===== TRANSACTION MANAGEMENT METHODS =====
+
+    /**
+     * List transactions for a company with filtering
+     * Pattern: /api/v2/companies/{companyCode}/transactions
+     */
+    public async listTransactions(companyCode?: string, options?: {
+        filter?: string;
+        include?: string;
+        top?: number;
+        skip?: number;
+        orderBy?: string;
+    }) {
+        try {
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            
+            const params = new URLSearchParams();
+            if (options?.filter) params.append('$filter', options.filter);
+            if (options?.include) params.append('$include', options.include);
+            if (options?.top) params.append('$top', options.top.toString());
+            if (options?.skip) params.append('$skip', options.skip.toString());
+            if (options?.orderBy) params.append('$orderBy', options.orderBy);
+            
+            const queryString = params.toString();
+            const pathAfterCompanyCode = queryString ? `/transactions?${queryString}` : '/transactions';
+            
+            const result = await this.makeCompanyCodeRequest('GET', pathAfterCompanyCode, resolvedCompanyCode);
+            
+            return {
+                count: result.count || 0,
+                value: result.value || [],
+                '@recordsetCount': result['@recordsetCount']
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Commit a transaction to make it available for tax reporting
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/commit
+     */
+    public async commitTransaction(companyCode: string, transactionCode: string, options?: {
+        documentType?: string;
+        include?: string;
+        commit?: boolean;
+    }) {
+        try {
+            if (!companyCode || companyCode.trim() === '') {
+                throw new Error('Company code is required for committing transactions.');
+            }
+            if (!transactionCode || transactionCode.trim() === '') {
+                throw new Error('Transaction code is required.');
+            }
+
+            const params = new URLSearchParams();
+            if (options?.documentType) params.append('documentType', options.documentType);
+            if (options?.include) params.append('$include', options.include);
+
+            const queryString = params.toString();
+            const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+            const pathAfterCompanyCode = queryString 
+                ? `/transactions/${encodedTransactionCode}/commit?${queryString}` 
+                : `/transactions/${encodedTransactionCode}/commit`;
+            
+            const commitModel = {
+                commit: options?.commit !== false // Default to true
+            };
+            
+            const result = await this.makeCompanyCodeRequest('POST', pathAfterCompanyCode, companyCode.trim(), commitModel);
+            
+            return {
+                id: result.id,
+                code: result.code,
+                status: result.status,
+                totalAmount: result.totalAmount,
+                totalTax: result.totalTax,
+                committed: result.status === 'Committed'
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Void a transaction
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/void
+     */
+    public async voidTransaction(companyCode: string, transactionCode: string, options?: {
+        documentType?: string;
+        include?: string;
+        code?: string;
+    }) {
+        try {
+            if (!companyCode || companyCode.trim() === '') {
+                throw new Error('Company code is required for voiding transactions.');
+            }
+            if (!transactionCode || transactionCode.trim() === '') {
+                throw new Error('Transaction code is required.');
+            }
+
+            const params = new URLSearchParams();
+            if (options?.documentType) params.append('documentType', options.documentType);
+            if (options?.include) params.append('$include', options.include);
+
+            const queryString = params.toString();
+            const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+            const pathAfterCompanyCode = queryString 
+                ? `/transactions/${encodedTransactionCode}/void?${queryString}` 
+                : `/transactions/${encodedTransactionCode}/void`;
+            
+            const voidModel = {
+                code: options?.code || 'DocVoided'
+            };
+            
+            const result = await this.makeCompanyCodeRequest('POST', pathAfterCompanyCode, companyCode.trim(), voidModel);
+            
+            return {
+                id: result.id,
+                code: result.code,
+                status: result.status,
+                totalAmount: result.totalAmount,
+                totalTax: result.totalTax,
+                voided: result.status === 'DocVoided'
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Adjust a committed transaction
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/adjust
+     */
+    public async adjustTransaction(companyCode: string, transactionCode: string, newTransaction: any, options?: {
+        documentType?: string;
+        include?: string;
+    }) {
+        try {
+            if (!companyCode || companyCode.trim() === '') {
+                throw new Error('Company code is required for adjusting transactions.');
+            }
+            if (!transactionCode || transactionCode.trim() === '') {
+                throw new Error('Transaction code is required.');
+            }
+
+            const params = new URLSearchParams();
+            if (options?.documentType) params.append('documentType', options.documentType);
+            if (options?.include) params.append('$include', options.include);
+
+            const queryString = params.toString();
+            const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+            const pathAfterCompanyCode = queryString 
+                ? `/transactions/${encodedTransactionCode}/adjust?${queryString}` 
+                : `/transactions/${encodedTransactionCode}/adjust`;
+            
+            // Prepare adjustment model - similar to createTransaction but for adjustment
+            const adjustModel = {
+                ...newTransaction,
+                companyCode: companyCode.trim(),
+                lines: newTransaction.lines?.map((line: any, index: number) => ({
+                    number: line.number || `${index + 1}`,
+                    quantity: line.quantity || 1,
+                    amount: line.amount,
+                    itemCode: line.itemCode,
+                    description: line.description,
+                    taxCode: line.taxCode || 'P0000000'
+                }))
+            };
+            
+            const result = await this.makeCompanyCodeRequest('POST', pathAfterCompanyCode, companyCode.trim(), adjustModel);
+            
+            return {
+                id: result.id,
+                code: result.code,
+                status: result.status,
+                totalAmount: result.totalAmount,
+                totalTax: result.totalTax,
+                adjusted: true
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Uncommit a committed transaction
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/uncommit
+     */
+    public async uncommitTransaction(companyCode: string, transactionCode: string, options?: {
+        documentType?: string;
+        include?: string;
+    }) {
+        try {
+            if (!companyCode || companyCode.trim() === '') {
+                throw new Error('Company code is required for uncommitting transactions.');
+            }
+            if (!transactionCode || transactionCode.trim() === '') {
+                throw new Error('Transaction code is required.');
+            }
+
+            const params = new URLSearchParams();
+            if (options?.documentType) params.append('documentType', options.documentType);
+            if (options?.include) params.append('$include', options.include);
+
+            const queryString = params.toString();
+            const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+            const pathAfterCompanyCode = queryString 
+                ? `/transactions/${encodedTransactionCode}/uncommit?${queryString}` 
+                : `/transactions/${encodedTransactionCode}/uncommit`;
+            
+            const result = await this.makeCompanyCodeRequest('POST', pathAfterCompanyCode, companyCode.trim(), {});
+            
+            return {
+                id: result.id,
+                code: result.code,
+                status: result.status,
+                totalAmount: result.totalAmount,
+                totalTax: result.totalTax,
+                uncommitted: result.status === 'Saved'
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Get audit information for a transaction
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/audit
+     */
+    public async getTransactionAudit(companyCode: string, transactionCode: string) {
+        try {
+            if (!companyCode || companyCode.trim() === '') {
+                throw new Error('Company code is required for transaction audit.');
+            }
+            if (!transactionCode || transactionCode.trim() === '') {
+                throw new Error('Transaction code is required.');
+            }
+
+            const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+            const pathAfterCompanyCode = `/transactions/${encodedTransactionCode}/audit`;
+            
+            const result = await this.makeCompanyCodeRequest('GET', pathAfterCompanyCode, companyCode.trim());
+            
+            return {
+                companyId: result.companyId,
+                serverTimestamp: result.serverTimestamp,
+                serverDuration: result.serverDuration,
+                apiCallStatus: result.apiCallStatus,
+                originalApiRequestUrl: result.originalApiRequestUrl,
+                reconstructedApiRequestBody: result.reconstructedApiRequestBody
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Change the code of a transaction
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/changecode
+     */
+    public async changeTransactionCode(companyCode: string, transactionCode: string, newCode: string, options?: {
+        documentType?: string;
+    }) {
+        try {
+            if (!companyCode || companyCode.trim() === '') {
+                throw new Error('Company code is required for changing transaction code.');
+            }
+            if (!transactionCode || transactionCode.trim() === '') {
+                throw new Error('Current transaction code is required.');
+            }
+            if (!newCode || newCode.trim() === '') {
+                throw new Error('New transaction code is required.');
+            }
+
+            const params = new URLSearchParams();
+            if (options?.documentType) params.append('documentType', options.documentType);
+
+            const queryString = params.toString();
+            const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+            const pathAfterCompanyCode = queryString 
+                ? `/transactions/${encodedTransactionCode}/changecode?${queryString}` 
+                : `/transactions/${encodedTransactionCode}/changecode`;
+            
+            const changeCodeModel = {
+                newCode: newCode.trim()
+            };
+            
+            const result = await this.makeCompanyCodeRequest('POST', pathAfterCompanyCode, companyCode.trim(), changeCodeModel);
+            
+            return {
+                id: result.id,
+                code: result.code,
+                status: result.status,
+                codeChanged: true
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Verify a transaction
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/verify
+     */
+    public async verifyTransaction(companyCode: string, transactionCode: string, options?: {
+        documentType?: string;
+    }) {
+        try {
+            if (!companyCode || companyCode.trim() === '') {
+                throw new Error('Company code is required for verifying transactions.');
+            }
+            if (!transactionCode || transactionCode.trim() === '') {
+                throw new Error('Transaction code is required.');
+            }
+
+            const params = new URLSearchParams();
+            if (options?.documentType) params.append('documentType', options.documentType);
+
+            const queryString = params.toString();
+            const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+            const pathAfterCompanyCode = queryString 
+                ? `/transactions/${encodedTransactionCode}/verify?${queryString}` 
+                : `/transactions/${encodedTransactionCode}/verify`;
+            
+            const result = await this.makeCompanyCodeRequest('POST', pathAfterCompanyCode, companyCode.trim(), {});
+            
+            return {
+                id: result.id,
+                code: result.code,
+                status: result.status,
+                verified: true,
+                messages: result.messages || []
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
 }
 
 export default AvataxClient;

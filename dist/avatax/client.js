@@ -818,5 +818,312 @@ class AvataxClient {
             }
         });
     }
+    // ===== TRANSACTION MANAGEMENT METHODS =====
+    /**
+     * List transactions for a company with filtering
+     * Pattern: /api/v2/companies/{companyCode}/transactions
+     */
+    listTransactions(companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.filter)
+                    params.append('$filter', options.filter);
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                if (options === null || options === void 0 ? void 0 : options.orderBy)
+                    params.append('$orderBy', options.orderBy);
+                const queryString = params.toString();
+                const pathAfterCompanyCode = queryString ? `/transactions?${queryString}` : '/transactions';
+                const result = yield this.makeCompanyCodeRequest('GET', pathAfterCompanyCode, resolvedCompanyCode);
+                return {
+                    count: result.count || 0,
+                    value: result.value || [],
+                    '@recordsetCount': result['@recordsetCount']
+                };
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Commit a transaction to make it available for tax reporting
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/commit
+     */
+    commitTransaction(companyCode, transactionCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required for committing transactions.');
+                }
+                if (!transactionCode || transactionCode.trim() === '') {
+                    throw new Error('Transaction code is required.');
+                }
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.documentType)
+                    params.append('documentType', options.documentType);
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                const queryString = params.toString();
+                const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+                const pathAfterCompanyCode = queryString
+                    ? `/transactions/${encodedTransactionCode}/commit?${queryString}`
+                    : `/transactions/${encodedTransactionCode}/commit`;
+                const commitModel = {
+                    commit: (options === null || options === void 0 ? void 0 : options.commit) !== false // Default to true
+                };
+                const result = yield this.makeCompanyCodeRequest('POST', pathAfterCompanyCode, companyCode.trim(), commitModel);
+                return {
+                    id: result.id,
+                    code: result.code,
+                    status: result.status,
+                    totalAmount: result.totalAmount,
+                    totalTax: result.totalTax,
+                    committed: result.status === 'Committed'
+                };
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Void a transaction
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/void
+     */
+    voidTransaction(companyCode, transactionCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required for voiding transactions.');
+                }
+                if (!transactionCode || transactionCode.trim() === '') {
+                    throw new Error('Transaction code is required.');
+                }
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.documentType)
+                    params.append('documentType', options.documentType);
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                const queryString = params.toString();
+                const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+                const pathAfterCompanyCode = queryString
+                    ? `/transactions/${encodedTransactionCode}/void?${queryString}`
+                    : `/transactions/${encodedTransactionCode}/void`;
+                const voidModel = {
+                    code: (options === null || options === void 0 ? void 0 : options.code) || 'DocVoided'
+                };
+                const result = yield this.makeCompanyCodeRequest('POST', pathAfterCompanyCode, companyCode.trim(), voidModel);
+                return {
+                    id: result.id,
+                    code: result.code,
+                    status: result.status,
+                    totalAmount: result.totalAmount,
+                    totalTax: result.totalTax,
+                    voided: result.status === 'DocVoided'
+                };
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Adjust a committed transaction
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/adjust
+     */
+    adjustTransaction(companyCode, transactionCode, newTransaction, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required for adjusting transactions.');
+                }
+                if (!transactionCode || transactionCode.trim() === '') {
+                    throw new Error('Transaction code is required.');
+                }
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.documentType)
+                    params.append('documentType', options.documentType);
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                const queryString = params.toString();
+                const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+                const pathAfterCompanyCode = queryString
+                    ? `/transactions/${encodedTransactionCode}/adjust?${queryString}`
+                    : `/transactions/${encodedTransactionCode}/adjust`;
+                // Prepare adjustment model - similar to createTransaction but for adjustment
+                const adjustModel = Object.assign(Object.assign({}, newTransaction), { companyCode: companyCode.trim(), lines: (_a = newTransaction.lines) === null || _a === void 0 ? void 0 : _a.map((line, index) => ({
+                        number: line.number || `${index + 1}`,
+                        quantity: line.quantity || 1,
+                        amount: line.amount,
+                        itemCode: line.itemCode,
+                        description: line.description,
+                        taxCode: line.taxCode || 'P0000000'
+                    })) });
+                const result = yield this.makeCompanyCodeRequest('POST', pathAfterCompanyCode, companyCode.trim(), adjustModel);
+                return {
+                    id: result.id,
+                    code: result.code,
+                    status: result.status,
+                    totalAmount: result.totalAmount,
+                    totalTax: result.totalTax,
+                    adjusted: true
+                };
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Uncommit a committed transaction
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/uncommit
+     */
+    uncommitTransaction(companyCode, transactionCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required for uncommitting transactions.');
+                }
+                if (!transactionCode || transactionCode.trim() === '') {
+                    throw new Error('Transaction code is required.');
+                }
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.documentType)
+                    params.append('documentType', options.documentType);
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                const queryString = params.toString();
+                const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+                const pathAfterCompanyCode = queryString
+                    ? `/transactions/${encodedTransactionCode}/uncommit?${queryString}`
+                    : `/transactions/${encodedTransactionCode}/uncommit`;
+                const result = yield this.makeCompanyCodeRequest('POST', pathAfterCompanyCode, companyCode.trim(), {});
+                return {
+                    id: result.id,
+                    code: result.code,
+                    status: result.status,
+                    totalAmount: result.totalAmount,
+                    totalTax: result.totalTax,
+                    uncommitted: result.status === 'Saved'
+                };
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Get audit information for a transaction
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/audit
+     */
+    getTransactionAudit(companyCode, transactionCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required for transaction audit.');
+                }
+                if (!transactionCode || transactionCode.trim() === '') {
+                    throw new Error('Transaction code is required.');
+                }
+                const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+                const pathAfterCompanyCode = `/transactions/${encodedTransactionCode}/audit`;
+                const result = yield this.makeCompanyCodeRequest('GET', pathAfterCompanyCode, companyCode.trim());
+                return {
+                    companyId: result.companyId,
+                    serverTimestamp: result.serverTimestamp,
+                    serverDuration: result.serverDuration,
+                    apiCallStatus: result.apiCallStatus,
+                    originalApiRequestUrl: result.originalApiRequestUrl,
+                    reconstructedApiRequestBody: result.reconstructedApiRequestBody
+                };
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Change the code of a transaction
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/changecode
+     */
+    changeTransactionCode(companyCode, transactionCode, newCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required for changing transaction code.');
+                }
+                if (!transactionCode || transactionCode.trim() === '') {
+                    throw new Error('Current transaction code is required.');
+                }
+                if (!newCode || newCode.trim() === '') {
+                    throw new Error('New transaction code is required.');
+                }
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.documentType)
+                    params.append('documentType', options.documentType);
+                const queryString = params.toString();
+                const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+                const pathAfterCompanyCode = queryString
+                    ? `/transactions/${encodedTransactionCode}/changecode?${queryString}`
+                    : `/transactions/${encodedTransactionCode}/changecode`;
+                const changeCodeModel = {
+                    newCode: newCode.trim()
+                };
+                const result = yield this.makeCompanyCodeRequest('POST', pathAfterCompanyCode, companyCode.trim(), changeCodeModel);
+                return {
+                    id: result.id,
+                    code: result.code,
+                    status: result.status,
+                    codeChanged: true
+                };
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Verify a transaction
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/verify
+     */
+    verifyTransaction(companyCode, transactionCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required for verifying transactions.');
+                }
+                if (!transactionCode || transactionCode.trim() === '') {
+                    throw new Error('Transaction code is required.');
+                }
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.documentType)
+                    params.append('documentType', options.documentType);
+                const queryString = params.toString();
+                const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim());
+                const pathAfterCompanyCode = queryString
+                    ? `/transactions/${encodedTransactionCode}/verify?${queryString}`
+                    : `/transactions/${encodedTransactionCode}/verify`;
+                const result = yield this.makeCompanyCodeRequest('POST', pathAfterCompanyCode, companyCode.trim(), {});
+                return {
+                    id: result.id,
+                    code: result.code,
+                    status: result.status,
+                    verified: true,
+                    messages: result.messages || []
+                };
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
 }
 exports.default = AvataxClient;

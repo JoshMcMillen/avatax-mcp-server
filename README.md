@@ -38,49 +38,112 @@ The app will start automatically after installation, and you can navigate to whi
 
 - **Tax Calculation**: Calculate sales tax, VAT, and other transaction taxes with line-item detail
 - **Address Validation**: Validate and normalize addresses for accurate tax calculations  
-- **Transaction Management**: Create committed transactions directly in AvaTax
+- **Comprehensive Transaction Management**: Full transaction lifecycle management with commit, void, adjust, and audit capabilities
+- **Document Type Intelligence**: Smart handling of temporary estimates vs permanent tax records
 - **Multi-Environment Support**: Switch between sandbox and production environments
+- **Dynamic Credential Management**: Switch between accounts and companies without restarting
+- **Nexus Management**: Declare and manage tax nexus for multiple jurisdictions
 - **Comprehensive Error Handling**: Detailed error messages for troubleshooting
 - **Secure Local Storage**: Credentials stored safely on your computer
 - **Smart build script with version management**: Easily manage and patch versions
 
 ## Available Tools
 
-### `calculate_tax`
-Calculate tax for a transaction with detailed line items.
+### 🧮 **Tax Calculation**
+
+#### `calculate_tax`
+Calculate tax for transactions with support for temporary estimates and permanent records.
+
+**Key Features:**
+- **SalesOrder**: Temporary estimates (quotes, shopping cart) - not saved to tax history
+- **SalesInvoice**: Permanent transactions (final sales) - saved but uncommitted
+- **Smart document type selection** based on use case
 
 **Parameters:**
-- `type`: Transaction type (SalesInvoice, PurchaseInvoice, etc.)
-- `companyCode`: Your company code in AvaTax (optional if configured globally)
+- `type`: Document type (SalesOrder for estimates, SalesInvoice for final transactions)
+- `companyCode`: Your company code in AvaTax (optional if configured globally)  
 - `date`: Transaction date (YYYY-MM-DD)
 - `customerCode`: Customer identifier
-- `lines`: Array of line items with quantities, amounts, and addresses
+- `lines`: Array of line items with quantities, amounts, and tax codes
+- `shipFrom`/`shipTo`: Addresses for tax jurisdiction determination
 
-### `validate_address`
-Validate and normalize an address.
+#### `create_transaction`
+Create committed transactions ready for tax reporting and compliance.
+
+**Best For:** Final invoices, completed sales that need immediate tax reporting
+
+### 📋 **Transaction Management**
+
+#### `list_transactions`
+Find and list transactions with powerful filtering capabilities.
+
+**Important:** Must include date filter or defaults to last 30 days.
+
+#### `get_transaction`
+Retrieve detailed information about a specific transaction.
+
+#### `commit_transaction`
+Commit saved transactions to make them available for tax reporting.
+
+#### `void_transaction`
+Cancel transactions permanently (useful for cancelled orders).
+
+#### `adjust_transaction`
+Correct committed transactions by creating new versions with updated data.
+
+#### `uncommit_transaction`
+Remove committed transactions from tax reporting to allow modifications.
+
+#### `change_transaction_code`
+Rename transaction codes before commitment.
+
+#### `verify_transaction`
+Validate transaction data and ensure compliance with tax rules.
+
+#### `get_transaction_audit`
+Get detailed audit information including creation details and processing time.
+
+### 📍 **Address Validation**
+
+#### `validate_address`
+Validate and normalize addresses worldwide for accurate tax calculations.
 
 **Parameters:**
 - `line1`: Street address
-- `city`: City name
+- `city`: City name  
 - `region`: State/province code
 - `postalCode`: ZIP/postal code
 - `country`: Country code (ISO 3166-1 alpha-2)
 
-### `create_transaction`
-Create a committed transaction in AvaTax.
+### 🏢 **Company Management**
 
-**Parameters:**
-- Same as `calculate_tax` plus:
-- `commit`: Whether to commit the transaction (default: true)
+#### `get_companies`
+Get a list of companies in your AvaTax account with optional filtering.
 
-### `get_companies`
-Get a list of companies in your AvaTax account.
+### 🌍 **Nexus Management**
 
-**Parameters:**
-- `filter`: Optional search filter to find companies by company code or name
+#### `get_company_nexus`
+List all nexus declarations for a company.
 
-### `ping_service`
+#### `create_nexus`
+Declare nexus in new tax jurisdictions.
+
+#### `declare_nexus_by_address`
+Automatically create nexus declarations based on business addresses.
+
+#### `update_nexus` / `delete_nexus`
+Manage existing nexus declarations.
+
+### ⚙️ **System & Credentials**
+
+#### `ping_service`
 Test connectivity to AvaTax service and verify credentials.
+
+#### `set_credentials` / `switch_account`
+Manage multiple AvaTax accounts and environments.
+
+#### `set_default_company` / `get_current_company`
+Switch between companies dynamically.
 
 ## Configuration
 
@@ -141,15 +204,67 @@ The configuration file is located at:
 
 ## Example Usage
 
-Once connected to Claude Desktop, you can ask Claude to:
+Once connected to Claude Desktop, you can leverage the full power of AvaTax through natural language:
 
-- "Calculate sales tax for a $100 item shipped from California to New York"
-- "Validate this address: 123 Main St, Seattle, WA 98101"
-- "Create a committed sales transaction for order #12345"
-- "What's the tax rate for Austin, Texas?"
-- "Help me calculate taxes for my online store order"
-- "Show me all companies in my AvaTax account"
-- "Which companies do I have available for tax calculations?"
+### 🧮 **Tax Calculations**
+- "Calculate sales tax for a $100 software license from Washington to California"
+- "Give me a tax estimate for this shopping cart: 3 books at $20 each, shipped to Texas"
+- "What's the tax on a $500 consulting service from NY to CA?"
+
+### 📍 **Address Validation** 
+- "Validate this shipping address: 123 Main St, Seattle, WA 98101"
+- "Normalize this address for tax purposes: 1600 Pennsylvania Ave, Washington DC"
+
+### 📋 **Transaction Management**
+- "Create a committed sales transaction for invoice #INV-2024-001"
+- "Show me all transactions from last month that need to be committed"
+- "Void transaction #ORDER-12345 - it was cancelled"
+- "Adjust committed transaction #INV-001 to change the amount to $150"
+- "Find all uncommitted transactions for company ACME"
+
+### 🏢 **Company & Account Management**
+- "Switch to my production AvaTax account"
+- "Show me all companies in my AvaTax account"  
+- "Set the default company to 'RETAIL-WEST'"
+- "What's my current company configuration?"
+
+### 🌍 **Nexus Management**
+- "Declare nexus for our new office in Austin, Texas" 
+- "Show me all jurisdictions where we have nexus"
+- "Remove nexus for California - we no longer have presence there"
+
+### 📊 **Compliance & Reporting**
+- "Get audit details for transaction #INV-2024-100"
+- "Verify the tax calculation for order #12345"
+- "Show me transaction history for customer ABC Corp"
+
+### 💡 **Smart Context Understanding**
+Claude understands the context and will:
+- Choose the right document type (SalesOrder for estimates, SalesInvoice for final transactions)
+- Ask for missing required information
+- Suggest appropriate next steps
+- Provide detailed explanations of tax calculations
+- Help with transaction workflow decisions
+
+### ⚡ **Workflow Examples**
+
+**E-commerce Checkout Flow:**
+```
+User: "Customer is checking out with a $200 item, shipping from WA to CA"
+Claude: Uses calculate_tax with SalesOrder type for instant estimate
+
+User: "They completed the purchase"  
+Claude: Uses create_transaction with SalesInvoice type for committed record
+```
+
+**Monthly Transaction Review:**
+```
+User: "Show me last month's uncommitted transactions"
+Claude: Uses list_transactions with date filter and status filter
+
+User: "Commit all the valid ones"
+Claude: Uses commit_transaction for each valid transaction
+```
 
 ## Development
 
