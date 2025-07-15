@@ -1,23 +1,65 @@
 import { AvaTaxConfig } from './config.js';
-import Avatax from 'avatax';
 
 class AvataxClient {
-    private client: any;
     private config: AvaTaxConfig;
+    private baseUrl: string;
+    private authHeader: string;
 
     constructor(config: AvaTaxConfig) {
         this.config = config;
         
-        this.client = new Avatax({
-            appName: config.appName || 'AvaTax-MCP-Server',
-            appVersion: config.appVersion || '1.0.0',
-            environment: config.environment,
-            machineName: config.machineName || 'MCP-Server',
-            timeout: config.timeout || 30000
-        }).withSecurity({
-            username: config.accountId,
-            password: config.licenseKey
-        });
+        // Set base URL based on environment
+        this.baseUrl = config.environment === 'production' 
+            ? 'https://rest.avatax.com' 
+            : 'https://sandbox-rest.avatax.com';
+            
+        // Create Basic Auth header
+        const credentials = Buffer.from(`${config.accountId}:${config.licenseKey}`).toString('base64');
+        this.authHeader = `Basic ${credentials}`;
+    }
+
+    private async makeRequest(method: string, endpoint: string, data?: any): Promise<any> {
+        const url = `${this.baseUrl}/api/v2${endpoint}`;
+        const timeout = this.config.timeout || 30000;
+
+        const headers: Record<string, string> = {
+            'Authorization': this.authHeader,
+            'Content-Type': 'application/json',
+            'X-Avalara-Client': `${this.config.appName || 'AvaTax-MCP-Server'};${this.config.appVersion || '1.0.0'};${this.config.machineName || 'MCP-Server'};TypeScript`
+        };
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+        try {
+            const response = await fetch(url, {
+                method,
+                headers,
+                body: data ? JSON.stringify(data) : undefined,
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                const error = new Error(`HTTP ${response.status}: ${response.statusText}`);
+                (error as any).response = { 
+                    status: response.status, 
+                    data: errorData,
+                    headers: Object.fromEntries(response.headers.entries())
+                };
+                throw error;
+            }
+
+            return await response.json();
+        } catch (error: any) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                throw new Error(`Request timeout after ${timeout}ms`);
+            }
+            throw error;
+        }
     }
 
     private handleError(error: any): never {
@@ -118,7 +160,7 @@ class AvataxClient {
             // Validate before sending
             this.validateTransactionData(model);
             
-            const result = await this.client.createTransaction({ model });
+            const result = await this.makeRequest('POST', '/transactions/create', model);
             return {
                 totalAmount: result.totalAmount,
                 totalTax: result.totalTax,
@@ -145,8 +187,8 @@ class AvataxClient {
                 country: addressData.country || 'US'
             };
 
-            // Use the AvaTax SDK's resolveAddress method
-            const result = await this.client.resolveAddress(model);
+            // Use the AvaTax API's address resolution endpoint
+            const result = await this.makeRequest('POST', '/addresses/resolve', model);
             
             // Check if address validation was successful
             if (result && result.validatedAddresses && result.validatedAddresses.length > 0) {
@@ -214,7 +256,7 @@ class AvataxClient {
             // Validate before sending
             this.validateTransactionData(model);
             
-            const result = await this.client.createTransaction({ model });
+            const result = await this.makeRequest('POST', '/transactions/create', model);
             return {
                 id: result.id,
                 code: result.code,
@@ -230,7 +272,7 @@ class AvataxClient {
 
     public async ping() {
         try {
-            const result = await this.client.ping();
+            const result = await this.makeRequest('GET', '/utilities/ping');
             return {
                 authenticated: result.authenticated,
                 version: result.version,
@@ -243,18 +285,20 @@ class AvataxClient {
 
     public async getCompanies(filter?: string) {
         try {
-            const params: any = {};
+            const params = new URLSearchParams();
             
             // Add search filter if provided
             if (filter) {
-                params.$filter = `companyCode contains '${this.sanitizeString(filter)}' or name contains '${this.sanitizeString(filter)}'`;
+                params.append('$filter', `companyCode contains '${this.sanitizeString(filter)}' or name contains '${this.sanitizeString(filter)}'`);
             }
             
             // Limit results to make the response manageable
-            params.$top = 50;
-            params.$orderby = 'companyCode';
+            params.append('$top', '50');
+            params.append('$orderby', 'companyCode');
             
-            const result = await this.client.queryCompanies(params);
+            const queryString = params.toString();
+            const endpoint = queryString ? `/companies?${queryString}` : '/companies';
+            const result = await this.makeRequest('GET', endpoint);
             
             // Return simplified company information
             return {
