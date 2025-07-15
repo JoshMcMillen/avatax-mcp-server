@@ -1,4 +1,4 @@
-import { AvaTaxConfig } from './config.js';
+import { AvaTaxConfig, StoredCredentials, loadCredentials, saveCredentials } from './config.js';
 
 /**
  * AvaTax API Client
@@ -26,9 +26,13 @@ class AvataxClient {
     private config: AvaTaxConfig;
     private baseUrl: string;
     private authHeader: string;
+    private runtimeCompanyCode?: string;
+    private storedCredentials?: StoredCredentials | null;
 
     constructor(config: AvaTaxConfig) {
         this.config = config;
+        this.runtimeCompanyCode = config.companyCode;
+        this.storedCredentials = loadCredentials();
         
         // Set base URL based on environment
         this.baseUrl = config.environment === 'production' 
@@ -37,6 +41,87 @@ class AvataxClient {
             
         // Create Basic Auth header
         const credentials = Buffer.from(`${config.accountId}:${config.licenseKey}`).toString('base64');
+        this.authHeader = `Basic ${credentials}`;
+    }
+
+    /**
+     * Set the default company code for the current session
+     */
+    setDefaultCompanyCode(companyCode: string): void {
+        this.runtimeCompanyCode = companyCode;
+    }
+
+    /**
+     * Get the current default company code
+     */
+    getDefaultCompanyCode(): string | undefined {
+        return this.runtimeCompanyCode;
+    }
+
+    /**
+     * Switch to a different pre-configured account
+     */
+    switchAccount(accountName: string): void {
+        if (!this.storedCredentials?.accounts[accountName]) {
+            throw new Error(`Account '${accountName}' not found in stored credentials`);
+        }
+
+        const account = this.storedCredentials.accounts[accountName];
+        
+        // Update configuration
+        this.config.accountId = account.accountId;
+        this.config.licenseKey = account.licenseKey;
+        this.config.environment = account.environment;
+        this.runtimeCompanyCode = account.defaultCompanyCode || '';
+
+        // Update base URL and auth header
+        this.baseUrl = account.environment === 'production' 
+            ? 'https://rest.avatax.com' 
+            : 'https://sandbox-rest.avatax.com';
+            
+        const credentials = Buffer.from(`${account.accountId}:${account.licenseKey}`).toString('base64');
+        this.authHeader = `Basic ${credentials}`;
+
+        // Update default account in stored credentials
+        this.storedCredentials.defaultAccount = accountName;
+        saveCredentials(this.storedCredentials);
+    }
+
+    /**
+     * Get list of available pre-configured accounts
+     */
+    getAvailableAccounts(): string[] {
+        return this.storedCredentials ? Object.keys(this.storedCredentials.accounts) : [];
+    }
+
+    /**
+     * Get current account information (without sensitive data)
+     */
+    getCurrentAccountInfo(): { accountName?: string; accountId: string; environment: string; companyCode?: string } {
+        const currentAccountName = this.storedCredentials?.defaultAccount;
+        return {
+            accountName: currentAccountName,
+            accountId: this.config.accountId,
+            environment: this.config.environment,
+            companyCode: this.runtimeCompanyCode
+        };
+    }
+
+    /**
+     * Set runtime credentials (for session-based credential updates)
+     */
+    setCredentials(accountId: string, licenseKey: string, environment: 'sandbox' | 'production', companyCode?: string): void {
+        this.config.accountId = accountId;
+        this.config.licenseKey = licenseKey;
+        this.config.environment = environment;
+        this.runtimeCompanyCode = companyCode || '';
+
+        // Update base URL and auth header
+        this.baseUrl = environment === 'production' 
+            ? 'https://rest.avatax.com' 
+            : 'https://sandbox-rest.avatax.com';
+            
+        const credentials = Buffer.from(`${accountId}:${licenseKey}`).toString('base64');
         this.authHeader = `Basic ${credentials}`;
     }
 
@@ -154,10 +239,11 @@ class AvataxClient {
      * Returns both companyCode (for request body) and companyId (for URL paths)
      */
     private async resolveCompanyInfo(requestedCompanyCode?: string): Promise<{ companyCode: string; companyId?: number }> {
-        const companyCode = requestedCompanyCode || this.config.companyCode;
+        // Use runtime company code instead of config.companyCode
+        const companyCode = requestedCompanyCode || this.runtimeCompanyCode;
         
         if (!companyCode || companyCode.trim() === '') {
-            throw new Error('Company code is required. Please specify a companyCode parameter or ask the user which company to use. Use the get_companies tool to see available companies.');
+            throw new Error('Company code is required. Please specify a companyCode parameter or use set_default_company to set a default, or ask the user which company to use. Use the get_companies tool to see available companies.');
         }
 
         // For endpoints that need companyId in the URL, we need to look it up

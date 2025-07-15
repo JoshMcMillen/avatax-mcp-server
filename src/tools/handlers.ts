@@ -200,6 +200,123 @@ export async function handleToolCall(name: string, args: any, avataxClient: AvaT
         }]
       };
     }
+
+    // Credential Management Tools
+    case 'set_default_company': {
+      const { companyCode } = args;
+      
+      // Validate that the company exists
+      const companies = await avataxClient.getCompanies();
+      const company = companies.companies.find((c: any) => c.companyCode === companyCode);
+      
+      if (!company) {
+        throw new Error(`Company with code '${companyCode}' not found`);
+      }
+      
+      // Update the runtime configuration
+      avataxClient.setDefaultCompanyCode(companyCode);
+      
+      return {
+        content: [{
+          type: 'text',
+          text: `Default company code set to: ${companyCode} (${company.name})`
+        }]
+      };
+    }
+    
+    case 'get_current_company': {
+      const currentInfo = avataxClient.getCurrentAccountInfo();
+      return {
+        content: [{
+          type: 'text',
+          text: `Current Configuration:
+Account Name: ${currentInfo.accountName || 'Not configured'}
+Account ID: ${currentInfo.accountId}
+Environment: ${currentInfo.environment}
+Default Company Code: ${currentInfo.companyCode || 'Not set'}`
+        }]
+      };
+    }
+
+    case 'set_credentials': {
+      const { accountId, licenseKey, environment, companyCode } = args;
+      
+      // Test the credentials by making a ping request
+      const tempClient = new (avataxClient.constructor as any)({
+        accountId,
+        licenseKey,
+        environment,
+        companyCode: companyCode || '',
+        appName: 'AvaTax-MCP-Server',
+        timeout: 30000
+      });
+      
+      try {
+        await tempClient.ping();
+      } catch (error: any) {
+        throw new Error(`Invalid credentials: ${error?.message || 'Authentication failed'}`);
+      }
+      
+      // Update the runtime configuration
+      avataxClient.setCredentials(accountId, licenseKey, environment, companyCode);
+      
+      return {
+        content: [{
+          type: 'text',
+          text: `Credentials updated successfully!
+Account ID: ${accountId}
+Environment: ${environment}
+${companyCode ? `Default Company Code: ${companyCode}` : 'No default company code set'}`
+        }]
+      };
+    }
+
+    case 'switch_account': {
+      const { accountName } = args;
+      
+      try {
+        avataxClient.switchAccount(accountName);
+        const currentInfo = avataxClient.getCurrentAccountInfo();
+        
+        return {
+          content: [{
+            type: 'text',
+            text: `Successfully switched to account: ${accountName}
+Account ID: ${currentInfo.accountId}
+Environment: ${currentInfo.environment}
+Default Company Code: ${currentInfo.companyCode || 'Not set'}`
+          }]
+        };
+      } catch (error: any) {
+        throw new Error(`Failed to switch account: ${error?.message || 'Unknown error'}`);
+      }
+    }
+
+    case 'list_accounts': {
+      const accounts = avataxClient.getAvailableAccounts();
+      const currentInfo = avataxClient.getCurrentAccountInfo();
+      
+      if (accounts.length === 0) {
+        return {
+          content: [{
+            type: 'text',
+            text: `No pre-configured accounts found. 
+You can use 'set_credentials' to add credentials for the current session, or create a credentials file at ~/.avatax/credentials.json`
+          }]
+        };
+      }
+      
+      const accountList = accounts.map(name => 
+        `- ${name}${name === currentInfo.accountName ? ' (current)' : ''}`
+      ).join('\n');
+      
+      return {
+        content: [{
+          type: 'text',
+          text: `Available pre-configured accounts:\n${accountList}\n\nUse 'switch_account' to change to a different account.`
+        }]
+      };
+    }
     
     default:
       throw new Error(`Unknown tool: ${name}`);

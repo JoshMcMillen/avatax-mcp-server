@@ -662,6 +662,7 @@
             border-radius: 12px;
             padding: 25px;
             margin: 25px 0;
+            color: #2c2c2c; /* Explicit text color for light theme */
         }
         
         .claude-config-section h3 {
@@ -674,6 +675,13 @@
             color: #2e7d32;
             margin: 15px 0 10px 0;
             font-size: 1.1em;
+        }
+        
+        .claude-config-section p,
+        .claude-config-section li,
+        .claude-config-section ol,
+        .claude-config-section ul {
+            color: #2c2c2c; /* Explicit text color for paragraphs and lists */
         }
         
         .config-copy-container {
@@ -692,7 +700,7 @@
             overflow-x: auto;
             white-space: pre;
             margin-bottom: 10px;
-            max-height: 400px;
+            max-height: 450px; /* Increased from 400px to 450px for consistency */
             overflow-y: auto;
         }
         
@@ -1167,11 +1175,19 @@
         [data-theme="dark"] .claude-config-section {
             background: var(--bg-secondary);
             border-color: #388e3c;
+            color: #e0e0e0; /* Explicit text color for dark theme */
         }
         
         [data-theme="dark"] .claude-config-section h3,
         [data-theme="dark"] .claude-config-section h4 {
             color: #4caf50;
+        }
+        
+        [data-theme="dark"] .claude-config-section p,
+        [data-theme="dark"] .claude-config-section li,
+        [data-theme="dark"] .claude-config-section ol,
+        [data-theme="dark"] .claude-config-section ul {
+            color: #e0e0e0; /* Explicit text color for paragraphs and lists in dark theme */
         }
         
         [data-theme="dark"] .setup-steps {
@@ -1789,6 +1805,85 @@
             padding: 40px;
             color: var(--text-secondary);
         }
+        
+        /* Configuration tabs styles */
+        .config-options {
+            width: 100%;
+        }
+        
+        .config-tabs {
+            display: flex;
+            border-bottom: 2px solid #4caf50;
+            margin-bottom: 20px;
+        }
+        
+        .config-tab {
+            background: #f5f5f5;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            border-radius: 8px 8px 0 0;
+            margin-right: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .config-tab:hover {
+            background: #e8f5e8;
+            color: #4caf50;
+        }
+        
+        .config-tab.active {
+            background: #4caf50;
+            color: white;
+            box-shadow: 0 2px 5px rgba(76,175,80,0.3);
+        }
+        
+        .config-content {
+            display: none;
+        }
+        
+        .config-content.active {
+            display: block;
+        }
+        
+        .config-code {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: 1px solid #4caf50;
+            border-radius: 8px;
+            padding: 20px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            white-space: pre;
+            margin-bottom: 10px;
+            max-height: 450px; /* Increased from 300px to 450px for better readability */
+            overflow-y: auto;
+        }
+        
+        .help-note {
+            background: #f8f9fa;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .help-note p {
+            margin: 0 0 10px 0;
+            font-weight: 600;
+        }
+        
+        .help-note ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .help-note li {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
@@ -1969,80 +2064,187 @@
                 <h2>Avalara AvaTax Configuration</h2>
                 <p>Configure your Avalara AvaTax API credentials and environment settings. Your credentials are stored securely on your local computer.</p>
                 
-                <form class="config-form" id="configForm">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="accountId">
-                                Account ID 
-                                <span class="required">*required</span>
-                            </label>
-                            <input type="text" id="accountId" name="accountId" placeholder="1234567890" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="licenseKey">
-                                License Key 
-                                <span class="required">*required</span>
-                            </label>
-                            <input type="password" id="licenseKey" name="licenseKey" placeholder="Your AvaTax license key" required>
-                        </div>
+                <div class="config-options">
+                    <div class="config-tabs">
+                        <button class="config-tab active" onclick="showConfigTab('credentials')">Credentials</button>
+                        <button class="config-tab" onclick="showConfigTab('settings')">Settings</button>
+                        <button class="config-tab" onclick="showConfigTab('theme')">Theme</button>
                     </div>
                     
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="companyCode">
-                                Company Code 
-                                <span class="optional">(optional)</span>
-                            </label>
-                            <div class="input-group">
-                                <input type="text" id="companyCode" name="companyCode" placeholder="Leave blank for interactive selection">
-                                <button type="button" class="btn btn-secondary btn-small" onclick="getCompanies()" id="getCompaniesBtn">
-                                    📋 Get Companies
-                                </button>
-                            </div>
-                            <small class="form-help">Leave blank to be prompted for company selection when calculating taxes</small>
-                            
-                            <!-- Company Selection Modal -->
-                            <div id="companySelectionModal" class="modal hidden">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h3>Select Company</h3>
-                                        <span class="close" onclick="closeCompanyModal()">&times;</span>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="search-box">
-                                            <input type="text" id="companySearch" placeholder="Search companies..." onkeyup="filterCompanies()">
-                                        </div>
-                                        <div id="companyList" class="company-list">
-                                            <!-- Companies will be populated here -->
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" onclick="closeCompanyModal()">Cancel</button>
-                                    </div>
+                    <div class="config-content active" id="credentials">
+                        <form class="config-form" id="configForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="accountId">
+                                        Account ID 
+                                        <span class="required">*required</span>
+                                    </label>
+                                    <input type="text" id="accountId" name="accountId" placeholder="1234567890" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="licenseKey">
+                                        License Key 
+                                        <span class="required">*required</span>
+                                    </label>
+                                    <input type="password" id="licenseKey" name="licenseKey" placeholder="Your AvaTax license key" required>
                                 </div>
                             </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="companyCode">
+                                        Company Code 
+                                        <span class="optional">(optional)</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="text" id="companyCode" name="companyCode" placeholder="Leave blank for interactive selection">
+                                        <button type="button" class="btn btn-secondary btn-small" onclick="getCompanies()" id="getCompaniesBtn">
+                                            📋 Get Companies
+                                        </button>
+                                    </div>
+                                    <small class="form-help">Leave blank to be prompted for company selection when calculating taxes</small>
+                                    
+                                    <!-- Company Selection Modal -->
+                                    <div id="companySelectionModal" class="modal hidden">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h3>Select Company</h3>
+                                                <span class="close" onclick="closeCompanyModal()">&times;</span>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="search-box">
+                                                    <input type="text" id="companySearch" placeholder="Search companies..." onkeyup="filterCompanies()">
+                                                </div>
+                                                <div id="companyList" class="company-list">
+                                                    <!-- Companies will be populated here -->
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" onclick="closeCompanyModal()">Cancel</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="environment">Environment</label>
+                                    <select id="environment" name="environment">
+                                        <option value="sandbox">Sandbox (Testing)</option>
+                                        <option value="production">Production (Live)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="appName">Application Name</label>
+                                    <input type="text" id="appName" name="appName" placeholder="AvaTax-MCP-Server" value="AvaTax-MCP-Server">
+                                </div>
+                                <div class="form-group">
+                                    <label for="timeout">API Timeout (ms)</label>
+                                    <input type="number" id="timeout" name="timeout" placeholder="30000" value="30000" min="5000" max="120000">
+                                </div>
+                            </div>
+                            
+                            <div class="button-group">
+                                <button type="submit" class="btn btn-primary">Save Configuration</button>
+                                <button type="button" class="btn btn-secondary" onclick="loadConfiguration()">Load Saved</button>
+                                <button type="button" class="btn btn-secondary" onclick="testConnection()">Test Connection</button>
+                                <button type="button" class="btn btn-danger" onclick="clearConfiguration()">Clear All</button>
+                            </div>
+                        </form>
+                        
+                        <div id="configStatus"></div>
+                        
+                        <!-- Application Update Section -->
+                        <div class="update-section">
+                            <h3>🔄 Application Updates</h3>
+                            <p>Keep your AvaTax MCP Server up to date with the latest features and bug fixes.</p>
+                            
+                            <div class="update-info">
+                                <div class="current-version">
+                                    <span class="label">Current Version:</span>
+                                    <span id="currentVersion" class="version">Loading...</span>
+                                </div>
+                            </div>
+                            
+                            <div class="update-controls">
+                                <button type="button" class="btn btn-secondary" onclick="checkForUpdates()" id="checkUpdateBtn">
+                                    🔍 Check for Updates
+                                </button>
+                                <button type="button" class="btn btn-primary hidden" onclick="downloadUpdate()" id="downloadUpdateBtn">
+                                    ⬇️ Download Update
+                                </button>
+                                <button type="button" class="btn btn-success hidden" onclick="installUpdate()" id="installUpdateBtn">
+                                    🚀 Install & Restart
+                                </button>
+                            </div>
+                            
+                            <div id="updateStatus" class="update-status"></div>
+                            <div id="updateProgress" class="update-progress hidden">
+                                <div class="progress-bar">
+                                    <div id="progressFill" class="progress-fill"></div>
+                                </div>
+                                <div id="progressText" class="progress-text"></div>
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label for="environment">Environment</label>
-                            <select id="environment" name="environment">
-                                <option value="sandbox">Sandbox (Testing)</option>
-                                <option value="production">Production (Live)</option>
-                            </select>
+                        
+                        <!-- Claude Desktop Configuration Section -->
+                        <div id="claudeConfigSection" class="claude-config-section hidden">
+                            <h3>📋 Claude Desktop Configuration</h3>
+                            <p>Copy this configuration to your <code>claude_desktop_config.json</code> file:</p>
+                                      <div class="config-copy-container">
+                        <div id="claudeConfigOutput" class="claude-config-output"></div>
+                    </div>
+                            
+                            <div class="help-section">
+                                <h4>📁 Configuration File Location</h4>
+                                <ul>
+                                    <li><strong>Windows:</strong> <code>%APPDATA%\Roaming\Claude\claude_desktop_config.json</code></li>
+                                    <li><strong>macOS:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
+                                    <li><strong>Linux:</strong> <code>~/.config/Claude/claude_desktop_config.json</code></li>
+                                </ul>
+                                
+                                <div class="help-section">
+                                    <h4>⚠️ Important Configuration Notes</h4>
+                                    <p><strong>For Installed Version:</strong> The configuration above uses the Electron executable path with <code>ELECTRON_RUN_AS_NODE=1</code> environment variable. This is required for the packaged installer version.</p>
+                                    <p><strong>For Development Version:</strong> If you're running from source code, you can use <code>"command": "node"</code> with the path to your local <code>dist/index.js</code> file instead.</p>
+                                </div>
+                                
+                                <p><strong>Next steps:</strong></p>
+                                <ol>
+                                    <li>Copy the configuration above</li>
+                                    <li>Open your Claude configuration file</li>
+                                    <li>Add the AvaTax MCP server configuration</li>
+                                    <li>Restart Claude Desktop</li>
+                                    <li>Start asking Claude about tax calculations!</li>
+                                </ol>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="form-row">
+                    <div class="config-content" id="settings">
+                        <h2>Settings</h2>
+                        <p>Adjust application settings and preferences:</p>
+                        
                         <div class="form-group">
                             <label for="appName">Application Name</label>
                             <input type="text" id="appName" name="appName" placeholder="AvaTax-MCP-Server" value="AvaTax-MCP-Server">
                         </div>
+                        
                         <div class="form-group">
                             <label for="timeout">API Timeout (ms)</label>
                             <input type="number" id="timeout" name="timeout" placeholder="30000" value="30000" min="5000" max="120000">
                         </div>
+                        
+                        <div class="button-group">
+                            <button type="button" class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
+                        </div>
                     </div>
                     
-                    <div class="form-row">
+                    <div class="config-content" id="theme">
+                        <h2>Theme Configuration</h2>
+                        <p>Customize the interface theme:</p>
+                        
                         <div class="form-group">
                             <label>Interface Theme</label>
                             <div class="theme-toggle-container">
@@ -2056,88 +2258,10 @@
                                 <span class="theme-label">Dark Mode</span>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <!-- Empty for spacing -->
-                        </div>
-                    </div>
-                    
-                    <div class="button-group">
-                        <button type="submit" class="btn btn-primary">Save Configuration</button>
-                        <button type="button" class="btn btn-secondary" onclick="loadConfiguration()">Load Saved</button>
-                        <button type="button" class="btn btn-secondary" onclick="testConnection()">Test Connection</button>
-                        <button type="button" class="btn btn-danger" onclick="clearConfiguration()">Clear All</button>
-                    </div>
-                </form>
-                
-                <div id="configStatus"></div>
-                
-                <!-- Application Update Section -->
-                <div class="update-section">
-                    <h3>🔄 Application Updates</h3>
-                    <p>Keep your AvaTax MCP Server up to date with the latest features and bug fixes.</p>
-                    
-                    <div class="update-info">
-                        <div class="current-version">
-                            <span class="label">Current Version:</span>
-                            <span id="currentVersion" class="version">Loading...</span>
-                        </div>
-                    </div>
-                    
-                    <div class="update-controls">
-                        <button type="button" class="btn btn-secondary" onclick="checkForUpdates()" id="checkUpdateBtn">
-                            🔍 Check for Updates
-                        </button>
-                        <button type="button" class="btn btn-primary hidden" onclick="downloadUpdate()" id="downloadUpdateBtn">
-                            ⬇️ Download Update
-                        </button>
-                        <button type="button" class="btn btn-success hidden" onclick="installUpdate()" id="installUpdateBtn">
-                            🚀 Install & Restart
-                        </button>
-                    </div>
-                    
-                    <div id="updateStatus" class="update-status"></div>
-                    <div id="updateProgress" class="update-progress hidden">
-                        <div class="progress-bar">
-                            <div id="progressFill" class="progress-fill"></div>
-                        </div>
-                        <div id="progressText" class="progress-text"></div>
-                    </div>
-                </div>
-                
-                <!-- Claude Desktop Configuration Section -->
-                <div id="claudeConfigSection" class="claude-config-section hidden">
-                    <h3>📋 Claude Desktop Configuration</h3>
-                    <p>Copy this configuration to your <code>claude_desktop_config.json</code> file:</p>
-                    
-                    <div class="config-copy-container">
-                        <pre id="claudeConfigOutput" class="claude-config-output"></pre>
-                        <button type="button" class="btn btn-secondary copy-btn" onclick="copyClaudeConfig()">
-                            📋 Copy Configuration
-                        </button>
-                    </div>
-                    
-                    <div class="help-section">
-                        <h4>📁 Configuration File Location</h4>
-                        <ul>
-                            <li><strong>Windows:</strong> <code>%APPDATA%\Roaming\Claude\claude_desktop_config.json</code></li>
-                            <li><strong>macOS:</strong> <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></li>
-                            <li><strong>Linux:</strong> <code>~/.config/Claude/claude_desktop_config.json</code></li>
-                        </ul>
                         
-                        <div class="help-section">
-                            <h4>⚠️ Important Configuration Notes</h4>
-                            <p><strong>For Installed Version:</strong> The configuration above uses the Electron executable path with <code>ELECTRON_RUN_AS_NODE=1</code> environment variable. This is required for the packaged installer version.</p>
-                            <p><strong>For Development Version:</strong> If you're running from source code, you can use <code>"command": "node"</code> with the path to your local <code>dist/index.js</code> file instead.</p>
+                        <div class="button-group">
+                            <button type="button" class="btn btn-primary" onclick="saveThemeSettings()">Save Theme Settings</button>
                         </div>
-                        
-                        <p><strong>Next steps:</strong></p>
-                        <ol>
-                            <li>Copy the configuration above</li>
-                            <li>Open your Claude configuration file</li>
-                            <li>Add the AvaTax MCP server configuration</li>
-                            <li>Restart Claude Desktop</li>
-                            <li>Start asking Claude about tax calculations!</li>
-                        </ol>
                     </div>
                 </div>
             </div>

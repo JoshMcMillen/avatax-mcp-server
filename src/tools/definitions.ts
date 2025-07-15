@@ -471,5 +471,78 @@ export const TOOL_DEFINITIONS = [
       },
       required: ['line1', 'city', 'region', 'country', 'postalCode']
     }
+  },
+
+  // Credential Management Tools
+  {
+    name: 'set_default_company',
+    description: 'Set the default company code for the current session. This allows you to switch between companies without restarting Claude.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'The company code to use as default for subsequent operations'
+        }
+      },
+      required: ['companyCode']
+    }
+  },
+  {
+    name: 'get_current_company',
+    description: 'Get the currently configured default company code and account information',
+    inputSchema: {
+      type: 'object',
+      properties: {}
+    }
+  },
+  {
+    name: 'set_credentials',
+    description: 'Set or update the AvaTax credentials for the current session. Use this to switch between different accounts or environments without restarting Claude.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        accountId: {
+          type: 'string',
+          description: 'The AvaTax account ID'
+        },
+        licenseKey: {
+          type: 'string',
+          description: 'The AvaTax license key'
+        },
+        environment: {
+          type: 'string',
+          description: 'The AvaTax environment (sandbox or production)',
+          enum: ['sandbox', 'production']
+        },
+        companyCode: {
+          type: 'string',
+          description: 'Optional default company code'
+        }
+      },
+      required: ['accountId', 'licenseKey']
+    }
+  },
+  {
+    name: 'switch_account',
+    description: 'Switch to a different pre-configured AvaTax account',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        accountName: {
+          type: 'string',
+          description: 'Name of the account configuration to switch to (e.g., "sandbox", "production")'
+        }
+      },
+      required: ['accountName']
+    }
+  },
+  {
+    name: 'list_accounts',
+    description: 'List all available pre-configured AvaTax accounts',
+    inputSchema: {
+      type: 'object',
+      properties: {}
+    }
   }
 ];

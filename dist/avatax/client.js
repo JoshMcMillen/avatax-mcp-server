@@ -9,6 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const config_js_1 = require("./config.js");
 /**
  * AvaTax API Client
  *
@@ -61,12 +62,84 @@ class AvataxClient {
          */
         this.companyIdCache = new Map();
         this.config = config;
+        this.runtimeCompanyCode = config.companyCode;
+        this.storedCredentials = (0, config_js_1.loadCredentials)();
         // Set base URL based on environment
         this.baseUrl = config.environment === 'production'
             ? 'https://rest.avatax.com'
             : 'https://sandbox-rest.avatax.com';
         // Create Basic Auth header
         const credentials = Buffer.from(`${config.accountId}:${config.licenseKey}`).toString('base64');
+        this.authHeader = `Basic ${credentials}`;
+    }
+    /**
+     * Set the default company code for the current session
+     */
+    setDefaultCompanyCode(companyCode) {
+        this.runtimeCompanyCode = companyCode;
+    }
+    /**
+     * Get the current default company code
+     */
+    getDefaultCompanyCode() {
+        return this.runtimeCompanyCode;
+    }
+    /**
+     * Switch to a different pre-configured account
+     */
+    switchAccount(accountName) {
+        var _a;
+        if (!((_a = this.storedCredentials) === null || _a === void 0 ? void 0 : _a.accounts[accountName])) {
+            throw new Error(`Account '${accountName}' not found in stored credentials`);
+        }
+        const account = this.storedCredentials.accounts[accountName];
+        // Update configuration
+        this.config.accountId = account.accountId;
+        this.config.licenseKey = account.licenseKey;
+        this.config.environment = account.environment;
+        this.runtimeCompanyCode = account.defaultCompanyCode || '';
+        // Update base URL and auth header
+        this.baseUrl = account.environment === 'production'
+            ? 'https://rest.avatax.com'
+            : 'https://sandbox-rest.avatax.com';
+        const credentials = Buffer.from(`${account.accountId}:${account.licenseKey}`).toString('base64');
+        this.authHeader = `Basic ${credentials}`;
+        // Update default account in stored credentials
+        this.storedCredentials.defaultAccount = accountName;
+        (0, config_js_1.saveCredentials)(this.storedCredentials);
+    }
+    /**
+     * Get list of available pre-configured accounts
+     */
+    getAvailableAccounts() {
+        return this.storedCredentials ? Object.keys(this.storedCredentials.accounts) : [];
+    }
+    /**
+     * Get current account information (without sensitive data)
+     */
+    getCurrentAccountInfo() {
+        var _a;
+        const currentAccountName = (_a = this.storedCredentials) === null || _a === void 0 ? void 0 : _a.defaultAccount;
+        return {
+            accountName: currentAccountName,
+            accountId: this.config.accountId,
+            environment: this.config.environment,
+            companyCode: this.runtimeCompanyCode
+        };
+    }
+    /**
+     * Set runtime credentials (for session-based credential updates)
+     */
+    setCredentials(accountId, licenseKey, environment, companyCode) {
+        this.config.accountId = accountId;
+        this.config.licenseKey = licenseKey;
+        this.config.environment = environment;
+        this.runtimeCompanyCode = companyCode || '';
+        // Update base URL and auth header
+        this.baseUrl = environment === 'production'
+            ? 'https://rest.avatax.com'
+            : 'https://sandbox-rest.avatax.com';
+        const credentials = Buffer.from(`${accountId}:${licenseKey}`).toString('base64');
         this.authHeader = `Basic ${credentials}`;
     }
     makeRequest(method, endpoint, data) {
@@ -174,9 +247,10 @@ class AvataxClient {
      */
     resolveCompanyInfo(requestedCompanyCode) {
         return __awaiter(this, void 0, void 0, function* () {
-            const companyCode = requestedCompanyCode || this.config.companyCode;
+            // Use runtime company code instead of config.companyCode
+            const companyCode = requestedCompanyCode || this.runtimeCompanyCode;
             if (!companyCode || companyCode.trim() === '') {
-                throw new Error('Company code is required. Please specify a companyCode parameter or ask the user which company to use. Use the get_companies tool to see available companies.');
+                throw new Error('Company code is required. Please specify a companyCode parameter or use set_default_company to set a default, or ask the user which company to use. Use the get_companies tool to see available companies.');
             }
             // For endpoints that need companyId in the URL, we need to look it up
             // We'll cache this information to avoid repeated API calls

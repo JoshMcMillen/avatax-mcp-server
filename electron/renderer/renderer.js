@@ -75,6 +75,7 @@ let currentConfig = {};
 window.addEventListener('DOMContentLoaded', () => {
     initializeStatusBar(); // Initialize status bar first
     loadTheme(); // Load theme first
+    loadSettings(); // Load saved settings
     loadConfiguration();
     getServerStatus();
     
@@ -343,7 +344,26 @@ function generateClaudeConfig(config) {
         ? `${window.mcp.homedir}\\AppData\\Local\\Programs\\AvaTax MCP Server\\resources\\app.asar\\dist\\index.js`
         : `${window.mcp.homedir}/Applications/AvaTax MCP Server.app/Contents/Resources/app.asar/dist/index.js`;
     
-    const claudeConfig = {
+    // Generate secure configuration (recommended)
+    const secureConfig = {
+        "mcpServers": {
+            "avatax": {
+                "command": executablePath,
+                "args": [scriptPath],
+                "env": {
+                    "ELECTRON_RUN_AS_NODE": "1",
+                    "AVATAX_CREDENTIALS_PATH": window.mcp.platform === 'win32' 
+                        ? `${window.mcp.homedir}\\.avatax\\credentials.json`
+                        : `${window.mcp.homedir}/.avatax/credentials.json`,
+                    "AVATAX_APP_NAME": config.AVATAX_APP_NAME,
+                    "AVATAX_TIMEOUT": config.AVATAX_TIMEOUT
+                }
+            }
+        }
+    };
+
+    // Generate legacy configuration (with credentials in config)
+    const legacyConfig = {
         "mcpServers": {
             "avatax": {
                 "command": executablePath,
@@ -360,9 +380,108 @@ function generateClaudeConfig(config) {
             }
         }
     };
+
+    // Generate credentials file content
+    const credentialsFile = {
+        "accounts": {
+            [config.AVATAX_ENVIRONMENT]: {
+                "accountId": config.AVATAX_ACCOUNT_ID,
+                "licenseKey": config.AVATAX_LICENSE_KEY,
+                "environment": config.AVATAX_ENVIRONMENT,
+                "defaultCompanyCode": config.AVATAX_COMPANY_CODE === 'DEFAULT' ? '' : config.AVATAX_COMPANY_CODE
+            }
+        },
+        "defaultAccount": config.AVATAX_ENVIRONMENT
+    };
     
-    const configText = JSON.stringify(claudeConfig, null, 2);
-    document.getElementById('claudeConfigOutput').textContent = configText;
+    const secureConfigText = JSON.stringify(secureConfig, null, 2);
+    const legacyConfigText = JSON.stringify(legacyConfig, null, 2);
+    const credentialsText = JSON.stringify(credentialsFile, null, 2);
+    
+    // Create the HTML structure
+    const configContainer = document.createElement('div');
+    configContainer.className = 'config-options';
+    
+    // Create tabs
+    const tabsContainer = document.createElement('div');
+    tabsContainer.className = 'config-tabs';
+    
+    const secureTab = document.createElement('button');
+    secureTab.className = 'config-tab active';
+    secureTab.innerHTML = '🔒 Secure (Recommended)';
+    secureTab.onclick = () => showConfigTab('secure');
+    
+    const legacyTab = document.createElement('button');
+    legacyTab.className = 'config-tab';
+    legacyTab.innerHTML = '⚙️ Legacy';
+    legacyTab.onclick = () => showConfigTab('legacy');
+    
+    tabsContainer.appendChild(secureTab);
+    tabsContainer.appendChild(legacyTab);
+    
+    // Create secure config content
+    const secureContent = document.createElement('div');
+    secureContent.id = 'secureConfig';
+    secureContent.className = 'config-content active';
+    secureContent.innerHTML = `
+        <h4>📋 Claude Desktop Configuration</h4>
+        <pre class="config-code">${secureConfigText}</pre>
+        <button type="button" class="btn btn-secondary copy-btn">📋 Copy Configuration</button>
+        
+        <h4>🔐 Credentials File</h4>
+        <p>Create this file at: <code>${window.mcp.platform === 'win32' 
+            ? `${window.mcp.homedir}\\.avatax\\credentials.json`
+            : `${window.mcp.homedir}/.avatax/credentials.json`}</code></p>
+        <pre class="config-code">${credentialsText}</pre>
+        <button type="button" class="btn btn-secondary copy-btn">📋 Copy Credentials</button>
+        
+        <div class="help-note">
+            <p><strong>✅ Benefits of Secure Configuration:</strong></p>
+            <ul>
+                <li>Credentials stored separately from Claude config</li>
+                <li>Better security with file permissions</li>
+                <li>Easy switching between multiple accounts</li>
+                <li>Dynamic credential management in Claude</li>
+            </ul>
+        </div>
+    `;
+    
+    // Create legacy config content
+    const legacyContent = document.createElement('div');
+    legacyContent.id = 'legacyConfig';
+    legacyContent.className = 'config-content';
+    legacyContent.innerHTML = `
+        <h4>📋 Claude Desktop Configuration (Legacy)</h4>
+        <pre class="config-code">${legacyConfigText}</pre>
+        <button type="button" class="btn btn-secondary copy-btn">📋 Copy Configuration</button>
+        
+        <div class="help-note">
+            <p><strong>⚠️ Legacy Configuration:</strong></p>
+            <ul>
+                <li>Credentials stored directly in Claude config</li>
+                <li>Less secure - credentials visible in config file</li>
+                <li>Requires Claude restart to change credentials</li>
+                <li>Use only if you prefer the simple approach</li>
+            </ul>
+        </div>
+    `;
+    
+    // Assemble the structure
+    configContainer.appendChild(tabsContainer);
+    configContainer.appendChild(secureContent);
+    configContainer.appendChild(legacyContent);
+    
+    // Clear and populate the output element
+    const outputElement = document.getElementById('claudeConfigOutput');
+    outputElement.innerHTML = '';
+    outputElement.appendChild(configContainer);
+    
+    // Add click handlers for copy buttons
+    const copyButtons = outputElement.querySelectorAll('.copy-btn');
+    copyButtons[0].onclick = (e) => copyConfigText(secureConfigText, e.target);
+    copyButtons[1].onclick = (e) => copyConfigText(credentialsText, e.target);
+    copyButtons[2].onclick = (e) => copyConfigText(legacyConfigText, e.target);
+    
     showClaudeConfig();
 }
 
@@ -376,11 +495,50 @@ function hideClaudeConfig() {
     section.classList.add('hidden');
 }
 
-function copyClaudeConfig() {
-    const configText = document.getElementById('claudeConfigOutput').textContent;
-    const copyBtn = document.querySelector('.copy-btn');
+// New functions for tab-based configuration display
+function showConfigTab(tabName) {
+    // Check if this is for the main configuration tabs (credentials, settings, theme)
+    const mainConfigTabs = document.querySelectorAll('.config-options > .config-tabs .config-tab');
+    const mainConfigContents = document.querySelectorAll('.config-options > .config-content');
     
-    navigator.clipboard.writeText(configText).then(() => {
+    // Check if this is a main config tab
+    if (tabName === 'credentials' || tabName === 'settings' || tabName === 'theme') {
+        // Handle main configuration tabs
+        mainConfigTabs.forEach(tab => tab.classList.remove('active'));
+        mainConfigContents.forEach(content => content.classList.remove('active'));
+        
+        // Find and activate the correct tab and content
+        const selectedTab = Array.from(mainConfigTabs).find(tab => 
+            tab.getAttribute('onclick').includes(`'${tabName}'`)
+        );
+        const selectedContent = document.getElementById(tabName);
+        
+        if (selectedTab) selectedTab.classList.add('active');
+        if (selectedContent) selectedContent.classList.add('active');
+    } else {
+        // Handle Claude config sub-tabs (secure/legacy) within the claudeConfigOutput
+        const outputElement = document.getElementById('claudeConfigOutput');
+        if (outputElement) {
+            const tabs = outputElement.querySelectorAll('.config-tab');
+            const contents = outputElement.querySelectorAll('.config-content');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            contents.forEach(content => content.classList.remove('active'));
+            
+            // Add active class to selected tab and content
+            const selectedTab = Array.from(tabs).find(tab => 
+                tab.innerHTML.includes(tabName === 'secure' ? 'Secure' : 'Legacy')
+            );
+            const selectedContent = outputElement.querySelector(`#${tabName}Config`);
+            
+            if (selectedTab) selectedTab.classList.add('active');
+            if (selectedContent) selectedContent.classList.add('active');
+        }
+    }
+}
+
+function copyConfigText(text, copyBtn) {
+    navigator.clipboard.writeText(text).then(() => {
         const originalText = copyBtn.textContent;
         copyBtn.textContent = '✅ Copied!';
         copyBtn.classList.add('copied');
@@ -392,7 +550,7 @@ function copyClaudeConfig() {
     }).catch(err => {
         // Fallback for older browsers
         const textarea = document.createElement('textarea');
-        textarea.value = configText;
+        textarea.value = text;
         document.body.appendChild(textarea);
         textarea.select();
         document.execCommand('copy');
@@ -1022,4 +1180,54 @@ function stopPeriodicStatusCheck() {
         clearInterval(statusCheckInterval);
         statusCheckInterval = null;
     }
+}
+
+// Save application settings
+function saveSettings() {
+    const appName = document.getElementById('appName').value || 'AvaTax-MCP-Server';
+    const timeout = document.getElementById('timeout').value || '30000';
+    
+    // Validate timeout value
+    const timeoutNum = parseInt(timeout);
+    if (isNaN(timeoutNum) || timeoutNum < 5000 || timeoutNum > 120000) {
+        showStatus('Timeout must be between 5000 and 120000 milliseconds', 'error');
+        return;
+    }
+    
+    // Save settings to localStorage for persistence
+    localStorage.setItem('appName', appName);
+    localStorage.setItem('timeout', timeout);
+    
+    // Update form values to ensure they're clean
+    document.getElementById('appName').value = appName;
+    document.getElementById('timeout').value = timeout;
+    
+    showStatus('Settings saved successfully!', 'success');
+    
+    // Update the configuration form if credentials are available
+    updateClaudeConfigPreview();
+}
+
+// Save theme settings
+function saveThemeSettings() {
+    const themeToggle = document.querySelector('#themeToggle');
+    const theme = themeToggle.checked ? 'dark' : 'light';
+    
+    // Apply the theme
+    document.body.dataset.theme = theme;
+    localStorage.setItem('theme', theme);
+    
+    showStatus('Theme settings saved successfully!', 'success');
+}
+
+// Load saved settings on startup
+function loadSettings() {
+    const savedAppName = localStorage.getItem('appName') || 'AvaTax-MCP-Server';
+    const savedTimeout = localStorage.getItem('timeout') || '30000';
+    
+    const appNameField = document.getElementById('appName');
+    const timeoutField = document.getElementById('timeout');
+    
+    if (appNameField) appNameField.value = savedAppName;
+    if (timeoutField) timeoutField.value = savedTimeout;
 }
