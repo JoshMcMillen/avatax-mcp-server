@@ -298,7 +298,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'update_nexus',
-    description: 'Update an existing nexus declaration. Use this when nexus details change, such as updating the end date when ceasing business operations, changing tax IDs, or modifying other nexus parameters.',
+    description: 'Update an existing nexus declaration. IMPORTANT: When updating nexus, only user-selectable fields can be modified: effectiveDate, endDate, taxId, nexusTypeId, hasLocalNexus, and streamlinedSalesTax. All other fields (country, region, jurisCode, jurisName, etc.) must match the existing Avalara-defined nexus object exactly. Use get_nexus_by_id first to retrieve current values.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -310,56 +310,56 @@ export const TOOL_DEFINITIONS = [
           type: 'number',
           description: 'The unique ID of the nexus declaration to update'
         },
+        effectiveDate: {
+          type: 'string',
+          description: 'Date when nexus becomes effective (YYYY-MM-DD format) - USER SELECTABLE'
+        },
+        endDate: {
+          type: 'string',
+          description: 'Date when nexus ends (YYYY-MM-DD format). Set this to cease nexus in a jurisdiction - USER SELECTABLE'
+        },
+        nexusTypeId: {
+          type: 'string',
+          description: 'Type of nexus being declared - USER SELECTABLE',
+          enum: ['SalesOrSellersUseTax', 'SalesTax', 'SellersUseTax', 'UseTax', 'ConsumerUseTax', 'RentalTax', 'AccommodationTax']
+        },
+        hasLocalNexus: {
+          type: 'boolean',
+          description: 'Whether this location has local jurisdiction nexus in addition to state/province nexus - USER SELECTABLE'
+        },
+        taxId: {
+          type: 'string',
+          description: 'Tax registration ID or permit number for this nexus - USER SELECTABLE'
+        },
+        streamlinedSalesTax: {
+          type: 'boolean',
+          description: 'Whether this nexus participates in Streamlined Sales Tax program (US only) - USER SELECTABLE'
+        },
         country: {
           type: 'string',
-          description: 'Two-character ISO country code (e.g., "US", "CA", "GB")'
+          description: 'Two-character ISO country code (e.g., "US", "CA", "GB") - MUST MATCH EXISTING NEXUS EXACTLY'
         },
         region: {
           type: 'string',
-          description: 'Two or three-character region code (state/province) (e.g., "CA", "NY", "ON")'
+          description: 'Two or three-character region code (state/province) (e.g., "CA", "NY", "ON") - MUST MATCH EXISTING NEXUS EXACTLY'
         },
         jurisTypeId: {
           type: 'string',
-          description: 'Type of jurisdiction (Country, State, County, City, Special)',
+          description: 'Type of jurisdiction (Country, State, County, City, Special) - MUST MATCH EXISTING NEXUS EXACTLY',
           enum: ['Country', 'State', 'County', 'City', 'Special']
         },
         jurisCode: {
           type: 'string',
-          description: 'Specific jurisdiction code for the nexus location'
+          description: 'Specific jurisdiction code for the nexus location - MUST MATCH EXISTING NEXUS EXACTLY'
         },
         jurisName: {
           type: 'string',
-          description: 'Human-readable name of the jurisdiction'
-        },
-        effectiveDate: {
-          type: 'string',
-          description: 'Date when nexus becomes effective (YYYY-MM-DD format)'
-        },
-        endDate: {
-          type: 'string',
-          description: 'Date when nexus ends (YYYY-MM-DD format). Set this to cease nexus in a jurisdiction.'
-        },
-        nexusTypeId: {
-          type: 'string',
-          description: 'Type of nexus being declared',
-          enum: ['SalesOrSellersUseTax', 'SalesTax', 'SellersUseTax', 'UseTax', 'ConsumerUseTax', 'RentalTax', 'AccommodationTax']
+          description: 'Human-readable name of the jurisdiction - MUST MATCH EXISTING NEXUS EXACTLY'
         },
         sourcing: {
           type: 'string',
-          description: 'Sourcing method for this nexus location',
+          description: 'Sourcing method for this nexus location - MUST MATCH EXISTING NEXUS EXACTLY',
           enum: ['Mixed', 'Destination', 'Origin']
-        },
-        hasLocalNexus: {
-          type: 'boolean',
-          description: 'Whether this location has local jurisdiction nexus in addition to state/province nexus'
-        },
-        taxId: {
-          type: 'string',
-          description: 'Tax registration ID or permit number for this nexus'
-        },
-        streamlinedSalesTax: {
-          type: 'boolean',
-          description: 'Whether this nexus participates in Streamlined Sales Tax program (US only)'
         }
       },
       required: ['id']
@@ -385,7 +385,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'get_nexus_by_form_code',
-    description: 'Retrieve nexus declarations associated with a specific tax form code. Use this when you need to find all nexus locations that require filing a particular tax form, which is useful for tax filing and compliance workflows.',
+    description: 'Retrieve nexus declarations associated with a specific tax form code. Use this when you need to find all nexus locations that require filing a particular tax form. NOTE: Form codes are jurisdiction-specific and must exist in the AvaTax system. If you get "formCode not found" errors, the form code does not exist. Use get_company_nexus to see existing nexus declarations first.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -395,7 +395,7 @@ export const TOOL_DEFINITIONS = [
         },
         formCode: {
           type: 'string',
-          description: 'Tax form code to filter nexus declarations by (e.g., "ST-1", "DR-15", "Sales")'
+          description: 'Tax form code to filter nexus declarations by. Must be a valid form code that exists in AvaTax system. Form codes are jurisdiction-specific (e.g., state tax form codes like "ST-1" for some states). Contact Avalara support if unsure of valid form codes for your jurisdictions.'
         },
         include: {
           type: 'string',

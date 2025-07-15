@@ -114,35 +114,73 @@ export async function handleToolCall(name: string, args: any, avataxClient: AvaT
     }
 
     case 'update_nexus': {
-      const nexusData: any = {
-        country: args.country,
-        region: args.region,
-        jurisTypeId: args.jurisTypeId,
-        jurisCode: args.jurisCode,
-        jurisName: args.jurisName,
-        effectiveDate: args.effectiveDate,
-        endDate: args.endDate,
-        nexusTypeId: args.nexusTypeId,
-        sourcing: args.sourcing,
-        hasLocalNexus: args.hasLocalNexus,
-        taxId: args.taxId,
-        streamlinedSalesTax: args.streamlinedSalesTax
-      };
-      
-      // Remove undefined properties
-      Object.keys(nexusData).forEach(key => {
-        if (nexusData[key] === undefined) {
-          delete nexusData[key];
-        }
-      });
+      try {
+        // Separate user-selectable fields from system fields
+        const userSelectableFields: any = {
+          effectiveDate: args.effectiveDate,
+          endDate: args.endDate,
+          nexusTypeId: args.nexusTypeId,
+          hasLocalNexus: args.hasLocalNexus,
+          taxId: args.taxId,
+          streamlinedSalesTax: args.streamlinedSalesTax
+        };
 
-      const result = await avataxClient.updateNexus(args.id, nexusData, args.companyCode);
-      return {
-        content: [{
-          type: 'text',
-          text: `Nexus declaration updated successfully!\n\n${JSON.stringify(result, null, 2)}`
-        }]
-      };
+        const systemFields: any = {
+          country: args.country,
+          region: args.region,
+          jurisTypeId: args.jurisTypeId,
+          jurisCode: args.jurisCode,
+          jurisName: args.jurisName,
+          sourcing: args.sourcing
+        };
+        
+        // Remove undefined properties
+        Object.keys(userSelectableFields).forEach(key => {
+          if (userSelectableFields[key] === undefined) {
+            delete userSelectableFields[key];
+          }
+        });
+
+        Object.keys(systemFields).forEach(key => {
+          if (systemFields[key] === undefined) {
+            delete systemFields[key];
+          }
+        });
+
+        // If only user-selectable fields are provided, use the safe update method
+        if (Object.keys(systemFields).length === 0 && Object.keys(userSelectableFields).length > 0) {
+          const result = await avataxClient.updateNexusSafely(args.id, userSelectableFields, args.companyCode);
+          return {
+            content: [{
+              type: 'text',
+              text: `Nexus declaration updated successfully using safe update method!\n\n${JSON.stringify(result, null, 2)}`
+            }]
+          };
+        } else {
+          // If system fields are provided, use the regular update method but warn the user
+          const allFields = { ...userSelectableFields, ...systemFields };
+          const result = await avataxClient.updateNexus(args.id, allFields, args.companyCode);
+          return {
+            content: [{
+              type: 'text',
+              text: `Nexus declaration updated successfully!\n\nWARNING: You provided system fields (country, region, etc.) which must match the existing nexus exactly. If you get errors, use get_nexus_by_id first to get the current values.\n\n${JSON.stringify(result, null, 2)}`
+            }]
+          };
+        }
+      } catch (error: any) {
+        // Provide specific guidance for common update_nexus errors
+        if (error.message && error.message.includes('IncorrectPathError')) {
+          return {
+            content: [{
+              type: 'text',
+              text: `Error updating nexus: ${error.message}\n\nTroubleshooting suggestions:\n1. Verify the nexus ID exists by using get_nexus_by_id first\n2. Ensure all non-user-selectable fields (country, region, jurisCode, jurisName, etc.) match the existing nexus exactly\n3. Only modify user-selectable fields: effectiveDate, endDate, taxId, nexusTypeId, hasLocalNexus, streamlinedSalesTax\n4. Use get_company_nexus to list all nexus declarations and find the correct ID\n\nFor more details about this error:\n${JSON.stringify(error, null, 2)}`
+            }]
+          };
+        } else {
+          // Re-throw other errors to be handled by the main error handler
+          throw error;
+        }
+      }
     }
 
     case 'delete_nexus': {
@@ -156,19 +194,43 @@ export async function handleToolCall(name: string, args: any, avataxClient: AvaT
     }
 
     case 'get_nexus_by_form_code': {
-      const result = await avataxClient.getNexusByFormCode(args.formCode, args.companyCode, {
-        include: args.include,
-        filter: args.filter,
-        top: args.top,
-        skip: args.skip,
-        orderBy: args.orderBy
-      });
-      return {
-        content: [{
-          type: 'text',
-          text: `Found ${result.count || 0} nexus declarations for form code "${args.formCode}":\n\n${JSON.stringify(result, null, 2)}`
-        }]
-      };
+      try {
+        const result = await avataxClient.getNexusByFormCode(args.formCode, args.companyCode, {
+          include: args.include,
+          filter: args.filter,
+          top: args.top,
+          skip: args.skip,
+          orderBy: args.orderBy
+        });
+        
+        if (result.companyNexus && result.companyNexus.length === 0 && result.nexusDefinitions && result.nexusDefinitions.length === 0) {
+          return {
+            content: [{
+              type: 'text',
+              text: `No nexus declarations found for form code "${args.formCode}".\n\nThis could mean:\n1. The form code "${args.formCode}" does not exist in the AvaTax system\n2. Your company has no nexus declarations associated with this form\n3. The form code format may be incorrect\n\nSuggestions:\n- Use get_company_nexus to see all your nexus declarations\n- Check with Avalara support for valid form codes for your jurisdictions\n- Form codes are typically state-specific (e.g., "ST-1" for some states)\n\nAPI Response:\n${JSON.stringify(result, null, 2)}`
+            }]
+          };
+        } else {
+          return {
+            content: [{
+              type: 'text',
+              text: `Found ${result.companyNexus?.length || 0} company nexus declarations and ${result.nexusDefinitions?.length || 0} nexus definitions for form code "${args.formCode}":\n\n${JSON.stringify(result, null, 2)}`
+            }]
+          };
+        }
+      } catch (error: any) {
+        if (error.message && error.message.includes('EntityNotFoundError')) {
+          return {
+            content: [{
+              type: 'text',
+              text: `Form code "${args.formCode}" not found in AvaTax system.\n\nThis means the form code does not exist in Avalara's database. Form codes are specific to tax jurisdictions and filing requirements.\n\nSuggestions:\n1. Verify the form code with your tax authority or Avalara support\n2. Use get_company_nexus to see existing nexus declarations\n3. Common form codes vary by state/jurisdiction\n\nError details:\n${JSON.stringify(error, null, 2)}`
+            }]
+          };
+        } else {
+          // Re-throw other errors to be handled by the main error handler
+          throw error;
+        }
+      }
     }
 
     case 'declare_nexus_by_address': {

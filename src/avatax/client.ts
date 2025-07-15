@@ -709,6 +709,11 @@ class AvataxClient {
     /**
      * Update an existing nexus declaration - uses companyId URL pattern
      * Pattern: /api/v2/companies/{companyId}/nexus/{id}
+     * 
+     * Note: When updating nexus, all values except user-selectable fields must match 
+     * an Avalara-defined system nexus object. User-selectable fields are:
+     * companyId, effectiveDate, endDate, localNexusTypeId, taxId, nexusTypeId, 
+     * hasPermanentEstablishment, and isSellerImporterOfRecord.
      */
     public async updateNexus(id: number, nexusData: any, companyCode?: string) {
         try {
@@ -721,7 +726,57 @@ class AvataxClient {
 
             const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
             
-            return await this.makeCompanyIdRequest('PUT', `/nexus/${id}`, resolvedCompanyCode, nexusData);
+            // For updates, we need to include the ID in the nexus data
+            const updateData = {
+                ...nexusData,
+                id: id
+            };
+            
+            return await this.makeCompanyIdRequest('PUT', `/nexus/${id}`, resolvedCompanyCode, updateData);
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Helper method to safely update nexus by first retrieving existing data
+     * and only modifying user-selectable fields
+     */
+    public async updateNexusSafely(id: number, userSelectableFields: any, companyCode?: string) {
+        try {
+            if (!id || id <= 0) {
+                throw new Error('Valid nexus ID is required.');
+            }
+
+            const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
+            
+            // First get the existing nexus declaration
+            const existingNexus = await this.getNexusById(id, resolvedCompanyCode);
+            
+            if (!existingNexus) {
+                throw new Error(`Nexus with ID ${id} not found.`);
+            }
+
+            // Create update data by merging existing data with only user-selectable fields
+            const userSelectableFieldNames = [
+                'effectiveDate', 'endDate', 'taxId', 'nexusTypeId', 
+                'hasLocalNexus', 'streamlinedSalesTax', 'hasPermanentEstablishment', 
+                'isSellerImporterOfRecord', 'localNexusTypeId'
+            ];
+
+            const updateData = { ...existingNexus };
+            
+            // Only update user-selectable fields that were provided
+            for (const field of userSelectableFieldNames) {
+                if (userSelectableFields[field] !== undefined) {
+                    updateData[field] = userSelectableFields[field];
+                }
+            }
+
+            // Ensure ID is included
+            updateData.id = id;
+            
+            return await this.makeCompanyIdRequest('PUT', `/nexus/${id}`, resolvedCompanyCode, updateData);
         } catch (error: any) {
             this.handleError(error);
         }

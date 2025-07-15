@@ -2841,7 +2841,49 @@ const functions = [
                                     <span class="toggle-icon">▶</span> Company & Account Management
                                 </h3>
                                 <div id="company-management" class="api-group-content">
+                                    <div class="api-endpoint">
+                                        <strong>get_companies</strong> - List available companies
+                                        <p>Retrieve companies in your AvaTax account with filtering options</p>
+                                    </div>
                                     <p><em>Coming Soon: manage_companies, get_company_settings, update_company_configuration</em></p>
+                                </div>
+                            </div>
+                            
+                            <div class="api-group">
+                                <h3 onclick="toggleApiGroup('nexus-management')" class="api-group-header">
+                                    <span class="toggle-icon">▶</span> Nexus Management
+                                </h3>
+                                <div id="nexus-management" class="api-group-content">
+                                    <div class="api-endpoint">
+                                        <strong>get_company_nexus</strong> - List company nexus declarations
+                                        <p>Retrieve all nexus declarations for a company with filtering and pagination options</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_nexus_by_id</strong> - Get specific nexus by ID
+                                        <p>Retrieve detailed information about a specific nexus declaration</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_nexus</strong> - Create new nexus declaration
+                                        <p>Declare nexus in a new jurisdiction where your company has tax obligations</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>update_nexus</strong> - Update existing nexus declaration
+                                        <p>Modify user-selectable fields of existing nexus (effectiveDate, endDate, taxId, etc.)</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>delete_nexus</strong> - Delete nexus declaration
+                                        <p>Remove nexus declaration when ceasing business operations in a jurisdiction</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_nexus_by_form_code</strong> - Find nexus by tax form
+                                        <p>Retrieve nexus declarations associated with specific tax forms for compliance workflows</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>declare_nexus_by_address</strong> - Auto-declare nexus by business address
+                                        <p>Automatically create nexus declarations based on your business location</p>
+                                    </div>
+                                    <p><strong>📖 Swagger Reference:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#!/Nexus" target="_blank" rel="noopener">AvaTax Nexus API Documentation</a></p>
+                                    <p><em>Note: Nexus indicates jurisdictions where your company is legally obligated to collect and remit taxes. Consult your accountant or lawyer before declaring nexus.</em></p>
                                 </div>
                             </div>
                             
