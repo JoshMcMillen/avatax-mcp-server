@@ -1,5 +1,27 @@
 import { AvaTaxConfig } from './config.js';
 
+/**
+ * AvaTax API Client
+ * 
+ * This client provides comprehensive access to the AvaTax REST API with proper handling
+ * of company identification patterns. The AvaTax API uses two different ways to identify
+ * companies in URLs:
+ * 
+ * 1. Company Code (string) - Used in endpoints like:
+ *    - /api/v2/companies/{companyCode}/transactions/{transactionCode}
+ *    - Transaction operations that use companyCode in the request body
+ * 
+ * 2. Company ID (numeric) - Used in endpoints like:
+ *    - /api/v2/companies/{companyId}/certificates
+ *    - /api/v2/companies/{companyId}/parameters
+ *    - /api/v2/companies/{companyId}/userdefinedfields
+ *    - /api/v2/companies/{companyId}/batches
+ * 
+ * This client automatically handles both patterns:
+ * - Resolves companyCode to companyId when needed for numeric ID endpoints
+ * - Caches company ID lookups to minimize API calls
+ * - Handles proper URL encoding for company codes with special characters
+ */
 class AvataxClient {
     private config: AvaTaxConfig;
     private baseUrl: string;
@@ -127,18 +149,139 @@ class AvataxClient {
         return input.replace(/[<>'"]/g, '');
     }
 
+    /**
+     * Resolves company information for API calls
+     * Returns both companyCode (for request body) and companyId (for URL paths)
+     */
+    private async resolveCompanyInfo(requestedCompanyCode?: string): Promise<{ companyCode: string; companyId?: number }> {
+        const companyCode = requestedCompanyCode || this.config.companyCode;
+        
+        if (!companyCode || companyCode.trim() === '') {
+            throw new Error('Company code is required. Please specify a companyCode parameter or ask the user which company to use. Use the get_companies tool to see available companies.');
+        }
+
+        // For endpoints that need companyId in the URL, we need to look it up
+        // We'll cache this information to avoid repeated API calls
+        return {
+            companyCode: companyCode.trim(),
+            companyId: undefined // Will be resolved when needed by specific methods
+        };
+    }
+
+    /**
+     * Gets the numeric company ID for a given company code
+     * This is needed for API endpoints that use companyId in the URL path
+     */
+    private async getCompanyId(companyCode: string): Promise<number> {
+        try {
+            const params = new URLSearchParams();
+            params.append('$filter', `companyCode eq '${this.sanitizeString(companyCode)}'`);
+            params.append('$top', '1');
+            
+            const result = await this.makeRequest('GET', `/companies?${params.toString()}`);
+            
+            if (!result.value || result.value.length === 0) {
+                throw new Error(`Company with code '${companyCode}' not found`);
+            }
+            
+            return result.value[0].id;
+        } catch (error: any) {
+            throw new Error(`Failed to resolve company ID for code '${companyCode}': ${error.message}`);
+        }
+    }
+
+    /**
+     * Company ID vs Company Code Handling
+     * 
+     * AvaTax API endpoints use two different company identification patterns:
+     * 
+     * 1. Company Code (string) - Used in:
+     *    - Transaction creation (/api/v2/transactions/create) - in request body
+     *    - Most transaction operations that use companyCode in URL path
+     *    - Example: /api/v2/companies/{companyCode}/transactions/{transactionCode}
+     * 
+     * 2. Company ID (numeric) - Used in:
+     *    - Company management endpoints
+     *    - Certificate operations
+     *    - User-defined fields
+     *    - Company parameters
+     *    - Batch operations
+     *    - Example: /api/v2/companies/{companyId}/certificates
+     * 
+     * This client handles both patterns automatically by:
+     * - Using companyCode directly when the endpoint expects it
+     * - Looking up companyId from companyCode when needed for URL-based endpoints
+     * - Caching company ID lookups to minimize API calls
+     */
+
+    /**
+     * Cache for company ID lookups to avoid repeated API calls
+     */
+    private companyIdCache: Map<string, number> = new Map();
+
+    /**
+     * Gets company ID with caching to minimize API calls
+     */
+    private async getCachedCompanyId(companyCode: string): Promise<number> {
+        const cacheKey = companyCode.trim().toLowerCase();
+        
+        if (this.companyIdCache.has(cacheKey)) {
+            return this.companyIdCache.get(cacheKey)!;
+        }
+        
+        const companyId = await this.getCompanyId(companyCode);
+        this.companyIdCache.set(cacheKey, companyId);
+        return companyId;
+    }
+
+    /**
+     * Helper method for endpoints that use companyId in the URL path
+     * Pattern: /api/v2/companies/{companyId}/...
+     */
+    private async makeCompanyIdRequest(method: string, pathAfterCompanyId: string, companyCode: string, data?: any): Promise<any> {
+        const companyId = await this.getCachedCompanyId(companyCode);
+        const endpoint = `/companies/${companyId}${pathAfterCompanyId}`;
+        return this.makeRequest(method, endpoint, data);
+    }
+
+    /**
+     * Helper method for endpoints that use companyCode in the URL path
+     * Pattern: /api/v2/companies/{companyCode}/...
+     */
+    private async makeCompanyCodeRequest(method: string, pathAfterCompanyCode: string, companyCode: string, data?: any): Promise<any> {
+        // Encode company code for URL safety
+        const encodedCompanyCode = this.encodeCompanyCode(companyCode);
+        const endpoint = `/companies/${encodedCompanyCode}${pathAfterCompanyCode}`;
+        return this.makeRequest(method, endpoint, data);
+    }
+
+    /**
+     * Encodes company code for use in URL paths
+     * Handles special characters as documented in AvaTax API
+     */
+    private encodeCompanyCode(companyCode: string): string {
+        return companyCode
+            .replace(/\//g, '_-ava2f-_')
+            .replace(/\+/g, '_-ava2b-_')
+            .replace(/\?/g, '_-ava3f-_')
+            .replace(/%/g, '_-ava25-_')
+            .replace(/#/g, '_-ava23-_')
+            .replace(/ /g, '%20');
+    }
+
     public async calculateTax(transactionData: any) {
         try {
             // Determine company code - require it for transactions
+            // Note: AvaTax uses companyCode (string) not companyId (numeric) for API calls
             const companyCode = transactionData.companyCode || this.config.companyCode;
-            if (!companyCode) {
+            if (!companyCode || companyCode.trim() === '') {
                 throw new Error('Company code is required for tax calculations. Please specify a companyCode parameter or ask the user which company to use. Use the get_companies tool to see available companies.');
             }
 
             // Prepare the transaction model
             const model = {
                 type: transactionData.type || 'SalesInvoice',
-                companyCode: companyCode,
+                companyCode: companyCode.trim(),
                 date: transactionData.date,
                 customerCode: transactionData.customerCode,
                 lines: transactionData.lines.map((line: any, index: number) => ({
@@ -167,7 +310,10 @@ class AvataxClient {
                 totalTaxable: result.totalTaxable,
                 lines: result.lines,
                 taxDate: result.taxDate,
-                status: result.status
+                status: result.status,
+                // Include company information from response
+                companyId: result.companyId,
+                companyCode: model.companyCode
             };
         } catch (error: any) {
             this.handleError(error);
@@ -226,8 +372,9 @@ class AvataxClient {
     public async createTransaction(transactionData: any) {
         try {
             // Determine company code - require it for transactions
+            // Note: AvaTax uses companyCode (string) not companyId (numeric) for API calls
             const companyCode = transactionData.companyCode || this.config.companyCode;
-            if (!companyCode) {
+            if (!companyCode || companyCode.trim() === '') {
                 throw new Error('Company code is required for creating transactions. Please specify a companyCode parameter or ask the user which company to use. Use the get_companies tool to see available companies.');
             }
 
@@ -311,6 +458,85 @@ class AvataxClient {
                     defaultCountry: company.defaultCountry
                 })) || [],
                 count: result['@recordsetCount'] || result.value?.length || 0
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Get certificates for a company - Example of companyId URL pattern
+     * Pattern: /api/v2/companies/{companyId}/certificates
+     */
+    public async getCertificates(companyCode?: string, options?: { customerCode?: string; filter?: string }) {
+        try {
+            const resolvedCompanyCode = companyCode || this.config.companyCode;
+            if (!resolvedCompanyCode || resolvedCompanyCode.trim() === '') {
+                throw new Error('Company code is required. Please specify a companyCode parameter or ask the user which company to use. Use the get_companies tool to see available companies.');
+            }
+
+            const params = new URLSearchParams();
+            if (options?.customerCode) {
+                params.append('$filter', `customers/any(c: c/customerCode eq '${this.sanitizeString(options.customerCode)}')`);
+            } else if (options?.filter) {
+                params.append('$filter', this.sanitizeString(options.filter));
+            }
+            params.append('$top', '50');
+            params.append('$orderby', 'createdDate desc');
+
+            const queryString = params.toString();
+            const pathAfterCompanyId = queryString ? `/certificates?${queryString}` : '/certificates';
+            
+            const result = await this.makeCompanyIdRequest('GET', pathAfterCompanyId, resolvedCompanyCode.trim());
+            
+            return {
+                certificates: result.value || [],
+                count: result['@recordsetCount'] || result.value?.length || 0
+            };
+        } catch (error: any) {
+            this.handleError(error);
+        }
+    }
+
+    /**
+     * Get transaction by company code and transaction code - Example of companyCode URL pattern  
+     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}
+     */
+    public async getTransaction(companyCode: string, transactionCode: string, options?: { documentType?: string; include?: string }) {
+        try {
+            if (!companyCode || companyCode.trim() === '') {
+                throw new Error('Company code is required for retrieving transactions.');
+            }
+            if (!transactionCode || transactionCode.trim() === '') {
+                throw new Error('Transaction code is required.');
+            }
+
+            const params = new URLSearchParams();
+            if (options?.documentType) {
+                params.append('documentType', options.documentType);
+            }
+            if (options?.include) {
+                params.append('$include', options.include);
+            }
+
+            const queryString = params.toString();
+            const encodedTransactionCode = this.encodeCompanyCode(transactionCode.trim()); // Use same encoding for transaction codes
+            const pathAfterCompanyCode = queryString 
+                ? `/transactions/${encodedTransactionCode}?${queryString}` 
+                : `/transactions/${encodedTransactionCode}`;
+            
+            const result = await this.makeCompanyCodeRequest('GET', pathAfterCompanyCode, companyCode.trim());
+            
+            return {
+                id: result.id,
+                code: result.code,
+                companyId: result.companyId,
+                companyCode: result.companyCode,
+                date: result.date,
+                totalAmount: result.totalAmount,
+                totalTax: result.totalTax,
+                status: result.status,
+                lines: result.lines || []
             };
         } catch (error: any) {
             this.handleError(error);
