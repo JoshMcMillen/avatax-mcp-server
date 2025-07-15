@@ -451,15 +451,849 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'get_companies',
-    description: 'Get a list of companies in the AvaTax account with optional search filtering',
+    description: 'Get a list of companies in the AvaTax account with optional search filtering. Use this to find available companies before performing operations on specific companies.',
     inputSchema: {
       type: 'object',
       properties: {
         filter: { 
           type: 'string', 
-          description: 'Optional search filter to find companies by company code or name' 
+          description: 'OData filter criteria to search companies. Examples: "companyCode eq \'MYCOMPANY\'", "name contains \'Test\'", "isActive eq true", "companyCode eq \'COMP1\' or companyCode eq \'COMP2\'"' 
+        },
+        include: {
+          type: 'string',
+          description: 'Additional data to include in response (comma-separated): Settings, FilingCalendars, Contacts, Items, Locations, Nexus, TaxCodes, TaxRules, UPC'
+        },
+        top: {
+          type: 'number',
+          description: 'Maximum number of records to return (default: 25, max: 1000)'
+        },
+        skip: {
+          type: 'number',
+          description: 'Number of records to skip for pagination (default: 0)'
+        },
+        orderBy: {
+          type: 'string',
+          description: 'Field to order results by (e.g., "companyCode asc", "name desc", "createdDate desc")'
         }
       }
+    }
+  },
+  {
+    name: 'get_company',
+    description: 'Retrieve detailed information about a specific company by its company code. Use this to examine company settings, status, and configuration details.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to retrieve (required)'
+        },
+        include: {
+          type: 'string',
+          description: 'Additional data to include in response (comma-separated): Settings, FilingCalendars, Contacts, Items, Locations, Nexus, TaxCodes, TaxRules, UPC'
+        }
+      },
+      required: ['companyCode']
+    }
+  },
+  {
+    name: 'create_company',
+    description: 'Create a new company in the AvaTax account. IMPORTANT: This creates a permanent company record that will be part of your AvaTax account. Use carefully and ensure all required information is accurate. The company will be available for transaction processing once created.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Unique company code (1-25 characters, alphanumeric and underscore only). This will be used to identify the company in all API calls.'
+        },
+        name: {
+          type: 'string',
+          description: 'Company name (required, 1-255 characters)'
+        },
+        taxpayerIdNumber: {
+          type: 'string',
+          description: 'Tax identification number (EIN in US, equivalent in other countries). Required for tax compliance.'
+        },
+        line1: {
+          type: 'string',
+          description: 'First line of company address'
+        },
+        line2: {
+          type: 'string',
+          description: 'Second line of company address (optional)'
+        },
+        line3: {
+          type: 'string',
+          description: 'Third line of company address (optional)'
+        },
+        city: {
+          type: 'string',
+          description: 'City name'
+        },
+        region: {
+          type: 'string',
+          description: 'State/Province/Region code'
+        },
+        postalCode: {
+          type: 'string',
+          description: 'Postal/ZIP code'
+        },
+        country: {
+          type: 'string',
+          description: 'Two-character ISO country code (e.g., "US", "CA", "GB")'
+        },
+        phoneNumber: {
+          type: 'string',
+          description: 'Company phone number'
+        },
+        email: {
+          type: 'string',
+          description: 'Company email address'
+        },
+        website: {
+          type: 'string',
+          description: 'Company website URL'
+        },
+        parentCompanyId: {
+          type: 'number',
+          description: 'ID of parent company if this is a subsidiary'
+        },
+        isActive: {
+          type: 'boolean',
+          description: 'Whether the company is active (default: true)',
+          default: true
+        },
+        isDefault: {
+          type: 'boolean',
+          description: 'Whether this is the default company for the account (default: false)',
+          default: false
+        },
+        defaultLocationCode: {
+          type: 'string',
+          description: 'Default location code for transactions (will be created if not exists)'
+        },
+        businessTypeId: {
+          type: 'string',
+          description: 'Business type identifier from AvaTax business type list'
+        },
+        roundingLevelId: {
+          type: 'string',
+          description: 'Tax rounding level: "Line" (round each line), "Document" (round total document)'
+        },
+        hasProfile: {
+          type: 'boolean',
+          description: 'Whether company has a filing profile setup'
+        },
+        isTest: {
+          type: 'boolean',
+          description: 'Mark company as test company (recommended for development/testing)',
+          default: false
+        }
+      },
+      required: ['companyCode', 'name']
+    }
+  },
+  {
+    name: 'update_company',
+    description: 'Update an existing company\'s information. IMPORTANT: This modifies permanent company records. Be careful when updating critical information like tax IDs or addresses as it may affect tax compliance and reporting.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to update (required)'
+        },
+        name: {
+          type: 'string',
+          description: 'Updated company name'
+        },
+        taxpayerIdNumber: {
+          type: 'string',
+          description: 'Updated tax identification number (EIN in US, equivalent in other countries)'
+        },
+        line1: {
+          type: 'string',
+          description: 'Updated first line of company address'
+        },
+        line2: {
+          type: 'string',
+          description: 'Updated second line of company address'
+        },
+        line3: {
+          type: 'string',
+          description: 'Updated third line of company address'
+        },
+        city: {
+          type: 'string',
+          description: 'Updated city name'
+        },
+        region: {
+          type: 'string',
+          description: 'Updated state/province/region code'
+        },
+        postalCode: {
+          type: 'string',
+          description: 'Updated postal/ZIP code'
+        },
+        country: {
+          type: 'string',
+          description: 'Updated two-character ISO country code'
+        },
+        phoneNumber: {
+          type: 'string',
+          description: 'Updated company phone number'
+        },
+        email: {
+          type: 'string',
+          description: 'Updated company email address'
+        },
+        website: {
+          type: 'string',
+          description: 'Updated company website URL'
+        },
+        isActive: {
+          type: 'boolean',
+          description: 'Whether the company is active'
+        },
+        isDefault: {
+          type: 'boolean',
+          description: 'Whether this is the default company for the account'
+        },
+        defaultLocationCode: {
+          type: 'string',
+          description: 'Updated default location code for transactions'
+        },
+        businessTypeId: {
+          type: 'string',
+          description: 'Updated business type identifier'
+        },
+        roundingLevelId: {
+          type: 'string',
+          description: 'Updated tax rounding level: "Line" or "Document"'
+        },
+        isTest: {
+          type: 'boolean',
+          description: 'Updated test company flag'
+        }
+      },
+      required: ['companyCode']
+    }
+  },
+  {
+    name: 'delete_company',
+    description: 'Delete a company from the AvaTax account. CRITICAL WARNING: This permanently removes the company and ALL associated data including transactions, nexus declarations, items, locations, and settings. This operation CANNOT be undone. Use with extreme caution and only for companies that should never have been created.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to delete (required). WARNING: This will permanently delete the company and all its data.'
+        }
+      },
+      required: ['companyCode']
+    }
+  },
+  {
+    name: 'get_company_configuration',
+    description: 'Retrieve detailed configuration settings for a company including tax calculation settings, compliance options, and feature flags. Use this to understand how a company is configured for tax processing.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to get configuration for (required)'
+        }
+      },
+      required: ['companyCode']
+    }
+  },
+  {
+    name: 'set_company_configuration',
+    description: 'Update company configuration settings for tax calculation behavior, compliance options, and features. IMPORTANT: These settings affect how taxes are calculated and reported for the company. Changes should be made carefully and tested thoroughly.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to configure (required)'
+        },
+        settings: {
+          type: 'array',
+          description: 'Array of configuration settings to update',
+          items: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: 'Setting name (e.g., "isSellerImporterOfRecord", "isBuyerImporterOfRecord", "enableUsPurchaseTransactions")'
+              },
+              value: {
+                type: 'string',
+                description: 'Setting value (usually "true" or "false" for boolean settings)'
+              }
+            },
+            required: ['name', 'value']
+          }
+        }
+      },
+      required: ['companyCode', 'settings']
+    }
+  },
+  {
+    name: 'initialize_company',
+    description: 'Initialize a newly created company with default settings, locations, and tax codes. IMPORTANT: This sets up the company for immediate use by creating necessary default configurations. Run this after creating a new company to make it ready for transaction processing.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to initialize (required)'
+        }
+      },
+      required: ['companyCode']
+    }
+  },
+  {
+    name: 'get_company_filing_status',
+    description: 'Get the tax filing status and compliance information for a company including return filing requirements, due dates, and status. Use this to understand tax compliance obligations and current filing state.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to check filing status for (required)'
+        }
+      },
+      required: ['companyCode']
+    }
+  },
+  {
+    name: 'approve_company_filing',
+    description: 'Approve tax filings for a company. IMPORTANT: This approves returns for submission to tax authorities. Only use when you are authorized to approve tax filings and have verified the accuracy of the returns. This affects legal tax compliance.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to approve filings for (required)'
+        },
+        year: {
+          type: 'number',
+          description: 'Tax year to approve filings for (required)'
+        },
+        month: {
+          type: 'number',
+          description: 'Tax month to approve filings for (1-12, required)'
+        },
+        model: {
+          type: 'object',
+          description: 'Approval details',
+          properties: {
+            approved: {
+              type: 'boolean',
+              description: 'Whether to approve the filing',
+              default: true
+            }
+          }
+        }
+      },
+      required: ['companyCode', 'year', 'month']
+    }
+  },
+  {
+    name: 'get_company_parameters',
+    description: 'Retrieve company parameters and settings that control various aspects of tax calculation and compliance. Use this to see specific configuration values and calculation settings for a company.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to get parameters for (required)'
+        }
+      },
+      required: ['companyCode']
+    }
+  },
+  {
+    name: 'set_company_parameters',
+    description: 'Update company parameters and settings. IMPORTANT: These parameters control tax calculation behavior and compliance features. Changes should be tested thoroughly before applying to production.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to set parameters for (required)'
+        },
+        parameters: {
+          type: 'array',
+          description: 'Array of parameter objects to set',
+          items: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: 'Parameter name (e.g., "taxCalculationMode", "roundingLevel", "accountingMethod")'
+              },
+              value: {
+                type: 'string',
+                description: 'Parameter value'
+              },
+              unit: {
+                type: 'string',
+                description: 'Parameter unit if applicable'
+              }
+            },
+            required: ['name', 'value']
+          }
+        }
+      },
+      required: ['companyCode', 'parameters']
+    }
+  },
+  {
+    name: 'get_company_certificates',
+    description: 'Retrieve exemption certificates associated with a company. Use this to see what exemption certificates are available for use in tax calculations.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to get certificates for (required)'
+        },
+        include: {
+          type: 'string',
+          description: 'Additional data to include (comma-separated): Details, Customers'
+        },
+        filter: {
+          type: 'string',
+          description: 'OData filter criteria for certificates'
+        },
+        top: {
+          type: 'number',
+          description: 'Maximum number of records to return (default: 25, max: 1000)'
+        },
+        skip: {
+          type: 'number',
+          description: 'Number of records to skip for pagination (default: 0)'
+        },
+        orderBy: {
+          type: 'string',
+          description: 'Field to order results by'
+        }
+      },
+      required: ['companyCode']
+    }
+  },
+  {
+    name: 'fund_company_account',
+    description: 'Fund a company account for usage-based services. IMPORTANT: This affects billing and account credits. Use only when authorized to manage company finances.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to fund (required)'
+        },
+        fundingRequest: {
+          type: 'object',
+          description: 'Funding request details',
+          properties: {
+            amount: {
+              type: 'number',
+              description: 'Amount to fund the account with'
+            },
+            currency: {
+              type: 'string',
+              description: 'Currency code (e.g., "USD")'
+            }
+          },
+          required: ['amount']
+        }
+      },
+      required: ['companyCode', 'fundingRequest']
+    }
+  },
+  {
+    name: 'get_company_returns',
+    description: 'Retrieve tax returns for a company. Use this to see filed and pending tax returns and their status.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to get returns for (required)'
+        },
+        filingFrequency: {
+          type: 'string',
+          description: 'Filter by filing frequency',
+          enum: ['Monthly', 'Quarterly', 'SemiAnnually', 'Annually', 'InverseQuarterly', 'Weekly', 'Bimonthly']
+        },
+        country: {
+          type: 'string',
+          description: 'Filter by country code'
+        },
+        region: {
+          type: 'string',
+          description: 'Filter by region/state code'
+        },
+        year: {
+          type: 'number',
+          description: 'Filter by tax year'
+        },
+        month: {
+          type: 'number',
+          description: 'Filter by tax month (1-12)'
+        },
+        include: {
+          type: 'string',
+          description: 'Additional data to include'
+        },
+        top: {
+          type: 'number',
+          description: 'Maximum number of records to return'
+        },
+        skip: {
+          type: 'number',
+          description: 'Number of records to skip for pagination'
+        }
+      },
+      required: ['companyCode']
+    }
+  },
+  {
+    name: 'create_company_return',
+    description: 'Create a new tax return for a company. IMPORTANT: This creates a legal tax return document. Only use when authorized and ensure all data is accurate.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to create return for (required)'
+        },
+        returnObject: {
+          type: 'object',
+          description: 'Tax return details',
+          properties: {
+            companyId: {
+              type: 'number',
+              description: 'Company ID'
+            },
+            filingFrequency: {
+              type: 'string',
+              description: 'Filing frequency',
+              enum: ['Monthly', 'Quarterly', 'SemiAnnually', 'Annually', 'InverseQuarterly', 'Weekly', 'Bimonthly']
+            },
+            country: {
+              type: 'string',
+              description: 'Country code'
+            },
+            region: {
+              type: 'string',
+              description: 'Region/state code'
+            },
+            filingCalendarId: {
+              type: 'number',
+              description: 'Filing calendar ID'
+            },
+            taxAuthorityId: {
+              type: 'number',
+              description: 'Tax authority ID'
+            },
+            year: {
+              type: 'number',
+              description: 'Tax year'
+            },
+            month: {
+              type: 'number',
+              description: 'Tax month'
+            }
+          },
+          required: ['filingFrequency', 'country', 'region', 'year', 'month']
+        }
+      },
+      required: ['companyCode', 'returnObject']
+    }
+  },
+  {
+    name: 'approve_company_return',
+    description: 'Approve a tax return for filing. CRITICAL: This approves legal tax documents for submission to authorities. Only use when legally authorized and after thorough review.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code (required)'
+        },
+        year: {
+          type: 'number',
+          description: 'Tax year (required)'
+        },
+        month: {
+          type: 'number',
+          description: 'Tax month (1-12, required)'
+        },
+        country: {
+          type: 'string',
+          description: 'Country code (required)'
+        },
+        region: {
+          type: 'string',
+          description: 'Region/state code (required)'
+        },
+        filingFrequency: {
+          type: 'string',
+          description: 'Filing frequency (required)',
+          enum: ['Monthly', 'Quarterly', 'SemiAnnually', 'Annually', 'InverseQuarterly', 'Weekly', 'Bimonthly']
+        }
+      },
+      required: ['companyCode', 'year', 'month', 'country', 'region', 'filingFrequency']
+    }
+  },
+  {
+    name: 'get_company_notices',
+    description: 'Retrieve tax notices received by a company from tax authorities. Use this to track compliance notices and required responses.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to get notices for (required)'
+        },
+        include: {
+          type: 'string',
+          description: 'Additional data to include'
+        },
+        filter: {
+          type: 'string',
+          description: 'OData filter criteria'
+        },
+        top: {
+          type: 'number',
+          description: 'Maximum number of records to return'
+        },
+        skip: {
+          type: 'number',
+          description: 'Number of records to skip for pagination'
+        },
+        orderBy: {
+          type: 'string',
+          description: 'Field to order results by'
+        }
+      },
+      required: ['companyCode']
+    }
+  },
+  {
+    name: 'create_company_notice',
+    description: 'Create a new tax notice for a company. Use this to manually record notices received from tax authorities that need tracking and response.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to create notice for (required)'
+        },
+        notice: {
+          type: 'object',
+          description: 'Notice details',
+          properties: {
+            noticeNumber: {
+              type: 'string',
+              description: 'Notice number from tax authority'
+            },
+            noticeDate: {
+              type: 'string',
+              description: 'Date notice was issued (YYYY-MM-DD)'
+            },
+            taxAuthorityId: {
+              type: 'number',
+              description: 'ID of the tax authority that issued the notice'
+            },
+            country: {
+              type: 'string',
+              description: 'Country code'
+            },
+            region: {
+              type: 'string',
+              description: 'Region/state code'
+            },
+            description: {
+              type: 'string',
+              description: 'Description of the notice'
+            },
+            amount: {
+              type: 'number',
+              description: 'Amount involved in the notice'
+            },
+            status: {
+              type: 'string',
+              description: 'Current status of the notice'
+            }
+          },
+          required: ['noticeNumber', 'noticeDate']
+        }
+      },
+      required: ['companyCode', 'notice']
+    }
+  },
+  {
+    name: 'quick_setup_company',
+    description: 'Perform quick setup for a company by automatically creating necessary locations, nexus declarations, and settings based on business address. IMPORTANT: This is a convenience method that creates multiple records. Use for new companies that need immediate setup.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to setup (required)'
+        },
+        setupRequest: {
+          type: 'object',
+          description: 'Quick setup configuration',
+          properties: {
+            businessName: {
+              type: 'string',
+              description: 'Business name'
+            },
+            firstName: {
+              type: 'string',
+              description: 'Contact first name'
+            },
+            lastName: {
+              type: 'string',
+              description: 'Contact last name'
+            },
+            title: {
+              type: 'string',
+              description: 'Contact title'
+            },
+            email: {
+              type: 'string',
+              description: 'Contact email'
+            },
+            phoneNumber: {
+              type: 'string',
+              description: 'Contact phone number'
+            },
+            line1: {
+              type: 'string',
+              description: 'Business address line 1'
+            },
+            line2: {
+              type: 'string',
+              description: 'Business address line 2'
+            },
+            city: {
+              type: 'string',
+              description: 'Business city'
+            },
+            region: {
+              type: 'string',
+              description: 'Business state/province'
+            },
+            postalCode: {
+              type: 'string',
+              description: 'Business postal/ZIP code'
+            },
+            country: {
+              type: 'string',
+              description: 'Business country code'
+            },
+            taxpayerIdNumber: {
+              type: 'string',
+              description: 'Tax ID number'
+            },
+            effectiveDate: {
+              type: 'string',
+              description: 'Effective date for nexus (YYYY-MM-DD)'
+            }
+          },
+          required: ['businessName', 'line1', 'city', 'region', 'postalCode', 'country']
+        }
+      },
+      required: ['companyCode', 'setupRequest']
+    }
+  },
+  {
+    name: 'get_company_worksheets',
+    description: 'Retrieve tax worksheets for a company. Use this to access detailed tax calculation worksheets and supporting documentation.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to get worksheets for (required)'
+        },
+        year: {
+          type: 'number',
+          description: 'Tax year to filter worksheets'
+        },
+        month: {
+          type: 'number',
+          description: 'Tax month to filter worksheets (1-12)'
+        },
+        country: {
+          type: 'string',
+          description: 'Country code to filter worksheets'
+        },
+        region: {
+          type: 'string',
+          description: 'Region/state code to filter worksheets'
+        },
+        include: {
+          type: 'string',
+          description: 'Additional data to include'
+        },
+        top: {
+          type: 'number',
+          description: 'Maximum number of records to return'
+        },
+        skip: {
+          type: 'number',
+          description: 'Number of records to skip for pagination'
+        }
+      },
+      required: ['companyCode']
+    }
+  },
+  {
+    name: 'rebuild_company_worksheets',
+    description: 'Rebuild tax worksheets for a company for a specific time period. IMPORTANT: This recalculates tax worksheets which may affect reporting. Use when data corrections require worksheet regeneration.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        companyCode: {
+          type: 'string',
+          description: 'Company code to rebuild worksheets for (required)'
+        },
+        rebuildRequest: {
+          type: 'object',
+          description: 'Rebuild parameters',
+          properties: {
+            year: {
+              type: 'number',
+              description: 'Tax year to rebuild (required)'
+            },
+            month: {
+              type: 'number',
+              description: 'Tax month to rebuild (1-12, required)'
+            },
+            country: {
+              type: 'string',
+              description: 'Country code'
+            },
+            region: {
+              type: 'string',
+              description: 'Region/state code'
+            },
+            rebuildType: {
+              type: 'string',
+              description: 'Type of rebuild to perform'
+            }
+          },
+          required: ['year', 'month']
+        }
+      },
+      required: ['companyCode', 'rebuildRequest']
     }
   },
   {
