@@ -2892,9 +2892,94 @@ const functions = [
                                 <div id="company-management" class="api-group-content">
                                     <div class="api-endpoint">
                                         <strong>get_companies</strong> - List available companies
-                                        <p>Retrieve companies in your AvaTax account with filtering options</p>
+                                        <p>Retrieve companies in your AvaTax account with advanced filtering, pagination, and related data inclusion options</p>
                                     </div>
-                                    <p><em>Coming Soon: manage_companies, get_company_settings, update_company_configuration</em></p>
+                                    <div class="api-endpoint">
+                                        <strong>get_company</strong> - Get specific company details
+                                        <p>Retrieve detailed information about a specific company including settings, status, and configuration</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_company</strong> - Create new company
+                                        <p>Create a permanent company record with complete address, tax ID, and business information. Use carefully as this affects your AvaTax account permanently.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>update_company</strong> - Update company information
+                                        <p>Modify existing company details including addresses, tax IDs, and business settings. Changes may affect tax compliance and reporting.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>delete_company</strong> - Delete company (PERMANENT)
+                                        <p><strong>⚠️ CRITICAL WARNING:</strong> Permanently removes company and ALL associated data including transactions, nexus, items, locations. Cannot be undone!</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_company_configuration</strong> - Get company settings
+                                        <p>Retrieve detailed configuration settings including tax calculation options, compliance features, and system flags</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>set_company_configuration</strong> - Update company settings
+                                        <p>Modify company configuration that controls tax calculation behavior and compliance features. Test changes thoroughly before production use.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>initialize_company</strong> - Initialize new company
+                                        <p>Set up newly created company with default settings, locations, and tax codes for immediate transaction processing</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_company_parameters</strong> - Get calculation parameters
+                                        <p>Retrieve company-specific parameters that control various aspects of tax calculation and compliance behavior</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>set_company_parameters</strong> - Update calculation parameters
+                                        <p>Modify parameters controlling tax calculation modes, rounding levels, and accounting methods. Test thoroughly before applying to production.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_company_certificates</strong> - List exemption certificates
+                                        <p>Retrieve exemption certificates associated with the company for tax-exempt transaction processing</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>fund_company_account</strong> - Fund usage-based services
+                                        <p><strong>💰 Financial Operation:</strong> Add credits to company account for usage-based services. Affects billing - use only when authorized.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>quick_setup_company</strong> - Automated company setup
+                                        <p>Perform comprehensive company setup by automatically creating locations, nexus declarations, and settings based on business address</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_company_filing_status</strong> - Check filing status
+                                        <p>Get tax filing status and compliance information including return requirements, due dates, and current state</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>approve_company_filing</strong> - Approve tax filings
+                                        <p><strong>🏛️ Legal Operation:</strong> Approve returns for submission to tax authorities. Only use when legally authorized after thorough review.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_company_returns</strong> - List tax returns
+                                        <p>Retrieve filed and pending tax returns with status information, filtered by frequency, jurisdiction, and time period</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_company_return</strong> - Create tax return
+                                        <p><strong>📋 Legal Document:</strong> Create new tax return for a company. Only use when authorized - creates official tax documents.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>approve_company_return</strong> - Approve specific return
+                                        <p><strong>✅ Critical Legal Operation:</strong> Approve specific tax return for filing with authorities. Requires legal authorization and thorough review.</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_company_notices</strong> - List tax notices
+                                        <p>Retrieve tax notices received from authorities for compliance tracking and response management</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>create_company_notice</strong> - Record tax notice
+                                        <p>Manually record notices received from tax authorities for tracking, response management, and compliance workflow</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>get_company_worksheets</strong> - Access tax worksheets
+                                        <p>Retrieve detailed tax calculation worksheets and supporting documentation for compliance and audit purposes</p>
+                                    </div>
+                                    <div class="api-endpoint">
+                                        <strong>rebuild_company_worksheets</strong> - Regenerate worksheets
+                                        <p>Recalculate tax worksheets for specific time periods when data corrections require worksheet regeneration. May affect reporting.</p>
+                                    </div>
+                                    <p><strong>📖 Swagger Reference:</strong> <a href="https://rest.avatax.com/swagger/ui/index.html#/Companies" target="_blank" rel="noopener">AvaTax Companies API Documentation</a></p>
+                                    <p><em><strong>Important:</strong> Company operations affect permanent records and legal compliance. Use delete operations with extreme caution. Financial and legal operations require proper authorization.</em></p>
                                 </div>
                             </div>
                             
