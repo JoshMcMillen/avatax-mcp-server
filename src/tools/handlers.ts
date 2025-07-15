@@ -437,7 +437,22 @@ You can use 'set_credentials' to add credentials for the current session, or cre
     }
 
     case 'adjust_transaction': {
-      const result = await avataxClient.adjustTransaction(args.companyCode, args.transactionCode, args.newTransaction, {
+      // Build the new transaction object from the flattened args
+      const newTransaction: any = {
+        date: args.date,
+        customerCode: args.customerCode,
+        lines: args.lines
+      };
+      
+      // Add optional address information if provided
+      if (args.shipFrom) {
+        newTransaction.shipFrom = args.shipFrom;
+      }
+      if (args.shipTo) {
+        newTransaction.shipTo = args.shipTo;
+      }
+      
+      const result = await avataxClient.adjustTransaction(args.companyCode, args.transactionCode, newTransaction, {
         documentType: args.documentType
       });
       return {

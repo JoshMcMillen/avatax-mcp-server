@@ -291,55 +291,54 @@ export const TOOL_DEFINITIONS = [
           description: 'Document type if multiple transactions exist with same code (optional, defaults to SalesInvoice)',
           enum: ['SalesOrder', 'SalesInvoice', 'PurchaseOrder', 'PurchaseInvoice', 'ReturnOrder', 'ReturnInvoice', 'InventoryTransferOrder', 'InventoryTransferInvoice', 'InventoryTransferOutboundOrder', 'InventoryTransferOutboundInvoice']
         },
-        newTransaction: {
+        date: { 
+          type: 'string', 
+          description: 'New transaction date (YYYY-MM-DD)' 
+        },
+        customerCode: { 
+          type: 'string', 
+          description: 'Customer identifier for the adjusted transaction' 
+        },
+        lines: {
+          type: 'array',
+          description: 'Updated transaction line items',
+          items: {
+            type: 'object',
+            properties: {
+              number: { type: 'string', description: 'Line number' },
+              quantity: { type: 'number', description: 'Quantity' },
+              amount: { type: 'number', description: 'Line amount' },
+              itemCode: { type: 'string', description: 'Item/product code' },
+              description: { type: 'string', description: 'Line description' },
+              taxCode: { type: 'string', description: 'Tax code (optional)' }
+            },
+            required: ['quantity', 'amount']
+          }
+        },
+        shipFrom: {
           type: 'object',
-          description: 'New transaction data to replace the existing transaction',
+          description: 'Ship from address',
           properties: {
-            date: { type: 'string', description: 'Transaction date (YYYY-MM-DD)' },
-            customerCode: { type: 'string', description: 'Customer identifier' },
-            lines: {
-              type: 'array',
-              description: 'Updated transaction line items',
-              items: {
-                type: 'object',
-                properties: {
-                  number: { type: 'string', description: 'Line number' },
-                  quantity: { type: 'number', description: 'Quantity' },
-                  amount: { type: 'number', description: 'Line amount' },
-                  itemCode: { type: 'string', description: 'Item/product code' },
-                  description: { type: 'string', description: 'Line description' },
-                  taxCode: { type: 'string', description: 'Tax code (optional)' }
-                },
-                required: ['quantity', 'amount']
-              }
-            },
-            shipFrom: {
-              type: 'object',
-              description: 'Ship from address',
-              properties: {
-                line1: { type: 'string' },
-                city: { type: 'string' },
-                region: { type: 'string' },
-                postalCode: { type: 'string' },
-                country: { type: 'string' }
-              }
-            },
-            shipTo: {
-              type: 'object',
-              description: 'Ship to address',
-              properties: {
-                line1: { type: 'string' },
-                city: { type: 'string' },
-                region: { type: 'string' },
-                postalCode: { type: 'string' },
-                country: { type: 'string' }
-              }
-            }
-          },
-          required: ['date', 'customerCode', 'lines']
+            line1: { type: 'string' },
+            city: { type: 'string' },
+            region: { type: 'string' },
+            postalCode: { type: 'string' },
+            country: { type: 'string' }
+          }
+        },
+        shipTo: {
+          type: 'object',
+          description: 'Ship to address',
+          properties: {
+            line1: { type: 'string' },
+            city: { type: 'string' },
+            region: { type: 'string' },
+            postalCode: { type: 'string' },
+            country: { type: 'string' }
+          }
         }
       },
-      required: ['transactionCode', 'newTransaction']
+      required: ['transactionCode', 'date', 'customerCode', 'lines']
     }
   },
   {
