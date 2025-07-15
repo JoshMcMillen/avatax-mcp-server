@@ -509,6 +509,256 @@ You can use 'set_credentials' to add credentials for the current session, or cre
       };
     }
 
+    // Company Management Handlers
+    case 'get_company': {
+      const result = await avataxClient.getCompany(args.companyCode, {
+        include: args.include
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Company details:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'create_company': {
+      const result = await avataxClient.createCompany(args);
+      return {
+        content: [{
+          type: 'text',
+          text: `Company created successfully!\n\nCompany Code: ${result.companyCode}\nCompany Name: ${result.name}\nID: ${result.id}\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'update_company': {
+      const { companyCode, ...updateData } = args;
+      const result = await avataxClient.updateCompany(companyCode, updateData);
+      return {
+        content: [{
+          type: 'text',
+          text: `Company updated successfully!\n\nCompany Code: ${result.companyCode}\nCompany Name: ${result.name}\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'delete_company': {
+      const result = await avataxClient.deleteCompany(args.companyCode);
+      return {
+        content: [{
+          type: 'text',
+          text: `Company deleted successfully!\n\nWARNING: The company '${args.companyCode}' and all associated data have been permanently deleted.\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'get_company_configuration': {
+      const result = await avataxClient.getCompanyConfiguration(args.companyCode);
+      return {
+        content: [{
+          type: 'text',
+          text: `Company configuration:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'set_company_configuration': {
+      const result = await avataxClient.setCompanyConfiguration(args.companyCode, args.settings);
+      return {
+        content: [{
+          type: 'text',
+          text: `Company configuration updated successfully!\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'initialize_company': {
+      const result = await avataxClient.initializeCompany(args.companyCode);
+      return {
+        content: [{
+          type: 'text',
+          text: `Company initialized successfully!\n\nThe company '${args.companyCode}' has been set up with default settings, locations, and tax codes.\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'get_company_filing_status': {
+      const result = await avataxClient.getCompanyFilingStatus(args.companyCode);
+      return {
+        content: [{
+          type: 'text',
+          text: `Company filing status:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'approve_company_filing': {
+      const result = await avataxClient.approveCompanyFiling(args.companyCode, args.year, args.month, args.model);
+      return {
+        content: [{
+          type: 'text',
+          text: `Company filing approved successfully!\n\nFiling for ${args.year}/${args.month} has been approved for submission to tax authorities.\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'get_company_parameters': {
+      const result = await avataxClient.getCompanyParameters(args.companyCode);
+      return {
+        content: [{
+          type: 'text',
+          text: `Company parameters:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'set_company_parameters': {
+      const result = await avataxClient.setCompanyParameters(args.companyCode, args.parameters);
+      return {
+        content: [{
+          type: 'text',
+          text: `Company parameters updated successfully!\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'get_company_certificates': {
+      const result = await avataxClient.getCompanyCertificates(args.companyCode, {
+        include: args.include,
+        filter: args.filter,
+        top: args.top,
+        skip: args.skip,
+        orderBy: args.orderBy
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Found ${result.count || result.value?.length || 0} exemption certificates:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'fund_company_account': {
+      const result = await avataxClient.fundCompanyAccount(args.companyCode, args.fundingRequest);
+      return {
+        content: [{
+          type: 'text',
+          text: `Company account funded successfully!\n\nAmount: ${args.fundingRequest.amount} ${args.fundingRequest.currency || 'USD'}\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'get_company_returns': {
+      const result = await avataxClient.getCompanyReturns(args.companyCode, {
+        filingFrequency: args.filingFrequency,
+        country: args.country,
+        region: args.region,
+        year: args.year,
+        month: args.month,
+        include: args.include,
+        top: args.top,
+        skip: args.skip
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Found ${result.count || result.value?.length || 0} tax returns:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'create_company_return': {
+      const result = await avataxClient.createCompanyReturn(args.companyCode, args.returnObject);
+      return {
+        content: [{
+          type: 'text',
+          text: `Tax return created successfully!\n\nIMPORTANT: This is a legal tax document that will be filed with tax authorities.\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'approve_company_return': {
+      const result = await avataxClient.approveCompanyReturn(
+        args.companyCode, 
+        args.year, 
+        args.month, 
+        args.country, 
+        args.region, 
+        args.filingFrequency
+      );
+      return {
+        content: [{
+          type: 'text',
+          text: `Tax return approved successfully!\n\nReturn for ${args.country}/${args.region} ${args.year}/${args.month} (${args.filingFrequency}) has been approved for filing.\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'get_company_notices': {
+      const result = await avataxClient.getCompanyNotices(args.companyCode, {
+        include: args.include,
+        filter: args.filter,
+        top: args.top,
+        skip: args.skip,
+        orderBy: args.orderBy
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Found ${result.count || result.value?.length || 0} tax notices:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'create_company_notice': {
+      const result = await avataxClient.createCompanyNotice(args.companyCode, args.notice);
+      return {
+        content: [{
+          type: 'text',
+          text: `Tax notice created successfully!\n\nNotice Number: ${args.notice.noticeNumber}\nDate: ${args.notice.noticeDate}\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'quick_setup_company': {
+      const result = await avataxClient.quickSetupCompany(args.companyCode, args.setupRequest);
+      return {
+        content: [{
+          type: 'text',
+          text: `Company quick setup completed successfully!\n\nThe company '${args.companyCode}' has been automatically configured with locations, nexus declarations, and settings based on the provided business address.\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'get_company_worksheets': {
+      const result = await avataxClient.getCompanyWorksheets(args.companyCode, {
+        year: args.year,
+        month: args.month,
+        country: args.country,
+        region: args.region,
+        include: args.include,
+        top: args.top,
+        skip: args.skip
+      });
+      return {
+        content: [{
+          type: 'text',
+          text: `Found ${result.count || result.value?.length || 0} tax worksheets:\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
+    case 'rebuild_company_worksheets': {
+      const result = await avataxClient.rebuildCompanyWorksheets(args.companyCode, args.rebuildRequest);
+      return {
+        content: [{
+          type: 'text',
+          text: `Company worksheets rebuilt successfully!\n\nWorksheets for ${args.rebuildRequest.year}/${args.rebuildRequest.month} have been recalculated.\n\n${JSON.stringify(result, null, 2)}`
+        }]
+      };
+    }
+
     default:
       throw new Error(`Unknown tool: ${name}`);
   }

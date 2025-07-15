@@ -527,6 +527,485 @@ class AvataxClient {
         });
     }
     /**
+     * Get a specific company by company code
+     * Pattern: /api/v2/companies?$filter=companyCode eq '{companyCode}'
+     */
+    getCompany(companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                const params = new URLSearchParams();
+                params.append('$filter', `companyCode eq '${this.sanitizeString(companyCode.trim())}'`);
+                if (options === null || options === void 0 ? void 0 : options.include) {
+                    params.append('$include', options.include);
+                }
+                const queryString = params.toString();
+                const endpoint = `/companies?${queryString}`;
+                const result = yield this.makeRequest('GET', endpoint);
+                if (!result.value || result.value.length === 0) {
+                    throw new Error(`Company with code '${companyCode}' not found`);
+                }
+                return result.value[0];
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Create a new company
+     * Pattern: /api/v2/companies
+     */
+    createCompany(companyData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyData || !companyData.companyCode || !companyData.name) {
+                    throw new Error('Company data with companyCode and name is required.');
+                }
+                // Clean up the data - remove undefined values
+                const cleanData = Object.assign({}, companyData);
+                Object.keys(cleanData).forEach(key => {
+                    if (cleanData[key] === undefined) {
+                        delete cleanData[key];
+                    }
+                });
+                const result = yield this.makeRequest('POST', '/companies', cleanData);
+                return result;
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Update an existing company
+     * Pattern: /api/v2/companies/{companyId}
+     */
+    updateCompany(companyCode, companyData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                if (!companyData) {
+                    throw new Error('Company data is required for update.');
+                }
+                // Get the company ID first
+                const companyId = yield this.getCachedCompanyId(companyCode.trim());
+                // Clean up the data - remove undefined values
+                const cleanData = Object.assign({}, companyData);
+                Object.keys(cleanData).forEach(key => {
+                    if (cleanData[key] === undefined) {
+                        delete cleanData[key];
+                    }
+                });
+                return yield this.makeRequest('PUT', `/companies/${companyId}`, cleanData);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Delete a company
+     * Pattern: /api/v2/companies/{companyId}
+     */
+    deleteCompany(companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                // Get the company ID first
+                const companyId = yield this.getCachedCompanyId(companyCode.trim());
+                return yield this.makeRequest('DELETE', `/companies/${companyId}`);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Get company configuration settings
+     * Pattern: /api/v2/companies/{companyId}/configuration
+     */
+    getCompanyConfiguration(companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                return yield this.makeCompanyIdRequest('GET', '/configuration', companyCode.trim());
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Set company configuration settings
+     * Pattern: /api/v2/companies/{companyId}/configuration
+     */
+    setCompanyConfiguration(companyCode, settings) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                if (!settings || !Array.isArray(settings)) {
+                    throw new Error('Settings array is required.');
+                }
+                return yield this.makeCompanyIdRequest('POST', '/configuration', companyCode.trim(), settings);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Initialize a company with default settings
+     * Pattern: /api/v2/companies/{companyId}/initialize
+     */
+    initializeCompany(companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                return yield this.makeCompanyIdRequest('POST', '/initialize', companyCode.trim());
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Get company filing status
+     * Pattern: /api/v2/companies/{companyId}/filings/status
+     */
+    getCompanyFilingStatus(companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                return yield this.makeCompanyIdRequest('GET', '/filings/status', companyCode.trim());
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Approve company filing
+     * Pattern: /api/v2/companies/{companyId}/filings/{year}/{month}/approve
+     */
+    approveCompanyFiling(companyCode, year, month, model) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                if (!year || !month) {
+                    throw new Error('Year and month are required.');
+                }
+                return yield this.makeCompanyIdRequest('POST', `/filings/${year}/${month}/approve`, companyCode.trim(), model || { approved: true });
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Get company parameters
+     * Pattern: /api/v2/companies/{companyId}/parameters
+     */
+    getCompanyParameters(companyCode) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                return yield this.makeCompanyIdRequest('GET', '/parameters', companyCode.trim());
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Set company parameters
+     * Pattern: /api/v2/companies/{companyId}/parameters
+     */
+    setCompanyParameters(companyCode, parameters) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                if (!parameters || !Array.isArray(parameters)) {
+                    throw new Error('Parameters array is required.');
+                }
+                return yield this.makeCompanyIdRequest('POST', '/parameters', companyCode.trim(), parameters);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Get company certificates
+     * Pattern: /api/v2/companies/{companyId}/certificates
+     */
+    getCompanyCertificates(companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                if (options === null || options === void 0 ? void 0 : options.filter)
+                    params.append('$filter', options.filter);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                if (options === null || options === void 0 ? void 0 : options.orderBy)
+                    params.append('$orderBy', options.orderBy);
+                const queryString = params.toString();
+                const pathAfterCompanyId = queryString ? `/certificates?${queryString}` : '/certificates';
+                return yield this.makeCompanyIdRequest('GET', pathAfterCompanyId, companyCode.trim());
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Fund company account
+     * Pattern: /api/v2/companies/{companyId}/funding/setup
+     */
+    fundCompanyAccount(companyCode, fundingRequest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                if (!fundingRequest || !fundingRequest.amount) {
+                    throw new Error('Funding request with amount is required.');
+                }
+                return yield this.makeCompanyIdRequest('POST', '/funding/setup', companyCode.trim(), fundingRequest);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Get company returns
+     * Pattern: /api/v2/companies/{companyId}/returns
+     */
+    getCompanyReturns(companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.filingFrequency)
+                    params.append('filingFrequency', options.filingFrequency);
+                if (options === null || options === void 0 ? void 0 : options.country)
+                    params.append('country', options.country);
+                if (options === null || options === void 0 ? void 0 : options.region)
+                    params.append('region', options.region);
+                if (options === null || options === void 0 ? void 0 : options.year)
+                    params.append('year', options.year.toString());
+                if (options === null || options === void 0 ? void 0 : options.month)
+                    params.append('month', options.month.toString());
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                const queryString = params.toString();
+                const pathAfterCompanyId = queryString ? `/returns?${queryString}` : '/returns';
+                return yield this.makeCompanyIdRequest('GET', pathAfterCompanyId, companyCode.trim());
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Create company return
+     * Pattern: /api/v2/companies/{companyId}/returns
+     */
+    createCompanyReturn(companyCode, returnObject) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                if (!returnObject) {
+                    throw new Error('Return object is required.');
+                }
+                return yield this.makeCompanyIdRequest('POST', '/returns', companyCode.trim(), returnObject);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Approve company return
+     * Pattern: /api/v2/companies/{companyId}/returns/{country}/{region}/{year}/{month}/{filingFrequency}/approve
+     */
+    approveCompanyReturn(companyCode, year, month, country, region, filingFrequency) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                if (!year || !month || !country || !region || !filingFrequency) {
+                    throw new Error('Year, month, country, region, and filing frequency are required.');
+                }
+                return yield this.makeCompanyIdRequest('POST', `/returns/${country}/${region}/${year}/${month}/${filingFrequency}/approve`, companyCode.trim(), { approved: true });
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Get company notices
+     * Pattern: /api/v2/companies/{companyId}/notices
+     */
+    getCompanyNotices(companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                if (options === null || options === void 0 ? void 0 : options.filter)
+                    params.append('$filter', options.filter);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                if (options === null || options === void 0 ? void 0 : options.orderBy)
+                    params.append('$orderBy', options.orderBy);
+                const queryString = params.toString();
+                const pathAfterCompanyId = queryString ? `/notices?${queryString}` : '/notices';
+                return yield this.makeCompanyIdRequest('GET', pathAfterCompanyId, companyCode.trim());
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Create company notice
+     * Pattern: /api/v2/companies/{companyId}/notices
+     */
+    createCompanyNotice(companyCode, notice) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                if (!notice || !notice.noticeNumber || !notice.noticeDate) {
+                    throw new Error('Notice object with noticeNumber and noticeDate is required.');
+                }
+                return yield this.makeCompanyIdRequest('POST', '/notices', companyCode.trim(), notice);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Quick setup company
+     * Pattern: /api/v2/companies/{companyId}/quicksetup
+     */
+    quickSetupCompany(companyCode, setupRequest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                if (!setupRequest) {
+                    throw new Error('Setup request is required.');
+                }
+                return yield this.makeCompanyIdRequest('POST', '/quicksetup', companyCode.trim(), setupRequest);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Get company worksheets
+     * Pattern: /api/v2/companies/{companyId}/worksheets
+     */
+    getCompanyWorksheets(companyCode, options) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                const params = new URLSearchParams();
+                if (options === null || options === void 0 ? void 0 : options.year)
+                    params.append('year', options.year.toString());
+                if (options === null || options === void 0 ? void 0 : options.month)
+                    params.append('month', options.month.toString());
+                if (options === null || options === void 0 ? void 0 : options.country)
+                    params.append('country', options.country);
+                if (options === null || options === void 0 ? void 0 : options.region)
+                    params.append('region', options.region);
+                if (options === null || options === void 0 ? void 0 : options.include)
+                    params.append('$include', options.include);
+                if (options === null || options === void 0 ? void 0 : options.top)
+                    params.append('$top', options.top.toString());
+                if (options === null || options === void 0 ? void 0 : options.skip)
+                    params.append('$skip', options.skip.toString());
+                const queryString = params.toString();
+                const pathAfterCompanyId = queryString ? `/worksheets?${queryString}` : '/worksheets';
+                return yield this.makeCompanyIdRequest('GET', pathAfterCompanyId, companyCode.trim());
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
+     * Rebuild company worksheets
+     * Pattern: /api/v2/companies/{companyId}/worksheets/rebuild
+     */
+    rebuildCompanyWorksheets(companyCode, rebuildRequest) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if (!companyCode || companyCode.trim() === '') {
+                    throw new Error('Company code is required.');
+                }
+                if (!rebuildRequest || !rebuildRequest.year || !rebuildRequest.month) {
+                    throw new Error('Rebuild request with year and month is required.');
+                }
+                return yield this.makeCompanyIdRequest('POST', '/worksheets/rebuild', companyCode.trim(), rebuildRequest);
+            }
+            catch (error) {
+                this.handleError(error);
+            }
+        });
+    }
+    /**
      * Get certificates for a company - Example of companyId URL pattern
      * Pattern: /api/v2/companies/{companyId}/certificates
      */
