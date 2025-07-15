@@ -8,14 +8,14 @@ import { AvaTaxConfig, StoredCredentials, loadCredentials, saveCredentials } fro
  * companies in URLs:
  * 
  * 1. Company Code (string) - Used in endpoints like:
- *    - /api/v2/companies/{companyCode}/transactions/{transactionCode}
+ *    - /companies/{companyCode}/transactions/{transactionCode}
  *    - Transaction operations that use companyCode in the request body
  * 
  * 2. Company ID (numeric) - Used in endpoints like:
- *    - /api/v2/companies/{companyId}/certificates
- *    - /api/v2/companies/{companyId}/parameters
- *    - /api/v2/companies/{companyId}/userdefinedfields
- *    - /api/v2/companies/{companyId}/batches
+ *    - /companies/{companyId}/certificates
+ *    - /companies/{companyId}/parameters
+ *    - /companies/{companyId}/userdefinedfields
+ *    - /companies/{companyId}/batches
  * 
  * This client automatically handles both patterns:
  * - Resolves companyCode to companyId when needed for numeric ID endpoints
@@ -284,7 +284,7 @@ class AvataxClient {
      * 1. Company Code (string) - Used in:
      *    - Transaction creation (/api/v2/transactions/create) - in request body
      *    - Most transaction operations that use companyCode in URL path
-     *    - Example: /api/v2/companies/{companyCode}/transactions/{transactionCode}
+     *    - Example: /companies/{companyCode}/transactions/{transactionCode}
      * 
      * 2. Company ID (numeric) - Used in:
      *    - Company management endpoints
@@ -292,7 +292,7 @@ class AvataxClient {
      *    - User-defined fields
      *    - Company parameters
      *    - Batch operations
-     *    - Example: /api/v2/companies/{companyId}/certificates
+     *    - Example: /companies/{companyId}/certificates
      * 
      * This client handles both patterns automatically by:
      * - Using companyCode directly when the endpoint expects it
@@ -322,7 +322,7 @@ class AvataxClient {
 
     /**
      * Helper method for endpoints that use companyId in the URL path
-     * Pattern: /api/v2/companies/{companyId}/...
+     * Pattern: /companies/{companyId}/...
      */
     private async makeCompanyIdRequest(method: string, pathAfterCompanyId: string, companyCode: string, data?: any): Promise<any> {
         const companyId = await this.getCachedCompanyId(companyCode);
@@ -332,7 +332,7 @@ class AvataxClient {
 
     /**
      * Helper method for endpoints that use companyCode in the URL path
-     * Pattern: /api/v2/companies/{companyCode}/...
+     * Pattern: /companies/{companyCode}/...
      */
     private async makeCompanyCodeRequest(method: string, pathAfterCompanyCode: string, companyCode: string, data?: any): Promise<any> {
         // Encode company code for URL safety
@@ -607,7 +607,7 @@ class AvataxClient {
 
     /**
      * Update an existing company
-     * Pattern: /api/v2/companies/{companyId}
+     * Pattern: /companies/{companyId}
      */
     public async updateCompany(companyCode: string, companyData: any) {
         try {
@@ -637,7 +637,7 @@ class AvataxClient {
 
     /**
      * Delete a company
-     * Pattern: /api/v2/companies/{companyId}
+     * Pattern: /companies/{companyId}
      */
     public async deleteCompany(companyCode: string) {
         try {
@@ -656,7 +656,7 @@ class AvataxClient {
 
     /**
      * Get company configuration settings
-     * Pattern: /api/v2/companies/{companyId}/configuration
+     * Pattern: /companies/{companyId}/configuration
      */
     public async getCompanyConfiguration(companyCode: string) {
         try {
@@ -672,7 +672,7 @@ class AvataxClient {
 
     /**
      * Set company configuration settings
-     * Pattern: /api/v2/companies/{companyId}/configuration
+     * Pattern: /companies/{companyId}/configuration
      */
     public async setCompanyConfiguration(companyCode: string, settings: any[]) {
         try {
@@ -691,7 +691,7 @@ class AvataxClient {
 
     /**
      * Initialize a company with default settings
-     * Pattern: /api/v2/companies/{companyId}/initialize
+     * Pattern: /companies/{companyId}/initialize
      */
     public async initializeCompany(companyCode: string) {
         try {
@@ -707,7 +707,7 @@ class AvataxClient {
 
     /**
      * Get company filing status
-     * Pattern: /api/v2/companies/{companyId}/filings/status
+     * Pattern: /companies/{companyId}/filings/status
      */
     public async getCompanyFilingStatus(companyCode: string) {
         try {
@@ -723,7 +723,7 @@ class AvataxClient {
 
     /**
      * Approve company filing
-     * Pattern: /api/v2/companies/{companyId}/filings/{year}/{month}/approve
+     * Pattern: /companies/{companyId}/filings/{year}/{month}/approve
      */
     public async approveCompanyFiling(companyCode: string, year: number, month: number, model?: any) {
         try {
@@ -742,7 +742,7 @@ class AvataxClient {
 
     /**
      * Get company parameters
-     * Pattern: /api/v2/companies/{companyId}/parameters
+     * Pattern: /companies/{companyId}/parameters
      */
     public async getCompanyParameters(companyCode: string) {
         try {
@@ -758,7 +758,7 @@ class AvataxClient {
 
     /**
      * Set company parameters
-     * Pattern: /api/v2/companies/{companyId}/parameters
+     * Pattern: /companies/{companyId}/parameters
      */
     public async setCompanyParameters(companyCode: string, parameters: any[]) {
         try {
@@ -777,7 +777,7 @@ class AvataxClient {
 
     /**
      * Get company certificates
-     * Pattern: /api/v2/companies/{companyId}/certificates
+     * Pattern: /companies/{companyId}/certificates
      */
     public async getCompanyCertificates(companyCode: string, options?: { 
         include?: string; 
@@ -809,7 +809,7 @@ class AvataxClient {
 
     /**
      * Fund company account
-     * Pattern: /api/v2/companies/{companyId}/funding/setup
+     * Pattern: /companies/{companyId}/funding/setup
      */
     public async fundCompanyAccount(companyCode: string, fundingRequest: any) {
         try {
@@ -828,7 +828,7 @@ class AvataxClient {
 
     /**
      * Get company returns
-     * Pattern: /api/v2/companies/{companyId}/returns
+     * Pattern: /companies/{companyId}/returns
      */
     public async getCompanyReturns(companyCode: string, options?: { 
         filingFrequency?: string;
@@ -866,7 +866,7 @@ class AvataxClient {
 
     /**
      * Create company return
-     * Pattern: /api/v2/companies/{companyId}/returns
+     * Pattern: /companies/{companyId}/returns
      */
     public async createCompanyReturn(companyCode: string, returnObject: any) {
         try {
@@ -885,7 +885,7 @@ class AvataxClient {
 
     /**
      * Approve company return
-     * Pattern: /api/v2/companies/{companyId}/returns/{country}/{region}/{year}/{month}/{filingFrequency}/approve
+     * Pattern: /companies/{companyId}/returns/{country}/{region}/{year}/{month}/{filingFrequency}/approve
      */
     public async approveCompanyReturn(companyCode: string, year: number, month: number, country: string, region: string, filingFrequency: string) {
         try {
@@ -904,7 +904,7 @@ class AvataxClient {
 
     /**
      * Get company notices
-     * Pattern: /api/v2/companies/{companyId}/notices
+     * Pattern: /companies/{companyId}/notices
      */
     public async getCompanyNotices(companyCode: string, options?: { 
         include?: string; 
@@ -936,7 +936,7 @@ class AvataxClient {
 
     /**
      * Create company notice
-     * Pattern: /api/v2/companies/{companyId}/notices
+     * Pattern: /companies/{companyId}/notices
      */
     public async createCompanyNotice(companyCode: string, notice: any) {
         try {
@@ -955,7 +955,7 @@ class AvataxClient {
 
     /**
      * Quick setup company
-     * Pattern: /api/v2/companies/{companyId}/quicksetup
+     * Pattern: /companies/{companyId}/quicksetup
      */
     public async quickSetupCompany(companyCode: string, setupRequest: any) {
         try {
@@ -974,7 +974,7 @@ class AvataxClient {
 
     /**
      * Get company worksheets
-     * Pattern: /api/v2/companies/{companyId}/worksheets
+     * Pattern: /companies/{companyId}/worksheets
      */
     public async getCompanyWorksheets(companyCode: string, options?: { 
         year?: number;
@@ -1010,7 +1010,7 @@ class AvataxClient {
 
     /**
      * Rebuild company worksheets
-     * Pattern: /api/v2/companies/{companyId}/worksheets/rebuild
+     * Pattern: /companies/{companyId}/worksheets/rebuild
      */
     public async rebuildCompanyWorksheets(companyCode: string, rebuildRequest: any) {
         try {
@@ -1029,7 +1029,7 @@ class AvataxClient {
 
     /**
      * Get certificates for a company - Example of companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/certificates
+     * Pattern: /companies/{companyId}/certificates
      */
     public async getCertificates(companyCode?: string, options?: { customerCode?: string; filter?: string }) {
         try {
@@ -1063,7 +1063,7 @@ class AvataxClient {
 
     /**
      * Get transaction by company code and transaction code - Example of companyCode URL pattern  
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}
      */
     public async getTransaction(companyCode: string, transactionCode: string, options?: { documentType?: string; include?: string }) {
         try {
@@ -1110,7 +1110,7 @@ class AvataxClient {
 
     /**
      * Get all nexus declarations for a company - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus
+     * Pattern: /companies/{companyId}/nexus
      */
     public async getCompanyNexus(companyCode?: string, options?: { 
         filter?: string; 
@@ -1140,7 +1140,7 @@ class AvataxClient {
 
     /**
      * Get a specific nexus declaration by ID - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus/{id}
+     * Pattern: /companies/{companyId}/nexus/{id}
      */
     public async getNexusById(id: number, companyCode?: string, options?: { include?: string }) {
         try {
@@ -1164,7 +1164,7 @@ class AvataxClient {
 
     /**
      * Create a new nexus declaration - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus
+     * Pattern: /companies/{companyId}/nexus
      */
     public async createNexus(nexusData: any, companyCode?: string) {
         try {
@@ -1185,7 +1185,7 @@ class AvataxClient {
 
     /**
      * Update an existing nexus declaration - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus/{id}
+     * Pattern: /companies/{companyId}/nexus/{id}
      * 
      * Note: When updating nexus, all values except user-selectable fields must match 
      * an Avalara-defined system nexus object. User-selectable fields are:
@@ -1261,7 +1261,7 @@ class AvataxClient {
 
     /**
      * Delete a nexus declaration - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus/{id}
+     * Pattern: /companies/{companyId}/nexus/{id}
      */
     public async deleteNexus(id: number, companyCode?: string) {
         try {
@@ -1279,7 +1279,7 @@ class AvataxClient {
 
     /**
      * Get nexus declarations by form code - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus/byform/{formCode}
+     * Pattern: /companies/{companyId}/nexus/byform/{formCode}
      */
     public async getNexusByFormCode(formCode: string, companyCode?: string, options?: { 
         include?: string; 
@@ -1316,7 +1316,7 @@ class AvataxClient {
 
     /**
      * Declare nexus by address - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus/byaddress
+     * Pattern: /companies/{companyId}/nexus/byaddress
      */
     public async declareNexusByAddress(addressData: any, companyCode?: string, options?: { 
         textCase?: string; 
@@ -1346,7 +1346,7 @@ class AvataxClient {
 
     /**
      * List transactions for a company with filtering
-     * Pattern: /api/v2/companies/{companyCode}/transactions
+     * Pattern: /companies/{companyCode}/transactions
      */
     public async listTransactions(companyCode?: string, options?: {
         filter?: string;
@@ -1382,7 +1382,7 @@ class AvataxClient {
 
     /**
      * Commit a transaction to make it available for tax reporting
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/commit
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/commit
      */
     public async commitTransaction(companyCode: string, transactionCode: string, options?: {
         documentType?: string;
@@ -1428,7 +1428,7 @@ class AvataxClient {
 
     /**
      * Void a transaction
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/void
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/void
      */
     public async voidTransaction(companyCode: string, transactionCode: string, options?: {
         documentType?: string;
@@ -1474,7 +1474,7 @@ class AvataxClient {
 
     /**
      * Adjust a committed transaction
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/adjust
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/adjust
      */
     public async adjustTransaction(companyCode: string, transactionCode: string, newTransaction: any, options?: {
         documentType?: string;
@@ -1529,7 +1529,7 @@ class AvataxClient {
 
     /**
      * Uncommit a committed transaction
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/uncommit
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/uncommit
      */
     public async uncommitTransaction(companyCode: string, transactionCode: string, options?: {
         documentType?: string;
@@ -1570,7 +1570,7 @@ class AvataxClient {
 
     /**
      * Get audit information for a transaction
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/audit
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/audit
      */
     public async getTransactionAudit(companyCode: string, transactionCode: string) {
         try {
@@ -1601,7 +1601,7 @@ class AvataxClient {
 
     /**
      * Change the code of a transaction
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/changecode
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/changecode
      */
     public async changeTransactionCode(companyCode: string, transactionCode: string, newCode: string, options?: {
         documentType?: string;
@@ -1645,7 +1645,7 @@ class AvataxClient {
 
     /**
      * Verify a transaction
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/verify
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/verify
      */
     public async verifyTransaction(companyCode: string, transactionCode: string, options?: {
         documentType?: string;
@@ -1723,8 +1723,8 @@ class AvataxClient {
 
             const queryString = params.toString();
             const endpoint = queryString 
-                ? `/api/v2/companies/${companyId}/items?${queryString}`
-                : `/api/v2/companies/${companyId}/items`;
+                ? `/companies/${companyId}/items?${queryString}`
+                : `/companies/${companyId}/items`;
 
             return await this.makeRequest('GET', endpoint);
         } catch (error: any) {
@@ -1747,8 +1747,8 @@ class AvataxClient {
 
             const queryString = params.toString();
             const endpoint = queryString 
-                ? `/api/v2/companies/${companyId}/items/${itemId}?${queryString}`
-                : `/api/v2/companies/${companyId}/items/${itemId}`;
+                ? `/companies/${companyId}/items/${itemId}?${queryString}`
+                : `/companies/${companyId}/items/${itemId}`;
 
             return await this.makeRequest('GET', endpoint);
         } catch (error: any) {
@@ -1773,8 +1773,8 @@ class AvataxClient {
 
             const queryString = params.toString();
             const endpoint = queryString 
-                ? `/api/v2/companies/${companyId}/items?${queryString}`
-                : `/api/v2/companies/${companyId}/items`;
+                ? `/companies/${companyId}/items?${queryString}`
+                : `/companies/${companyId}/items`;
 
             return await this.makeRequest('POST', endpoint, items);
         } catch (error: any) {
@@ -1799,8 +1799,8 @@ class AvataxClient {
 
             const queryString = params.toString();
             const endpoint = queryString 
-                ? `/api/v2/companies/${companyId}/items/${itemId}?${queryString}`
-                : `/api/v2/companies/${companyId}/items/${itemId}`;
+                ? `/companies/${companyId}/items/${itemId}?${queryString}`
+                : `/companies/${companyId}/items/${itemId}`;
 
             return await this.makeRequest('PUT', endpoint, itemData);
         } catch (error: any) {
@@ -1816,7 +1816,7 @@ class AvataxClient {
             const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
             const companyId = await this.getCompanyId(resolvedCompanyCode);
 
-            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}`;
+            const endpoint = `/companies/${companyId}/items/${itemId}`;
             return await this.makeRequest('DELETE', endpoint);
         } catch (error: any) {
             this.handleError(error);
@@ -1850,8 +1850,8 @@ class AvataxClient {
 
             const queryString = params.toString();
             const endpoint = queryString 
-                ? `/api/v2/companies/${companyId}/items/${itemId}/parameters?${queryString}`
-                : `/api/v2/companies/${companyId}/items/${itemId}/parameters`;
+                ? `/companies/${companyId}/items/${itemId}/parameters?${queryString}`
+                : `/companies/${companyId}/items/${itemId}/parameters`;
 
             return await this.makeRequest('GET', endpoint);
         } catch (error: any) {
@@ -1867,7 +1867,7 @@ class AvataxClient {
             const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
             const companyId = await this.getCompanyId(resolvedCompanyCode);
 
-            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/parameters`;
+            const endpoint = `/companies/${companyId}/items/${itemId}/parameters`;
             return await this.makeRequest('POST', endpoint, parameters);
         } catch (error: any) {
             this.handleError(error);
@@ -1882,7 +1882,7 @@ class AvataxClient {
             const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
             const companyId = await this.getCompanyId(resolvedCompanyCode);
 
-            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/parameters/${parameterId}`;
+            const endpoint = `/companies/${companyId}/items/${itemId}/parameters/${parameterId}`;
             return await this.makeRequest('PUT', endpoint, parameterData);
         } catch (error: any) {
             this.handleError(error);
@@ -1897,7 +1897,7 @@ class AvataxClient {
             const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
             const companyId = await this.getCompanyId(resolvedCompanyCode);
 
-            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/parameters/${parameterId}`;
+            const endpoint = `/companies/${companyId}/items/${itemId}/parameters/${parameterId}`;
             return await this.makeRequest('DELETE', endpoint);
         } catch (error: any) {
             this.handleError(error);
@@ -1931,8 +1931,8 @@ class AvataxClient {
 
             const queryString = params.toString();
             const endpoint = queryString 
-                ? `/api/v2/companies/${companyId}/items/${itemId}/classifications?${queryString}`
-                : `/api/v2/companies/${companyId}/items/${itemId}/classifications`;
+                ? `/companies/${companyId}/items/${itemId}/classifications?${queryString}`
+                : `/companies/${companyId}/items/${itemId}/classifications`;
 
             return await this.makeRequest('GET', endpoint);
         } catch (error: any) {
@@ -1948,7 +1948,7 @@ class AvataxClient {
             const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
             const companyId = await this.getCompanyId(resolvedCompanyCode);
 
-            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/classifications`;
+            const endpoint = `/companies/${companyId}/items/${itemId}/classifications`;
             return await this.makeRequest('POST', endpoint, classifications);
         } catch (error: any) {
             this.handleError(error);
@@ -1963,7 +1963,7 @@ class AvataxClient {
             const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
             const companyId = await this.getCompanyId(resolvedCompanyCode);
 
-            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/classifications/${classificationId}`;
+            const endpoint = `/companies/${companyId}/items/${itemId}/classifications/${classificationId}`;
             return await this.makeRequest('PUT', endpoint, classificationData);
         } catch (error: any) {
             this.handleError(error);
@@ -1978,7 +1978,7 @@ class AvataxClient {
             const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
             const companyId = await this.getCompanyId(resolvedCompanyCode);
 
-            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/classifications/${classificationId}`;
+            const endpoint = `/companies/${companyId}/items/${itemId}/classifications/${classificationId}`;
             return await this.makeRequest('DELETE', endpoint);
         } catch (error: any) {
             this.handleError(error);
@@ -2011,8 +2011,8 @@ class AvataxClient {
 
             const queryString = params.toString();
             const endpoint = queryString 
-                ? `/api/v2/companies/${companyId}/items/${itemId}/tags?${queryString}`
-                : `/api/v2/companies/${companyId}/items/${itemId}/tags`;
+                ? `/companies/${companyId}/items/${itemId}/tags?${queryString}`
+                : `/companies/${companyId}/items/${itemId}/tags`;
 
             return await this.makeRequest('GET', endpoint);
         } catch (error: any) {
@@ -2028,7 +2028,7 @@ class AvataxClient {
             const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
             const companyId = await this.getCompanyId(resolvedCompanyCode);
 
-            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/tags`;
+            const endpoint = `/companies/${companyId}/items/${itemId}/tags`;
             return await this.makeRequest('POST', endpoint, tags);
         } catch (error: any) {
             this.handleError(error);
@@ -2043,7 +2043,7 @@ class AvataxClient {
             const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
             const companyId = await this.getCompanyId(resolvedCompanyCode);
 
-            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/tags/${tagId}`;
+            const endpoint = `/companies/${companyId}/items/${itemId}/tags/${tagId}`;
             return await this.makeRequest('DELETE', endpoint);
         } catch (error: any) {
             this.handleError(error);
@@ -2073,8 +2073,8 @@ class AvataxClient {
 
             const queryString = params.toString();
             const endpoint = queryString 
-                ? `/api/v2/companies/${companyId}/items/bytags/${tag}?${queryString}`
-                : `/api/v2/companies/${companyId}/items/bytags/${tag}`;
+                ? `/companies/${companyId}/items/bytags/${tag}?${queryString}`
+                : `/companies/${companyId}/items/bytags/${tag}`;
 
             return await this.makeRequest('GET', endpoint);
         } catch (error: any) {
@@ -2090,7 +2090,7 @@ class AvataxClient {
             const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
             const companyId = await this.getCompanyId(resolvedCompanyCode);
 
-            const endpoint = `/api/v2/companies/${companyId}/items/upload`;
+            const endpoint = `/companies/${companyId}/items/upload`;
             return await this.makeRequest('POST', endpoint, items);
         } catch (error: any) {
             this.handleError(error);
@@ -2105,7 +2105,7 @@ class AvataxClient {
             const { companyCode: resolvedCompanyCode } = await this.resolveCompanyInfo(companyCode);
             const companyId = await this.getCompanyId(resolvedCompanyCode);
 
-            const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/taxcoderecommendations`;
+            const endpoint = `/companies/${companyId}/items/${itemId}/taxcoderecommendations`;
             return await this.makeRequest('GET', endpoint);
         } catch (error: any) {
             this.handleError(error);

@@ -18,14 +18,14 @@ const config_js_1 = require("./config.js");
  * companies in URLs:
  *
  * 1. Company Code (string) - Used in endpoints like:
- *    - /api/v2/companies/{companyCode}/transactions/{transactionCode}
+ *    - /companies/{companyCode}/transactions/{transactionCode}
  *    - Transaction operations that use companyCode in the request body
  *
  * 2. Company ID (numeric) - Used in endpoints like:
- *    - /api/v2/companies/{companyId}/certificates
- *    - /api/v2/companies/{companyId}/parameters
- *    - /api/v2/companies/{companyId}/userdefinedfields
- *    - /api/v2/companies/{companyId}/batches
+ *    - /companies/{companyId}/certificates
+ *    - /companies/{companyId}/parameters
+ *    - /companies/{companyId}/userdefinedfields
+ *    - /companies/{companyId}/batches
  *
  * This client automatically handles both patterns:
  * - Resolves companyCode to companyId when needed for numeric ID endpoints
@@ -42,7 +42,7 @@ class AvataxClient {
          * 1. Company Code (string) - Used in:
          *    - Transaction creation (/api/v2/transactions/create) - in request body
          *    - Most transaction operations that use companyCode in URL path
-         *    - Example: /api/v2/companies/{companyCode}/transactions/{transactionCode}
+         *    - Example: /companies/{companyCode}/transactions/{transactionCode}
          *
          * 2. Company ID (numeric) - Used in:
          *    - Company management endpoints
@@ -50,7 +50,7 @@ class AvataxClient {
          *    - User-defined fields
          *    - Company parameters
          *    - Batch operations
-         *    - Example: /api/v2/companies/{companyId}/certificates
+         *    - Example: /companies/{companyId}/certificates
          *
          * This client handles both patterns automatically by:
          * - Using companyCode directly when the endpoint expects it
@@ -297,7 +297,7 @@ class AvataxClient {
     }
     /**
      * Helper method for endpoints that use companyId in the URL path
-     * Pattern: /api/v2/companies/{companyId}/...
+     * Pattern: /companies/{companyId}/...
      */
     makeCompanyIdRequest(method, pathAfterCompanyId, companyCode, data) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -308,7 +308,7 @@ class AvataxClient {
     }
     /**
      * Helper method for endpoints that use companyCode in the URL path
-     * Pattern: /api/v2/companies/{companyCode}/...
+     * Pattern: /companies/{companyCode}/...
      */
     makeCompanyCodeRequest(method, pathAfterCompanyCode, companyCode, data) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -581,7 +581,7 @@ class AvataxClient {
     }
     /**
      * Update an existing company
-     * Pattern: /api/v2/companies/{companyId}
+     * Pattern: /companies/{companyId}
      */
     updateCompany(companyCode, companyData) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -610,7 +610,7 @@ class AvataxClient {
     }
     /**
      * Delete a company
-     * Pattern: /api/v2/companies/{companyId}
+     * Pattern: /companies/{companyId}
      */
     deleteCompany(companyCode) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -629,7 +629,7 @@ class AvataxClient {
     }
     /**
      * Get company configuration settings
-     * Pattern: /api/v2/companies/{companyId}/configuration
+     * Pattern: /companies/{companyId}/configuration
      */
     getCompanyConfiguration(companyCode) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -646,7 +646,7 @@ class AvataxClient {
     }
     /**
      * Set company configuration settings
-     * Pattern: /api/v2/companies/{companyId}/configuration
+     * Pattern: /companies/{companyId}/configuration
      */
     setCompanyConfiguration(companyCode, settings) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -666,7 +666,7 @@ class AvataxClient {
     }
     /**
      * Initialize a company with default settings
-     * Pattern: /api/v2/companies/{companyId}/initialize
+     * Pattern: /companies/{companyId}/initialize
      */
     initializeCompany(companyCode) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -683,7 +683,7 @@ class AvataxClient {
     }
     /**
      * Get company filing status
-     * Pattern: /api/v2/companies/{companyId}/filings/status
+     * Pattern: /companies/{companyId}/filings/status
      */
     getCompanyFilingStatus(companyCode) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -700,7 +700,7 @@ class AvataxClient {
     }
     /**
      * Approve company filing
-     * Pattern: /api/v2/companies/{companyId}/filings/{year}/{month}/approve
+     * Pattern: /companies/{companyId}/filings/{year}/{month}/approve
      */
     approveCompanyFiling(companyCode, year, month, model) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -720,7 +720,7 @@ class AvataxClient {
     }
     /**
      * Get company parameters
-     * Pattern: /api/v2/companies/{companyId}/parameters
+     * Pattern: /companies/{companyId}/parameters
      */
     getCompanyParameters(companyCode) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -737,7 +737,7 @@ class AvataxClient {
     }
     /**
      * Set company parameters
-     * Pattern: /api/v2/companies/{companyId}/parameters
+     * Pattern: /companies/{companyId}/parameters
      */
     setCompanyParameters(companyCode, parameters) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -757,7 +757,7 @@ class AvataxClient {
     }
     /**
      * Get company certificates
-     * Pattern: /api/v2/companies/{companyId}/certificates
+     * Pattern: /companies/{companyId}/certificates
      */
     getCompanyCertificates(companyCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -787,7 +787,7 @@ class AvataxClient {
     }
     /**
      * Fund company account
-     * Pattern: /api/v2/companies/{companyId}/funding/setup
+     * Pattern: /companies/{companyId}/funding/setup
      */
     fundCompanyAccount(companyCode, fundingRequest) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -807,7 +807,7 @@ class AvataxClient {
     }
     /**
      * Get company returns
-     * Pattern: /api/v2/companies/{companyId}/returns
+     * Pattern: /companies/{companyId}/returns
      */
     getCompanyReturns(companyCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -843,7 +843,7 @@ class AvataxClient {
     }
     /**
      * Create company return
-     * Pattern: /api/v2/companies/{companyId}/returns
+     * Pattern: /companies/{companyId}/returns
      */
     createCompanyReturn(companyCode, returnObject) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -863,7 +863,7 @@ class AvataxClient {
     }
     /**
      * Approve company return
-     * Pattern: /api/v2/companies/{companyId}/returns/{country}/{region}/{year}/{month}/{filingFrequency}/approve
+     * Pattern: /companies/{companyId}/returns/{country}/{region}/{year}/{month}/{filingFrequency}/approve
      */
     approveCompanyReturn(companyCode, year, month, country, region, filingFrequency) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -883,7 +883,7 @@ class AvataxClient {
     }
     /**
      * Get company notices
-     * Pattern: /api/v2/companies/{companyId}/notices
+     * Pattern: /companies/{companyId}/notices
      */
     getCompanyNotices(companyCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -913,7 +913,7 @@ class AvataxClient {
     }
     /**
      * Create company notice
-     * Pattern: /api/v2/companies/{companyId}/notices
+     * Pattern: /companies/{companyId}/notices
      */
     createCompanyNotice(companyCode, notice) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -933,7 +933,7 @@ class AvataxClient {
     }
     /**
      * Quick setup company
-     * Pattern: /api/v2/companies/{companyId}/quicksetup
+     * Pattern: /companies/{companyId}/quicksetup
      */
     quickSetupCompany(companyCode, setupRequest) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -953,7 +953,7 @@ class AvataxClient {
     }
     /**
      * Get company worksheets
-     * Pattern: /api/v2/companies/{companyId}/worksheets
+     * Pattern: /companies/{companyId}/worksheets
      */
     getCompanyWorksheets(companyCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -987,7 +987,7 @@ class AvataxClient {
     }
     /**
      * Rebuild company worksheets
-     * Pattern: /api/v2/companies/{companyId}/worksheets/rebuild
+     * Pattern: /companies/{companyId}/worksheets/rebuild
      */
     rebuildCompanyWorksheets(companyCode, rebuildRequest) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1007,7 +1007,7 @@ class AvataxClient {
     }
     /**
      * Get certificates for a company - Example of companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/certificates
+     * Pattern: /companies/{companyId}/certificates
      */
     getCertificates(companyCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1041,7 +1041,7 @@ class AvataxClient {
     }
     /**
      * Get transaction by company code and transaction code - Example of companyCode URL pattern
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}
      */
     getTransaction(companyCode, transactionCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1085,7 +1085,7 @@ class AvataxClient {
     // ===== NEXUS MANAGEMENT METHODS =====
     /**
      * Get all nexus declarations for a company - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus
+     * Pattern: /companies/{companyId}/nexus
      */
     getCompanyNexus(companyCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1113,7 +1113,7 @@ class AvataxClient {
     }
     /**
      * Get a specific nexus declaration by ID - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus/{id}
+     * Pattern: /companies/{companyId}/nexus/{id}
      */
     getNexusById(id, companyCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1136,7 +1136,7 @@ class AvataxClient {
     }
     /**
      * Create a new nexus declaration - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus
+     * Pattern: /companies/{companyId}/nexus
      */
     createNexus(nexusData, companyCode) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1156,7 +1156,7 @@ class AvataxClient {
     }
     /**
      * Update an existing nexus declaration - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus/{id}
+     * Pattern: /companies/{companyId}/nexus/{id}
      *
      * Note: When updating nexus, all values except user-selectable fields must match
      * an Avalara-defined system nexus object. User-selectable fields are:
@@ -1222,7 +1222,7 @@ class AvataxClient {
     }
     /**
      * Delete a nexus declaration - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus/{id}
+     * Pattern: /companies/{companyId}/nexus/{id}
      */
     deleteNexus(id, companyCode) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1240,7 +1240,7 @@ class AvataxClient {
     }
     /**
      * Get nexus declarations by form code - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus/byform/{formCode}
+     * Pattern: /companies/{companyId}/nexus/byform/{formCode}
      */
     getNexusByFormCode(formCode, companyCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1274,7 +1274,7 @@ class AvataxClient {
     }
     /**
      * Declare nexus by address - uses companyId URL pattern
-     * Pattern: /api/v2/companies/{companyId}/nexus/byaddress
+     * Pattern: /companies/{companyId}/nexus/byaddress
      */
     declareNexusByAddress(addressData, companyCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1300,7 +1300,7 @@ class AvataxClient {
     // ===== TRANSACTION MANAGEMENT METHODS =====
     /**
      * List transactions for a company with filtering
-     * Pattern: /api/v2/companies/{companyCode}/transactions
+     * Pattern: /companies/{companyCode}/transactions
      */
     listTransactions(companyCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1333,7 +1333,7 @@ class AvataxClient {
     }
     /**
      * Commit a transaction to make it available for tax reporting
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/commit
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/commit
      */
     commitTransaction(companyCode, transactionCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1374,7 +1374,7 @@ class AvataxClient {
     }
     /**
      * Void a transaction
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/void
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/void
      */
     voidTransaction(companyCode, transactionCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1415,7 +1415,7 @@ class AvataxClient {
     }
     /**
      * Adjust a committed transaction
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/adjust
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/adjust
      */
     adjustTransaction(companyCode, transactionCode, newTransaction, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1463,7 +1463,7 @@ class AvataxClient {
     }
     /**
      * Uncommit a committed transaction
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/uncommit
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/uncommit
      */
     uncommitTransaction(companyCode, transactionCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1501,7 +1501,7 @@ class AvataxClient {
     }
     /**
      * Get audit information for a transaction
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/audit
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/audit
      */
     getTransactionAudit(companyCode, transactionCode) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1531,7 +1531,7 @@ class AvataxClient {
     }
     /**
      * Change the code of a transaction
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/changecode
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/changecode
      */
     changeTransactionCode(companyCode, transactionCode, newCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1571,7 +1571,7 @@ class AvataxClient {
     }
     /**
      * Verify a transaction
-     * Pattern: /api/v2/companies/{companyCode}/transactions/{transactionCode}/verify
+     * Pattern: /companies/{companyCode}/transactions/{transactionCode}/verify
      */
     verifyTransaction(companyCode, transactionCode, options) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -1643,8 +1643,8 @@ class AvataxClient {
                     params.append('hsCodeClassificationStatus', options.hsCodeClassificationStatus);
                 const queryString = params.toString();
                 const endpoint = queryString
-                    ? `/api/v2/companies/${companyId}/items?${queryString}`
-                    : `/api/v2/companies/${companyId}/items`;
+                    ? `/companies/${companyId}/items?${queryString}`
+                    : `/companies/${companyId}/items`;
                 return yield this.makeRequest('GET', endpoint);
             }
             catch (error) {
@@ -1665,8 +1665,8 @@ class AvataxClient {
                     params.append('$include', options.include);
                 const queryString = params.toString();
                 const endpoint = queryString
-                    ? `/api/v2/companies/${companyId}/items/${itemId}?${queryString}`
-                    : `/api/v2/companies/${companyId}/items/${itemId}`;
+                    ? `/companies/${companyId}/items/${itemId}?${queryString}`
+                    : `/companies/${companyId}/items/${itemId}`;
                 return yield this.makeRequest('GET', endpoint);
             }
             catch (error) {
@@ -1688,8 +1688,8 @@ class AvataxClient {
                 }
                 const queryString = params.toString();
                 const endpoint = queryString
-                    ? `/api/v2/companies/${companyId}/items?${queryString}`
-                    : `/api/v2/companies/${companyId}/items`;
+                    ? `/companies/${companyId}/items?${queryString}`
+                    : `/companies/${companyId}/items`;
                 return yield this.makeRequest('POST', endpoint, items);
             }
             catch (error) {
@@ -1711,8 +1711,8 @@ class AvataxClient {
                 }
                 const queryString = params.toString();
                 const endpoint = queryString
-                    ? `/api/v2/companies/${companyId}/items/${itemId}?${queryString}`
-                    : `/api/v2/companies/${companyId}/items/${itemId}`;
+                    ? `/companies/${companyId}/items/${itemId}?${queryString}`
+                    : `/companies/${companyId}/items/${itemId}`;
                 return yield this.makeRequest('PUT', endpoint, itemData);
             }
             catch (error) {
@@ -1728,7 +1728,7 @@ class AvataxClient {
             try {
                 const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
                 const companyId = yield this.getCompanyId(resolvedCompanyCode);
-                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}`;
+                const endpoint = `/companies/${companyId}/items/${itemId}`;
                 return yield this.makeRequest('DELETE', endpoint);
             }
             catch (error) {
@@ -1760,8 +1760,8 @@ class AvataxClient {
                     params.append('$orderBy', options.orderBy);
                 const queryString = params.toString();
                 const endpoint = queryString
-                    ? `/api/v2/companies/${companyId}/items/${itemId}/parameters?${queryString}`
-                    : `/api/v2/companies/${companyId}/items/${itemId}/parameters`;
+                    ? `/companies/${companyId}/items/${itemId}/parameters?${queryString}`
+                    : `/companies/${companyId}/items/${itemId}/parameters`;
                 return yield this.makeRequest('GET', endpoint);
             }
             catch (error) {
@@ -1777,7 +1777,7 @@ class AvataxClient {
             try {
                 const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
                 const companyId = yield this.getCompanyId(resolvedCompanyCode);
-                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/parameters`;
+                const endpoint = `/companies/${companyId}/items/${itemId}/parameters`;
                 return yield this.makeRequest('POST', endpoint, parameters);
             }
             catch (error) {
@@ -1793,7 +1793,7 @@ class AvataxClient {
             try {
                 const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
                 const companyId = yield this.getCompanyId(resolvedCompanyCode);
-                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/parameters/${parameterId}`;
+                const endpoint = `/companies/${companyId}/items/${itemId}/parameters/${parameterId}`;
                 return yield this.makeRequest('PUT', endpoint, parameterData);
             }
             catch (error) {
@@ -1809,7 +1809,7 @@ class AvataxClient {
             try {
                 const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
                 const companyId = yield this.getCompanyId(resolvedCompanyCode);
-                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/parameters/${parameterId}`;
+                const endpoint = `/companies/${companyId}/items/${itemId}/parameters/${parameterId}`;
                 return yield this.makeRequest('DELETE', endpoint);
             }
             catch (error) {
@@ -1841,8 +1841,8 @@ class AvataxClient {
                     params.append('$orderBy', options.orderBy);
                 const queryString = params.toString();
                 const endpoint = queryString
-                    ? `/api/v2/companies/${companyId}/items/${itemId}/classifications?${queryString}`
-                    : `/api/v2/companies/${companyId}/items/${itemId}/classifications`;
+                    ? `/companies/${companyId}/items/${itemId}/classifications?${queryString}`
+                    : `/companies/${companyId}/items/${itemId}/classifications`;
                 return yield this.makeRequest('GET', endpoint);
             }
             catch (error) {
@@ -1858,7 +1858,7 @@ class AvataxClient {
             try {
                 const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
                 const companyId = yield this.getCompanyId(resolvedCompanyCode);
-                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/classifications`;
+                const endpoint = `/companies/${companyId}/items/${itemId}/classifications`;
                 return yield this.makeRequest('POST', endpoint, classifications);
             }
             catch (error) {
@@ -1874,7 +1874,7 @@ class AvataxClient {
             try {
                 const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
                 const companyId = yield this.getCompanyId(resolvedCompanyCode);
-                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/classifications/${classificationId}`;
+                const endpoint = `/companies/${companyId}/items/${itemId}/classifications/${classificationId}`;
                 return yield this.makeRequest('PUT', endpoint, classificationData);
             }
             catch (error) {
@@ -1890,7 +1890,7 @@ class AvataxClient {
             try {
                 const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
                 const companyId = yield this.getCompanyId(resolvedCompanyCode);
-                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/classifications/${classificationId}`;
+                const endpoint = `/companies/${companyId}/items/${itemId}/classifications/${classificationId}`;
                 return yield this.makeRequest('DELETE', endpoint);
             }
             catch (error) {
@@ -1921,8 +1921,8 @@ class AvataxClient {
                     params.append('$orderBy', options.orderBy);
                 const queryString = params.toString();
                 const endpoint = queryString
-                    ? `/api/v2/companies/${companyId}/items/${itemId}/tags?${queryString}`
-                    : `/api/v2/companies/${companyId}/items/${itemId}/tags`;
+                    ? `/companies/${companyId}/items/${itemId}/tags?${queryString}`
+                    : `/companies/${companyId}/items/${itemId}/tags`;
                 return yield this.makeRequest('GET', endpoint);
             }
             catch (error) {
@@ -1938,7 +1938,7 @@ class AvataxClient {
             try {
                 const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
                 const companyId = yield this.getCompanyId(resolvedCompanyCode);
-                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/tags`;
+                const endpoint = `/companies/${companyId}/items/${itemId}/tags`;
                 return yield this.makeRequest('POST', endpoint, tags);
             }
             catch (error) {
@@ -1954,7 +1954,7 @@ class AvataxClient {
             try {
                 const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
                 const companyId = yield this.getCompanyId(resolvedCompanyCode);
-                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/tags/${tagId}`;
+                const endpoint = `/companies/${companyId}/items/${itemId}/tags/${tagId}`;
                 return yield this.makeRequest('DELETE', endpoint);
             }
             catch (error) {
@@ -1983,8 +1983,8 @@ class AvataxClient {
                     params.append('$orderBy', options.orderBy);
                 const queryString = params.toString();
                 const endpoint = queryString
-                    ? `/api/v2/companies/${companyId}/items/bytags/${tag}?${queryString}`
-                    : `/api/v2/companies/${companyId}/items/bytags/${tag}`;
+                    ? `/companies/${companyId}/items/bytags/${tag}?${queryString}`
+                    : `/companies/${companyId}/items/bytags/${tag}`;
                 return yield this.makeRequest('GET', endpoint);
             }
             catch (error) {
@@ -2000,7 +2000,7 @@ class AvataxClient {
             try {
                 const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
                 const companyId = yield this.getCompanyId(resolvedCompanyCode);
-                const endpoint = `/api/v2/companies/${companyId}/items/upload`;
+                const endpoint = `/companies/${companyId}/items/upload`;
                 return yield this.makeRequest('POST', endpoint, items);
             }
             catch (error) {
@@ -2016,7 +2016,7 @@ class AvataxClient {
             try {
                 const { companyCode: resolvedCompanyCode } = yield this.resolveCompanyInfo(companyCode);
                 const companyId = yield this.getCompanyId(resolvedCompanyCode);
-                const endpoint = `/api/v2/companies/${companyId}/items/${itemId}/taxcoderecommendations`;
+                const endpoint = `/companies/${companyId}/items/${itemId}/taxcoderecommendations`;
                 return yield this.makeRequest('GET', endpoint);
             }
             catch (error) {
