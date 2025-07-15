@@ -1676,9 +1676,64 @@ export const TOOL_DEFINITIONS = [
   },
 
   // Item Management Tools - Based on actual AvaTax API endpoints
+  // Items are product catalog entries that simplify tax calculations by pre-configuring tax codes, parameters, and descriptions
+  // 
+  // === ITEM MANAGEMENT WORKFLOW FOR LLMs ===
+  //
+  // 1. PRODUCT CATALOG SETUP:
+  //    - Use list_items_by_company to discover existing items before creating new ones
+  //    - Use create_items for new product onboarding with proper tax codes
+  //    - Use bulk_upload_items for importing large catalogs from external systems
+  //    - Always include meaningful descriptions and consistent itemCode naming
+  //
+  // 2. TRANSACTION INTEGRATION:
+  //    - Reference items by itemCode in CreateTransaction calls instead of manual tax codes
+  //    - This separates tax configuration from transaction creation
+  //    - Tax teams can modify item tax behavior without changing software
+  //
+  // 3. ITEM MAINTENANCE:
+  //    - Use get_item before updating to preserve existing data (update replaces ALL data)
+  //    - Use update_item only when tax treatment or product specs change
+  //    - Use delete_item for discontinued products (cannot delete if referenced in transactions)
+  //
+  // 4. PARAMETER MANAGEMENT (Product Attributes):
+  //    - Use create_item_parameters for UPC codes, weights, dimensions, brand info
+  //    - Common parameters: UPC (compliance), Weight (shipping tax), Summary (tax code recommendations)
+  //    - Include units where applicable (kg, inch, etc.)
+  //
+  // 5. CLASSIFICATION MANAGEMENT (International Trade):
+  //    - Use create_item_classifications for HS codes (international shipments)
+  //    - Add NAICS codes for business reporting, TARIC for EU, HTS for US imports
+  //    - Critical for customs compliance and duty calculations
+  //
+  // 6. TAG MANAGEMENT (Organization):
+  //    - Use create_item_tags for flexible categorization beyond product groups
+  //    - Common tags: Electronics, Seasonal, Promotional, Fragile, Hazardous
+  //    - Use query_items_by_tag for filtered searches and bulk operations
+  //
+  // 7. TAX CODE ASSISTANCE:
+  //    - Use get_item_tax_code_recommendations for AI-powered tax code suggestions
+  //    - Provides confidence scores for proper tax classification
+  //    - Essential when unsure about correct tax treatment
+  //
+  // 8. BEST PRACTICES:
+  //    - Always retrieve (get_item) before updating to preserve data
+  //    - Use consistent itemCode naming conventions across systems
+  //    - Include UPC codes as parameters for product identification
+  //    - Add comprehensive descriptions for better tax code recommendations
+  //    - Organize with tags rather than complex naming schemes
+  //    - Monitor item usage to identify unused catalog entries
+  //
+  // === EXAMPLE WORKFLOW ===
+  // 1. Check existing items: list_items_by_company(filter: "itemCode contains 'LAPTOP'")
+  // 2. Create new item: create_items([{itemCode: "LAPTOP-001", description: "Business Laptop", taxCode: "P0000000"}])
+  // 3. Add parameters: create_item_parameters(itemId, [{name: "UPC", value: "123456789012"}, {name: "Weight", value: "2.5", unit: "kg"}])
+  // 4. Add classifications: create_item_classifications(itemId, [{productCode: "8471300000", systemCode: "HTS", country: "US"}])
+  // 5. Add tags: create_item_tags(itemId, [{tagName: "Electronics"}, {tagName: "Business"}])
+  // 6. Use in transaction: CreateTransaction with line items containing itemCode: "LAPTOP-001"
   {
     name: 'list_items_by_company',
-    description: 'Retrieve items for this company. Items are a way of separating your tax calculation process from your tax configuration details. You can provide itemCode values for each CreateTransaction() API call rather than specifying tax codes, parameters, descriptions, and other data fields. AvaTax will automatically look up each itemCode and apply the correct tax codes and parameters from the item table instead.',
+    description: 'List all items in a company\'s product catalog. WHEN TO USE: 1) Before creating transactions to find existing itemCodes for line items, 2) For product catalog discovery and management, 3) To audit existing item configurations, 4) When implementing item search functionality. Items separate tax calculation from tax configuration - reference items by itemCode in transactions rather than specifying tax codes manually. This simplifies CreateTransaction calls and allows tax teams to manage item tax behavior independently.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -1735,7 +1790,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'create_items',
-    description: 'Creates one or more new item objects attached to this company. Items are a way of separating your tax calculation process from your tax configuration details. This allows your CreateTransaction call to be as simple as possible, and your tax compliance team can manage your item catalog and adjust the tax behavior of items without having to modify your software. The tax code takes precedence over the tax code id if both are provided.',
+    description: 'Create new items in a company\'s product catalog. WHEN TO USE: 1) Add new products to your catalog with pre-configured tax settings, 2) Bulk import items from external systems, 3) Set up tax treatment for new products before creating transactions. Items centralize tax configuration - create items with tax codes, parameters, and descriptions, then reference by itemCode in transactions. IMPORTANT: Always include meaningful descriptions and use consistent itemCode naming conventions. Add UPC codes as parameters when available.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -1837,7 +1892,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'get_item',
-    description: 'Get the Item object identified by this URL. Items are a way of separating your tax calculation process from your tax configuration details. AvaTax will automatically look up each itemCode and apply the correct tax codes and parameters from the item table instead.',
+    description: 'Retrieve detailed information about a specific item by ID. WHEN TO USE: 1) Before updating an item to check current values and preserve existing data, 2) For troubleshooting tax calculations related to specific items, 3) To display item details in admin interfaces, 4) When investigating item configuration for transaction setup. Include additional data (Parameters, Classifications, Tags, Properties) to get complete item details.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -1859,7 +1914,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'update_item',
-    description: 'Replace the existing Item object at this URL with an updated object. All data from the existing object will be replaced with data in the object you PUT. To set a field\'s value to null, you may either set its value to null or omit that field from the object you post. The tax code takes precedence over the tax code id if both are provided.',
+    description: 'Update an existing item\'s configuration. WHEN TO USE: 1) Modify tax codes when product classification changes, 2) Update descriptions or categories for better organization, 3) Adjust parameters like UPC codes, weights, or dimensions. CRITICAL: This replaces ALL item data - always retrieve the current item first using get_item and include all fields you want to preserve. Only update when necessary as this affects all future transactions using this itemCode.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -1954,7 +2009,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'delete_item',
-    description: 'Delete the item object at this URL. Items that are referenced by transactions cannot be deleted.',
+    description: 'Remove an item from the product catalog. WHEN TO USE: 1) Remove obsolete/discontinued products from catalog, 2) Clean up test or incorrectly created items, 3) Catalog maintenance to remove unused items. RESTRICTIONS: Cannot delete items referenced in existing transactions. Deletion is permanent and cannot be undone. Consider deactivating items instead if they might be needed for historical transaction references.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -1972,7 +2027,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'query_items_by_tag',
-    description: 'Get multiple item objects associated with given tag. Items are a way of separating your tax calculation process from your tax configuration details. This allows your CreateTransaction call to be as simple as possible, and your tax compliance team can manage your item catalog and adjust the tax behavior of items without having to modify your software.',
+    description: 'Find items associated with a specific organizational tag. WHEN TO USE: 1) Find items by category (Electronics, Clothing, Food, etc.), 2) Locate items with specific properties (Seasonal, Promotional, Fragile, etc.), 3) Filter items for bulk operations or reporting, 4) Organize product catalog management by tags. Tags help categorize items beyond basic product groups and enable flexible item organization.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2010,7 +2065,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'bulk_upload_items',
-    description: 'Create/Update one or more item objects attached to this company. Items are a way of separating your tax calculation process from your tax configuration details. This allows your CreateTransaction call to be as simple as possible, and your tax compliance team can manage your item catalog and adjust the tax behavior of items without having to modify your software. The tax code takes precedence over the tax code id if both are provided.',
+    description: 'Create or update multiple items efficiently in a single operation. WHEN TO USE: 1) Import large product catalogs from external systems (ERP, e-commerce platforms), 2) Bulk updates to existing item configurations, 3) Initial setup of product catalog for new companies, 4) Synchronize item data between systems. More efficient than creating items individually when processing many items at once.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2061,7 +2116,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'get_item_parameters',
-    description: 'Retrieve parameters for a specific item. Parameters store additional configuration that can affect tax calculations.',
+    description: 'Retrieve parameters for a specific item. Parameters store additional product attributes that can affect tax calculations or provide supplementary information. WHEN TO USE: 1) Review current parameters before adding/updating, 2) Audit item configuration for compliance, 3) Display detailed product information in interfaces. Common parameters include UPC codes, weight/dimensions, brand, model numbers, and tax-relevant attributes.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2095,7 +2150,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'create_item_parameters',
-    description: 'Create one or more parameters for an item. Parameters store additional configuration that can affect tax calculations.',
+    description: 'Add parameters to an existing item. Parameters store additional product attributes for tax calculations and product information. WHEN TO USE: 1) Add UPC codes for product identification and compliance, 2) Include weight/dimensions for shipping-related tax calculations, 3) Store brand, model, or technical specifications, 4) Add tax-specific attributes required by certain jurisdictions. Include units where applicable (kg, inch, etc.).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2135,7 +2190,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'update_item_parameter',
-    description: 'Update a single parameter belonging to an item.',
+    description: 'Modify a specific parameter for an item. WHEN TO USE: 1) Correct parameter values (updated UPC codes, specifications), 2) Update weight/dimensions when product changes, 3) Modify brand or model information, 4) Adjust tax-specific attributes when requirements change. Use when you know the specific parameter ID that needs updating.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2176,7 +2231,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'delete_item_parameter',
-    description: 'Delete a single parameter belonging to an item.',
+    description: 'Remove a specific parameter from an item. WHEN TO USE: 1) Remove obsolete or incorrect parameters, 2) Clean up outdated product specifications, 3) Remove parameters that no longer apply to the product, 4) Correct data entry errors. Use carefully as this permanently removes the parameter and cannot be undone.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2198,7 +2253,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'get_item_classifications',
-    description: 'Retrieve classifications for a specific item. Classifications include HS codes and other product classification systems.',
+    description: 'Retrieve classification codes for an item including HS codes, NAICS codes, and other standardized product classification systems. WHEN TO USE: 1) Review current trade classifications for compliance, 2) Audit international trade code assignments, 3) Verify classification requirements before international shipments, 4) Check NAICS codes for business reporting. Essential for international trade and certain tax jurisdictions.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2232,7 +2287,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'create_item_classifications',
-    description: 'Create one or more classifications for an item. Classifications assign HS codes and other product classification codes.',
+    description: 'Assign standardized classification codes to an item for international trade and compliance. WHEN TO USE: 1) Assign HS codes for international shipments and customs compliance, 2) Add NAICS codes for business classification reporting, 3) Include TARIC codes for EU trade, 4) Set up HTS codes for US imports. Critical for international commerce - ensures proper customs treatment and duty calculations.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2276,7 +2331,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'update_item_classification',
-    description: 'Update a single classification for an item.',
+    description: 'Modify a specific classification code for an item. WHEN TO USE: 1) Correct classification codes when product specifications change, 2) Update HS codes when classification rules change, 3) Modify country-specific codes for compliance updates, 4) Fix incorrectly assigned classification codes. Important for maintaining accurate international trade compliance.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2321,7 +2376,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'delete_item_classification',
-    description: 'Delete a single classification for an item.',
+    description: 'Remove a classification code from an item. WHEN TO USE: 1) Remove incorrect or obsolete classification codes, 2) Clean up misassigned trade codes, 3) Remove classifications no longer applicable to the product, 4) Correct data entry errors. Use carefully as this may affect international trade compliance and customs processing.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2343,7 +2398,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'get_item_tags',
-    description: 'Retrieve tags for a specific item. Tags are organizational labels that help categorize items.',
+    description: 'Retrieve organizational tags assigned to an item. Tags are flexible labels for categorizing and filtering items beyond standard product groups. WHEN TO USE: 1) Review current item organization and categorization, 2) Understand how items are grouped for business processes, 3) Audit tag assignments for consistency, 4) Display item categories in user interfaces.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2377,7 +2432,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'create_item_tags',
-    description: 'Create one or more tags for an item. Tags help organize and categorize items.',
+    description: 'Add organizational tags to an item for categorization and filtering. WHEN TO USE: 1) Organize items by business categories (Electronics, Clothing, Food), 2) Mark items with operational properties (Seasonal, Promotional, Clearance, New), 3) Identify special handling requirements (Fragile, Hazardous, Oversized, Refrigerated), 4) Enable flexible item filtering and search capabilities. Use consistent tag naming conventions across your catalog.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2409,7 +2464,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'delete_item_tag',
-    description: 'Delete a single tag for an item.',
+    description: 'Remove a specific tag from an item. WHEN TO USE: 1) Remove outdated tags (e.g., "New" tag after product is established), 2) Clean up incorrect tag assignments, 3) Update item categorization when business processes change, 4) Remove tags that no longer apply to the product. Use when reorganizing item classification systems.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2431,7 +2486,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'get_item_tax_code_recommendations',
-    description: 'Provides at least three tax-code recommendations for the given company ID and item ID. Use this to get suggested tax codes for items that need proper tax classification.',
+    description: 'Get AI-powered tax code recommendations for an item based on its description and attributes. WHEN TO USE: 1) Find appropriate tax codes for new products without manual research, 2) Validate current tax code assignments for accuracy, 3) Get suggestions when product classification is uncertain, 4) Ensure compliance with proper tax treatment. Provides at least three recommendations with confidence scores to help select the most appropriate tax code.',
     inputSchema: {
       type: 'object',
       properties: {
