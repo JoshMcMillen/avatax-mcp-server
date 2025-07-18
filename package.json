@@ -1,6 +1,6 @@
 {
   "name": "avatax-mcp-server",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "MCP server for AvaTax - calculate tax, validate addresses, and create transactions",
   "main": "electron/main.js",
   "scripts": {
