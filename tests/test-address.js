@@ -1,4 +1,4 @@
-// Test script to verify address validation works
+// Combined address validation tests
 const AvataxClient = require('./dist/avatax/client.js').default;
 
 const config = {
